@@ -35,6 +35,7 @@ export default function WordCard({ word, onCorrect, onSkip }) {
 
             <motion.h2 
               className="text-5xl md:text-7xl font-bold bg-gradient-to-br from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent"
+              style={{ direction: "rtl" }}
               animate={{ scale: [1, 1.02, 1] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             >
@@ -60,7 +61,7 @@ export default function WordCard({ word, onCorrect, onSkip }) {
             </Button>
 
             {word.example_sentence && (
-              <div className="pt-4">
+              <div className="pt-4" dir="rtl">
                 <p className="text-sm text-gray-400 italic">"{word.example_sentence}"</p>
               </div>
             )}

@@ -75,7 +75,7 @@ export default function Library() {
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
               Word Library
             </h1>
-            <p className="text-gray-500">Manage your vocabulary collection</p>
+            <p className="text-gray-500">Manage your Hebrew vocabulary</p>
           </div>
           <Button
             onClick={() => setShowAddForm(!showAddForm)}
@@ -99,20 +99,21 @@ export default function Library() {
                   <h3 className="text-xl font-bold mb-4">Add New Word</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label>Word *</Label>
+                      <Label>Hebrew Word *</Label>
                       <Input
                         value={newWord.word}
                         onChange={(e) => setNewWord({ ...newWord, word: e.target.value })}
-                        placeholder="e.g., Hello"
-                        className="mt-1"
+                        placeholder="e.g., שלום"
+                        className="mt-1 text-right"
+                        dir="rtl"
                       />
                     </div>
                     <div>
-                      <Label>Translation *</Label>
+                      <Label>English Translation *</Label>
                       <Input
                         value={newWord.translation}
                         onChange={(e) => setNewWord({ ...newWord, translation: e.target.value })}
-                        placeholder="e.g., Hola"
+                        placeholder="e.g., Hello"
                         className="mt-1"
                       />
                     </div>
@@ -121,7 +122,7 @@ export default function Library() {
                       <Input
                         value={newWord.phonetic}
                         onChange={(e) => setNewWord({ ...newWord, phonetic: e.target.value })}
-                        placeholder="e.g., həˈloʊ"
+                        placeholder="e.g., shalom"
                         className="mt-1"
                       />
                     </div>
@@ -159,12 +160,13 @@ export default function Library() {
                       </Select>
                     </div>
                     <div className="md:col-span-2">
-                      <Label>Example Sentence</Label>
+                      <Label>Example Sentence (Hebrew)</Label>
                       <Textarea
                         value={newWord.example_sentence}
                         onChange={(e) => setNewWord({ ...newWord, example_sentence: e.target.value })}
-                        placeholder="Example usage..."
-                        className="mt-1"
+                        placeholder="Example usage in Hebrew..."
+                        className="mt-1 text-right"
+                        dir="rtl"
                       />
                     </div>
                   </div>
@@ -233,10 +235,10 @@ export default function Library() {
                 <Card className="border border-violet-100 hover:shadow-lg transition-all duration-300 bg-white/80 backdrop-blur-sm">
                   <CardContent className="p-5">
                     <div className="flex justify-between items-start mb-3">
-                      <div className="flex-1">
+                      <div className="flex-1" dir="rtl">
                         <h3 className="text-2xl font-bold text-gray-800">{word.word}</h3>
                         {word.phonetic && (
-                          <p className="text-sm text-gray-500">/{word.phonetic}/</p>
+                          <p className="text-sm text-gray-500" dir="ltr">/{word.phonetic}/</p>
                         )}
                       </div>
                       {word.mastered && (
@@ -256,7 +258,7 @@ export default function Library() {
                     </div>
 
                     {word.example_sentence && (
-                      <p className="text-sm text-gray-500 italic mb-3">"{word.example_sentence}"</p>
+                      <p className="text-sm text-gray-500 italic mb-3" dir="rtl">"{word.example_sentence}"</p>
                     )}
 
                     <div className="text-xs text-gray-400 mb-3">
