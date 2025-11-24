@@ -93,16 +93,41 @@ export default function Layout({ children, currentPageName }) {
           <SidebarContent className="p-3">
             <SidebarGroup>
               <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 py-3">
-                Menu
+                🇮🇱 Hebrew
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-1">
-                  {navigationItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
+                  {hebrewItems.map((item) => (
+                    <SidebarMenuItem key={`hebrew-${item.title}`}>
                       <SidebarMenuButton 
                         asChild 
                         className={`hover:bg-violet-50 hover:text-violet-700 transition-all duration-200 rounded-xl ${
                           location.pathname === item.url ? 'bg-gradient-to-r from-violet-500 to-blue-500 text-white hover:from-violet-600 hover:to-blue-600 hover:text-white shadow-lg' : ''
+                        }`}
+                      >
+                        <Link to={item.url} className="flex items-center gap-3 px-4 py-3">
+                          <item.icon className="w-5 h-5" />
+                          <span className="font-medium">{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 py-3">
+                🇪🇸 Spanish
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-1">
+                  {spanishItems.map((item) => (
+                    <SidebarMenuItem key={`spanish-${item.title}`}>
+                      <SidebarMenuButton 
+                        asChild 
+                        className={`hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 rounded-xl ${
+                          location.pathname === item.url ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 hover:text-white shadow-lg' : ''
                         }`}
                       >
                         <Link to={item.url} className="flex items-center gap-3 px-4 py-3">
