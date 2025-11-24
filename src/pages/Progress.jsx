@@ -29,12 +29,22 @@ export default function Progress() {
   return (
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
-            Your Progress
-          </h1>
-          <p className="text-gray-500">Track your learning journey</p>
-        </div>
+        <div className="mb-8 flex items-center gap-4">
+                        <ParrotMascot 
+                          size="sm" 
+                          message={
+                            masteredWords >= 10 ? "You're a star! ⭐" :
+                            masteredWords >= 5 ? "Great progress!" :
+                            "Keep learning!"
+                          } 
+                        />
+                        <div>
+                          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                            Your Progress
+                          </h1>
+                          <p className="text-gray-500">Track your learning journey</p>
+                        </div>
+                      </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatsCard

@@ -295,10 +295,10 @@ export default function Library() {
         </div>
 
         {filteredWords.length === 0 && (
-          <div className="text-center py-20">
-            <p className="text-xl text-gray-400">No words found</p>
-          </div>
-        )}
+                        <div className="text-center py-20">
+                          <ParrotMascot size="lg" message="No words yet! Add some to your library." />
+                        </div>
+                      )}
       </div>
     </div>
   );

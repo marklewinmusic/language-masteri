@@ -67,12 +67,15 @@ export default function Videos() {
   return (
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
-            Video Lessons
-          </h1>
-          <p className="text-gray-500">Watch and practice Hebrew with cloze flashcards</p>
-        </div>
+        <div className="mb-8 flex items-center gap-4">
+                        <ParrotMascot size="sm" message="Let's watch & learn!" />
+                        <div>
+                          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                            Video Lessons
+                          </h1>
+                          <p className="text-gray-500">Watch and practice Hebrew with cloze flashcards</p>
+                        </div>
+                      </div>
 
         <div className="space-y-6">
           {videoData.map((video, idx) => (

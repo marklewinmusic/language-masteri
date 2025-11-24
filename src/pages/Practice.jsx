@@ -134,32 +134,40 @@ export default function Practice() {
             </Select>
 
             <div className="flex gap-4 items-center flex-1">
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl px-6 py-3 border border-violet-100 shadow-sm">
-                <p className="text-sm text-gray-500">Progress</p>
-                <p className="text-xl font-bold text-violet-600">
-                  {currentWordIndex + 1} / {sessionWords.length}
-                </p>
-              </div>
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl px-6 py-3 border border-violet-100 shadow-sm">
-                <p className="text-sm text-gray-500">Score</p>
-                <p className="text-xl font-bold text-violet-600">
-                  {sessionStats.total > 0 ? Math.round((sessionStats.correct / sessionStats.total) * 100) : 0}%
-                </p>
-              </div>
-            </div>
+                                <ParrotMascot 
+                                  size="sm" 
+                                  message={
+                                    sessionStats.total === 0 ? "Let's learn!" :
+                                    sessionStats.correct / sessionStats.total >= 0.8 ? "Amazing work! 🎉" :
+                                    sessionStats.correct / sessionStats.total >= 0.5 ? "Keep going! 💪" :
+                                    "You can do it! 🌟"
+                                  }
+                                />
+                                <div className="bg-white/80 backdrop-blur-sm rounded-xl px-6 py-3 border border-violet-100 shadow-sm">
+                                  <p className="text-sm text-gray-500">Progress</p>
+                                  <p className="text-xl font-bold text-violet-600">
+                                    {currentWordIndex + 1} / {sessionWords.length}
+                                  </p>
+                                </div>
+                                <div className="bg-white/80 backdrop-blur-sm rounded-xl px-6 py-3 border border-violet-100 shadow-sm">
+                                  <p className="text-sm text-gray-500">Score</p>
+                                  <p className="text-xl font-bold text-violet-600">
+                                    {sessionStats.total > 0 ? Math.round((sessionStats.correct / sessionStats.total) * 100) : 0}%
+                                  </p>
+                                </div>
+                              </div>
           </div>
         </motion.div>
 
         {sessionWords.length === 0 ? (
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="text-center py-20"
-          >
-            <Sparkles className="w-16 h-16 mx-auto mb-4 text-violet-400" />
-            <p className="text-xl text-gray-500">No words yet. Add some to get started!</p>
-          </motion.div>
-        ) : (
+                        <motion.div
+                          initial={{ scale: 0.9, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="text-center py-20"
+                        >
+                          <ParrotMascot size="lg" message="Add some words to start learning!" className="mb-4" />
+                        </motion.div>
+                      ) : (
           <AnimatePresence mode="wait">
             <WordCard
               key={currentWord?.id}
