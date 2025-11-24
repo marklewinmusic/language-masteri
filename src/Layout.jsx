@@ -66,6 +66,8 @@ const spanishItems = [
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
+  const [hebrewOpen, setHebrewOpen] = React.useState(true);
+  const [spanishOpen, setSpanishOpen] = React.useState(false);
 
   return (
     <SidebarProvider>
