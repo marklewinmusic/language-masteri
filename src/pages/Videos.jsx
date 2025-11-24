@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import YouTubePlayer from "../components/practice/YouTubePlayer";
 import ClozeFlashcard from "../components/videos/ClozeFlashcard";
+import ParrotMascot from "../components/mascot/ParrotMascot";
 
 const videoData = [
   {

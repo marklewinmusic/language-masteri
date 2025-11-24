@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Award, Target, TrendingUp, Zap } from "lucide-react";
 import StatsCard from "../components/progress/StatsCard";
+import ParrotMascot from "../components/mascot/ParrotMascot";
 
 export default function Progress() {
   const { data: words = [] } = useQuery({

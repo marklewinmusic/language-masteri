@@ -7,6 +7,7 @@ import { Sparkles, RotateCcw } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import WordCard from "../components/practice/WordCard";
 import SoundWave from "../components/practice/SoundWave";
+import ParrotMascot from "../components/mascot/ParrotMascot";
 
 export default function Practice() {
   const [selectedCategory, setSelectedCategory] = useState("all");

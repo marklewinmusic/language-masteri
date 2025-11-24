@@ -9,6 +9,7 @@ import { Plus, Volume2, Trash2, Award, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import ParrotMascot from "../components/mascot/ParrotMascot";
 
 export default function Library() {
   const [showAddForm, setShowAddForm] = useState(false);
