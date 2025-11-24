@@ -61,8 +61,8 @@ export default function Layout({ children, currentPageName }) {
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-violet-400 rounded-full animate-pulse" />
               </div>
               <div>
-                <h2 className="font-bold text-xl bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">SoundLearn</h2>
-                <p className="text-xs text-gray-500">Master pronunciation</p>
+                <h2 className="font-bold text-xl bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">Masteri Languages</h2>
+                                      <p className="text-xs text-gray-500">Master any language</p>
               </div>
             </div>
           </SidebarHeader>
@@ -99,7 +99,7 @@ export default function Layout({ children, currentPageName }) {
           <header className="bg-white/60 backdrop-blur-md border-b border-violet-100/50 px-6 py-4 md:hidden">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="hover:bg-violet-50 p-2 rounded-lg transition-colors duration-200" />
-              <h1 className="text-xl font-bold bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">SoundLearn</h1>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">Masteri Languages</h1>
             </div>
           </header>
 
