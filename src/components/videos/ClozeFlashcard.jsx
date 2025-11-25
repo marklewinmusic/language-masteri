@@ -61,11 +61,19 @@ export default function ClozeFlashcard({ flashcard, onNext, onPrev, onRate }) {
             exit={{ opacity: 0, y: -10 }}
             className="space-y-4 text-center"
           >
-            {/* Answer */}
+            {/* Answer - Hebrew */}
             <div className="bg-white rounded-xl p-4 border border-violet-200">
-              <p className="text-sm text-gray-500 mb-1">Answer (Transliterated Hebrew)</p>
-              <p className="text-2xl font-bold text-violet-600">{flashcard.answer}</p>
+              <p className="text-sm text-gray-500 mb-1">Hebrew</p>
+              <p className="text-2xl font-bold text-violet-600" dir="rtl">{flashcard.answer}</p>
             </div>
+
+            {/* Transliteration */}
+            {flashcard.transliteration && (
+              <div className="bg-white rounded-xl p-4 border border-purple-200">
+                <p className="text-sm text-gray-500 mb-1">Transliteration</p>
+                <p className="text-xl font-semibold text-purple-600">{flashcard.transliteration}</p>
+              </div>
+            )}
 
             {/* Meaning */}
             <div className="bg-white rounded-xl p-4 border border-blue-200">
