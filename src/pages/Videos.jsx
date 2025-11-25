@@ -306,6 +306,33 @@ export default function Videos() {
                 <p className="text-gray-500 mb-4">{video.description}</p>
                                       <YouTubePlayer url={video.url} />
 
+                                      {idx === 1 && (
+                                        <div className="mt-4">
+                                          <Button
+                                            variant="outline"
+                                            onClick={() => setShowTranscript(prev => ({ ...prev, [idx]: !prev[idx] }))}
+                                            className="w-full border-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50 rounded-xl text-blue-600"
+                                          >
+                                            <FileText className="w-4 h-4 mr-2" />
+                                            {showTranscript[idx] ? "Hide Transcript" : "Show Transcript (Transliteration + Translation)"}
+                                          </Button>
+                                          <AnimatePresence>
+                                            {showTranscript[idx] && (
+                                              <motion.div
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: "auto" }}
+                                                exit={{ opacity: 0, height: 0 }}
+                                                className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200 max-h-96 overflow-y-auto"
+                                              >
+                                                <ReactMarkdown className="prose prose-sm max-w-none text-gray-700 [&>p]:mb-3 [&>hr]:my-4 [&>hr]:border-blue-200">
+                                                  {israeliMusicTranscript}
+                                                </ReactMarkdown>
+                                              </motion.div>
+                                            )}
+                                          </AnimatePresence>
+                                        </div>
+                                      )}
+
                                       <div className="mt-4 p-4 bg-gradient-to-r from-violet-50 to-blue-50 rounded-xl border border-violet-100">
                                                                 <h3 className="font-semibold text-violet-700 mb-3">📖 Vocabulary from this video:</h3>
                                                                 <div className="flex flex-wrap gap-2 text-sm">
