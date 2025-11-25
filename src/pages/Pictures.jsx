@@ -24,8 +24,8 @@ const pictureCards = [
     mnemonic: "Sounds like 'dove' - imagine a bear releasing a dove!"
   },
   {
-    image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=500",
-    hint: "The dog is running around like a crazy _____",
+    image: "https://images.unsplash.com/photo-1534361960057-19889db9621e?w=500",
+    hint: "This clever dog knows the answer - it's a _____",
     hebrewWord: "כלב",
     transliteration: "Kelev",
     meaning: "Dog",
