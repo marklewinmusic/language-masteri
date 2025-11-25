@@ -8,6 +8,33 @@ import ParrotMascot from "../components/mascot/ParrotMascot";
 
 const videoData = [
   {
+    title: "בן העשיר והעבד החמדן - The Rich Man's Son & The Greedy Servant",
+    url: "https://www.youtube.com/watch?v=0gp1WUOeKak",
+    description: "A King Solomon story for kids - learn Hebrew vocabulary through an engaging animated tale",
+    flashcards: [
+      { sentence: "בעיר הקסומה ירושלים חי פעם _____ מופלג", blank: "rich man", answer: "עשיר", transliteration: "ashir", meaning: "rich man", fullTranslation: "In the magical city of Jerusalem once lived a very rich man" },
+      { sentence: "היה לו _____ יחיד, נער חכם ונבון", blank: "son", answer: "בן", transliteration: "ben", meaning: "son", fullTranslation: "He had an only son, a wise and intelligent young man" },
+      { sentence: "יום אחד יצא הבן ל_____ מעבר לים", blank: "journey", answer: "מסע", transliteration: "masa", meaning: "journey", fullTranslation: "One day the son went on a journey across the sea" },
+      { sentence: "האב הזקן שחש כי ימיו _____", blank: "numbered", answer: "ספורים", transliteration: "sfurim", meaning: "numbered/counted", fullTranslation: "The old father who felt his days were numbered" },
+      { sentence: "קרא ל_____ הנאמן שלו", blank: "servant", answer: "עבד", transliteration: "eved", meaning: "servant", fullTranslation: "He called his loyal servant" },
+      { sentence: "שמור על _____ הרב עד שובו", blank: "property", answer: "רכוש", transliteration: "rechush", meaning: "property/wealth", fullTranslation: "Guard my great property until his return" },
+      { sentence: "העבד היה _____ עד כה", blank: "loyal", answer: "נאמן", transliteration: "ne'eman", meaning: "loyal/faithful", fullTranslation: "The servant was loyal until now" },
+      { sentence: "הוא חמד את ה_____ לעצמו", blank: "money", answer: "כסף", transliteration: "kesef", meaning: "money", fullTranslation: "He coveted the money for himself" },
+      { sentence: "הבן היחיד _____ לביתו", blank: "returned", answer: "שב", transliteration: "shav", meaning: "returned", fullTranslation: "The only son returned to his home" },
+      { sentence: "מיהר לארמונו של דוד ה_____", blank: "king", answer: "מלך", transliteration: "melech", meaning: "king", fullTranslation: "He hurried to the palace of King David" },
+      { sentence: "שלמה בנו הצעיר וה_____ של דוד", blank: "wise", answer: "חכם", transliteration: "chacham", meaning: "wise", fullTranslation: "Solomon, the young and wise son of David" },
+      { sentence: "דוד המלך הקשיב ב_____ רב", blank: "attention", answer: "קשב", transliteration: "keshev", meaning: "attention", fullTranslation: "King David listened with great attention" },
+      { sentence: "כל אחד מהם יביא _____", blank: "witnesses", answer: "עדים", transliteration: "edim", meaning: "witnesses", fullTranslation: "Each of them should bring witnesses" },
+      { sentence: "הבן שהיה _____ וטהור לב", blank: "innocent", answer: "תמים", transliteration: "tamim", meaning: "innocent/pure", fullTranslation: "The son who was innocent and pure of heart" },
+      { sentence: "אנשים פחדו מהעבד ה_____", blank: "evil", answer: "רשע", transliteration: "rasha", meaning: "evil/wicked", fullTranslation: "People were afraid of the evil servant" },
+      { sentence: "כיצד יוכל להוכיח את _____", blank: "his righteousness", answer: "צדקתו", transliteration: "tzidkato", meaning: "his righteousness", fullTranslation: "How could he prove his righteousness" },
+      { sentence: "שלמה אמר יש לי _____ מבריק", blank: "idea", answer: "רעיון", transliteration: "ra'ayon", meaning: "idea", fullTranslation: "Solomon said I have a brilliant idea" },
+      { sentence: "נפתח את _____ של האב", blank: "grave", answer: "קבר", transliteration: "kever", meaning: "grave", fullTranslation: "We will open the father's grave" },
+      { sentence: "הבן האמיתי בכה ואמר _____", blank: "no", answer: "לא", transliteration: "lo", meaning: "no", fullTranslation: "The true son cried and said no" },
+      { sentence: "זוהי ה_____ האמיתית!", blank: "truth", answer: "אמת", transliteration: "emet", meaning: "truth", fullTranslation: "This is the real truth!" }
+    ]
+  },
+  {
     title: "Israeli Music Vocabulary",
     url: "https://www.youtube.com/watch?v=BmbmaWQJu18",
     description: "Learn Hebrew with Israeli singers - vocabulary about music, concerts, and artists",
