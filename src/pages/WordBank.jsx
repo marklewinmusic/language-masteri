@@ -82,9 +82,10 @@ export default function WordBank() {
                   className="bg-white/80 backdrop-blur-sm rounded-xl border border-violet-100 p-4"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
                       <span className="text-xl font-bold text-violet-600">{word.phonetic}</span>
-                      <span className="text-gray-600 text-sm">{word.translation}</span>
+                      <span className="text-gray-400">=</span>
+                      <span className="text-gray-600">_____</span>
                     </div>
                     <Button
                       variant="ghost"
