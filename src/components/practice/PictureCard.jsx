@@ -29,7 +29,7 @@ export default function PictureCard({ card, onNext, onPrev, currentIndex, total 
           className="w-full h-64 object-cover"
         />
         <div className="absolute top-3 right-3 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-          {currentIndex + 1} / {total}
+          {currentIndex + 1}
         </div>
       </div>
 
@@ -38,9 +38,15 @@ export default function PictureCard({ card, onNext, onPrev, currentIndex, total 
           <p className="text-lg text-gray-700 mb-2">
             {card.hint}
           </p>
-          <p className="text-2xl font-bold text-violet-600">
-            _____ ?
-          </p>
+          <div className="flex items-center justify-center gap-3">
+            <span className="text-3xl font-bold text-violet-600" dir="rtl">
+              {card.hebrewWord}
+            </span>
+            <span className="text-2xl text-gray-400">=</span>
+            <span className="text-2xl font-bold text-violet-600">
+              {showAnswer ? card.meaning : "_____"}
+            </span>
+          </div>
         </div>
 
         <Button
@@ -49,7 +55,7 @@ export default function PictureCard({ card, onNext, onPrev, currentIndex, total 
           className="w-full mb-4 border-2 border-violet-200 hover:border-violet-300"
         >
           {showAnswer ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
-          {showAnswer ? "Hide Answer" : "Reveal Answer"}
+          {showAnswer ? "Hide" : "Reveal"}
         </Button>
 
         {showAnswer && (
@@ -58,16 +64,10 @@ export default function PictureCard({ card, onNext, onPrev, currentIndex, total 
             animate={{ opacity: 1, y: 0 }}
             className="bg-gradient-to-r from-violet-50 to-blue-50 rounded-xl p-4 text-center"
           >
-            <p className="text-3xl font-bold text-violet-700 mb-1" dir="rtl">
-              {card.hebrewWord}
-            </p>
             <p className="text-xl text-gray-600 mb-1">
               {card.transliteration}
             </p>
-            <p className="text-lg font-medium text-emerald-600">
-              = {card.meaning}
-            </p>
-            <p className="text-sm text-gray-500 mt-2 italic">
+            <p className="text-sm text-gray-500 italic">
               🧠 {card.mnemonic}
             </p>
           </motion.div>
