@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import YouTubePlayer from "./YouTubePlayer";
 import ExerciseCard from "./ExerciseCard";
 
-export default function WordCard({ word, onCorrect, onSkip }) {
+export default function WordCard({ word, onCorrect, onSkip, onRate, currentRating }) {
   const [showTranslation, setShowTranslation] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
@@ -152,16 +152,29 @@ export default function WordCard({ word, onCorrect, onSkip }) {
               )}
             </motion.div>
 
-            <div className="flex gap-4 pt-6">
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={onSkip}
-                className="flex-1 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 rounded-xl text-gray-600"
-              >
-                <X className="w-5 h-5 mr-2" />
-                Skip
-              </Button>
+            <div className="pt-6">
+              <p className="text-sm text-gray-500 mb-3">Rate your knowledge (5 = mastered, moves to "Words I Know")</p>
+              <div className="flex justify-center gap-2 mb-4">
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <Button
+                    key={num}
+                    onClick={() => onRate(word.id, num)}
+                    variant={currentRating === num ? "default" : "outline"}
+                    className={`w-12 h-12 p-0 text-lg font-bold rounded-xl ${
+                      currentRating === num 
+                        ? num === 5 
+                          ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white" 
+                          : "bg-gradient-to-r from-violet-500 to-blue-500 text-white"
+                        : "border-2 border-violet-200 hover:border-violet-300"
+                    }`}
+                  >
+                    {num}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-4 pt-4">
               <Button
                 variant="outline"
                 size="lg"
@@ -172,11 +185,10 @@ export default function WordCard({ word, onCorrect, onSkip }) {
               </Button>
               <Button
                 size="lg"
-                onClick={onCorrect}
-                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-xl shadow-lg"
+                onClick={onSkip}
+                className="flex-1 bg-gradient-to-r from-violet-500 to-blue-500 hover:from-violet-600 hover:to-blue-600 rounded-xl shadow-lg"
               >
-                <Check className="w-5 h-5 mr-2" />
-                Got it!
+                Next Word
               </Button>
             </div>
           </div>

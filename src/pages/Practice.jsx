@@ -12,6 +12,7 @@ import ParrotMascot from "../components/mascot/ParrotMascot";
 
 export default function Practice() {
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedFolder, setSelectedFolder] = useState("dont-know");
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [sessionWords, setSessionWords] = useState([]);
   const [sessionStats, setSessionStats] = useState({ correct: 0, total: 0 });
@@ -35,12 +36,22 @@ export default function Practice() {
     },
   });
 
+  const filteredByFolder = words.filter(word => {
+    const rating = word.times_practiced || 0;
+    if (selectedFolder === "know") return rating >= 5;
+    if (selectedFolder === "dont-know") return rating < 5;
+    return true;
+  });
+
   useEffect(() => {
-    if (words.length > 0 && sessionWords.length === 0) {
-      const shuffled = [...words].sort(() => Math.random() - 0.5);
+    if (filteredByFolder.length > 0) {
+      const shuffled = [...filteredByFolder].sort(() => Math.random() - 0.5);
       setSessionWords(shuffled);
+      setCurrentWordIndex(0);
+    } else {
+      setSessionWords([]);
     }
-  }, [words]);
+  }, [words, selectedFolder, selectedCategory]);
 
   const currentWord = sessionWords[currentWordIndex];
 
@@ -116,6 +127,17 @@ export default function Practice() {
                 </motion.div>
 
                 <div className="flex flex-col md:flex-row gap-4 mb-6">
+                              <Select value={selectedFolder} onValueChange={setSelectedFolder}>
+                                <SelectTrigger className="w-full md:w-64 border-2 border-violet-100 rounded-xl">
+                                  <SelectValue placeholder="Select folder" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="dont-know">📚 Words I Don't Know ({words.filter(w => (w.times_practiced || 0) < 5).length})</SelectItem>
+                                  <SelectItem value="know">✅ Words I Know ({words.filter(w => (w.times_practiced || 0) >= 5).length})</SelectItem>
+                                  <SelectItem value="all">All Words ({words.length})</SelectItem>
+                                </SelectContent>
+                              </Select>
+
                               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                                 <SelectTrigger className="w-full md:w-64 border-2 border-violet-100 rounded-xl">
                                   <SelectValue placeholder="Select category" />
@@ -173,8 +195,9 @@ export default function Practice() {
                                 <WordCard
                                   key={currentWord?.id}
                                   word={currentWord}
-                                  onCorrect={handleCorrect}
+                                  onRate={handleRate}
                                   onSkip={handleSkip}
+                                  currentRating={currentWord?.times_practiced || 0}
                                 />
                               </AnimatePresence>
                             )}
