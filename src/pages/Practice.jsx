@@ -115,99 +115,69 @@ export default function Practice() {
                   </div>
                 </motion.div>
 
-                <Tabs defaultValue="audio" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 mb-6 bg-violet-50 rounded-xl p-1">
-                    <TabsTrigger value="audio" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                      <AudioIcon className="w-4 h-4 mr-2" />
-                      Audio Practice
-                    </TabsTrigger>
-                    <TabsTrigger value="pictures" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                      <Image className="w-4 h-4 mr-2" />
-                      Pictures
-                    </TabsTrigger>
-                  </TabsList>
+                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                                <SelectTrigger className="w-full md:w-64 border-2 border-violet-100 rounded-xl">
+                                  <SelectValue placeholder="Select category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="all">All Categories</SelectItem>
+                                  <SelectItem value="basics">Basics</SelectItem>
+                                  <SelectItem value="numbers">Numbers</SelectItem>
+                                  <SelectItem value="colors">Colors</SelectItem>
+                                  <SelectItem value="food">Food</SelectItem>
+                                  <SelectItem value="animals">Animals</SelectItem>
+                                  <SelectItem value="travel">Travel</SelectItem>
+                                  <SelectItem value="nature">Nature</SelectItem>
+                                  <SelectItem value="business">Business</SelectItem>
+                                  <SelectItem value="emotions">Emotions</SelectItem>
+                                  <SelectItem value="actions">Actions</SelectItem>
+                                </SelectContent>
+                              </Select>
 
-                  <TabsContent value="audio">
-                    <div className="flex flex-col md:flex-row gap-4 mb-6">
-                      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                        <SelectTrigger className="w-full md:w-64 border-2 border-violet-100 rounded-xl">
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Categories</SelectItem>
-                          <SelectItem value="basics">Basics</SelectItem>
-                          <SelectItem value="numbers">Numbers</SelectItem>
-                          <SelectItem value="colors">Colors</SelectItem>
-                          <SelectItem value="food">Food</SelectItem>
-                          <SelectItem value="animals">Animals</SelectItem>
-                          <SelectItem value="travel">Travel</SelectItem>
-                          <SelectItem value="nature">Nature</SelectItem>
-                          <SelectItem value="business">Business</SelectItem>
-                          <SelectItem value="emotions">Emotions</SelectItem>
-                          <SelectItem value="actions">Actions</SelectItem>
-                        </SelectContent>
-                      </Select>
+                              <div className="flex gap-4 items-center flex-1">
+                                <ParrotMascot 
+                                  size="sm" 
+                                  message={
+                                    sessionStats.total === 0 ? "Let's learn!" :
+                                    sessionStats.correct / sessionStats.total >= 0.8 ? "Amazing work! 🎉" :
+                                    sessionStats.correct / sessionStats.total >= 0.5 ? "Keep going! 💪" :
+                                    "You can do it! 🌟"
+                                  }
+                                />
+                                <div className="bg-white/80 backdrop-blur-sm rounded-xl px-6 py-3 border border-violet-100 shadow-sm">
+                                  <p className="text-sm text-gray-500">Progress</p>
+                                  <p className="text-xl font-bold text-violet-600">
+                                    {currentWordIndex + 1} / {sessionWords.length}
+                                  </p>
+                                </div>
+                                <div className="bg-white/80 backdrop-blur-sm rounded-xl px-6 py-3 border border-violet-100 shadow-sm">
+                                  <p className="text-sm text-gray-500">Score</p>
+                                  <p className="text-xl font-bold text-violet-600">
+                                    {sessionStats.total > 0 ? Math.round((sessionStats.correct / sessionStats.total) * 100) : 0}%
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
 
-                      <div className="flex gap-4 items-center flex-1">
-                          <ParrotMascot 
-                            size="sm" 
-                            message={
-                              sessionStats.total === 0 ? "Let's learn!" :
-                              sessionStats.correct / sessionStats.total >= 0.8 ? "Amazing work! 🎉" :
-                              sessionStats.correct / sessionStats.total >= 0.5 ? "Keep going! 💪" :
-                              "You can do it! 🌟"
-                            }
-                          />
-                          <div className="bg-white/80 backdrop-blur-sm rounded-xl px-6 py-3 border border-violet-100 shadow-sm">
-                            <p className="text-sm text-gray-500">Progress</p>
-                            <p className="text-xl font-bold text-violet-600">
-                              {currentWordIndex + 1} / {sessionWords.length}
-                            </p>
-                          </div>
-                          <div className="bg-white/80 backdrop-blur-sm rounded-xl px-6 py-3 border border-violet-100 shadow-sm">
-                            <p className="text-sm text-gray-500">Score</p>
-                            <p className="text-xl font-bold text-violet-600">
-                              {sessionStats.total > 0 ? Math.round((sessionStats.correct / sessionStats.total) * 100) : 0}%
-                            </p>
-                          </div>
-                        </div>
-                    </div>
-
-                    {sessionWords.length === 0 ? (
-                        <motion.div
-                          initial={{ scale: 0.9, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          className="text-center py-20"
-                        >
-                          <ParrotMascot size="lg" message="Add some words to start learning!" className="mb-4" />
-                        </motion.div>
-                      ) : (
-                      <AnimatePresence mode="wait">
-                        <WordCard
-                          key={currentWord?.id}
-                          word={currentWord}
-                          onCorrect={handleCorrect}
-                          onSkip={handleSkip}
-                        />
-                      </AnimatePresence>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="pictures">
-                    <div className="mb-6">
-                      <p className="text-center text-gray-600 mb-4">
-                        Learn Hebrew words through visual mnemonics - pictures that help you remember!
-                      </p>
-                      <PictureCard
-                        card={pictureCards[pictureCardIndex]}
-                        currentIndex={pictureCardIndex}
-                        total={pictureCards.length}
-                        onNext={() => setPictureCardIndex((prev) => (prev + 1) % pictureCards.length)}
-                        onPrev={() => setPictureCardIndex((prev) => (prev - 1 + pictureCards.length) % pictureCards.length)}
-                      />
-                    </div>
-                  </TabsContent>
-                </Tabs>
+                            {sessionWords.length === 0 ? (
+                              <motion.div
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className="text-center py-20"
+                              >
+                                <ParrotMascot size="lg" message="Add some words to start learning!" className="mb-4" />
+                              </motion.div>
+                            ) : (
+                              <AnimatePresence mode="wait">
+                                <WordCard
+                                  key={currentWord?.id}
+                                  word={currentWord}
+                                  onCorrect={handleCorrect}
+                                  onSkip={handleSkip}
+                                />
+                              </AnimatePresence>
+                            )}
               </div>
             </div>
           );
