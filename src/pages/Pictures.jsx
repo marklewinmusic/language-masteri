@@ -32,32 +32,8 @@ const pictureCards = [
     mnemonic: "Sounds like 'clever' - dogs are clever animals!"
   },
   {
-    image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500",
-    hint: "Coffee keeps you alert and _____",
-    hebrewWord: "קפה",
-    transliteration: "Kafeh",
-    meaning: "Coffee",
-    mnemonic: "Sounds like 'cafe' - where you drink coffee!"
-  },
-  {
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500",
-    hint: "A man is getting his picture taken, say _____!",
-    hebrewWord: "גבר",
-    transliteration: "Gever",
-    meaning: "Man",
-    mnemonic: "Sounds like 'giver' - a man who gives!"
-  },
-  {
-    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500",
-    hint: "A woman holds a delicate _____",
-    hebrewWord: "אישה",
-    transliteration: "Isha",
-    meaning: "Woman",
-    mnemonic: "Sounds like 'issue' - she's reading the latest issue of a magazine!"
-  },
-  {
-    image: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=500",
-    hint: "Water is essential for _____",
+    image: "https://images.unsplash.com/photo-1544776193-352d25ca82cd?w=500",
+    hint: "A mother giving water to her child - _____",
     hebrewWord: "מים",
     transliteration: "Mayim",
     meaning: "Water",
@@ -72,20 +48,12 @@ const pictureCards = [
     mnemonic: "Sounds like 'let them' - let them eat bread!"
   },
   {
-    image: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=500",
-    hint: "A beautiful flower blooming in the _____",
+    image: "https://images.unsplash.com/photo-1457089328109-e5d9bd499191?w=500",
+    hint: "Flowers and pears together - a _____",
     hebrewWord: "פרח",
     transliteration: "Perach",
     meaning: "Flower",
     mnemonic: "Sounds like 'per each' - one flower per each person!"
-  },
-  {
-    image: "https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5?w=500",
-    hint: "The sun shines bright, bringing _____",
-    hebrewWord: "שמש",
-    transliteration: "Shemesh",
-    meaning: "Sun",
-    mnemonic: "Sounds like 'she mesh' - she's caught in a mesh of sunlight!"
   },
   {
     image: "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=500",
