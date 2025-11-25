@@ -112,22 +112,20 @@ export default function Videos() {
                 <p className="text-gray-500 mb-4">{video.description}</p>
                                       <YouTubePlayer url={video.url} />
 
-                                      {idx === 0 && (
-                                        <div className="mt-4 p-4 bg-gradient-to-r from-violet-50 to-blue-50 rounded-xl border border-violet-100">
-                                          <h3 className="font-semibold text-violet-700 mb-3">📖 Vocabulary from this video:</h3>
-                                          <div className="flex flex-wrap gap-2 text-sm">
-                                            {video.flashcards.map((card, i) => (
-                                              <span key={i} className="bg-white px-3 py-1 rounded-full border border-violet-200 text-gray-700">
-                                                <span className="font-medium text-violet-600">{card.answer}</span>
-                                                <span className="text-gray-400 mx-1">•</span>
-                                                <span>{card.transliteration}</span>
-                                                <span className="text-gray-400 mx-1">•</span>
-                                                <span className="text-gray-500">{card.meaning}</span>
-                                              </span>
-                                            ))}
-                                          </div>
-                                        </div>
-                                      )}
+                                      <div className="mt-4 p-4 bg-gradient-to-r from-violet-50 to-blue-50 rounded-xl border border-violet-100">
+                                                                <h3 className="font-semibold text-violet-700 mb-3">📖 Vocabulary from this video:</h3>
+                                                                <div className="flex flex-wrap gap-2 text-sm">
+                                                                  {video.flashcards.map((card, i) => (
+                                                                    <span key={i} className="bg-white px-3 py-1 rounded-full border border-violet-200 text-gray-700">
+                                                                      <span className="font-medium text-violet-600">{card.answer}</span>
+                                                                      <span className="text-gray-400 mx-1">•</span>
+                                                                      <span>{card.transliteration}</span>
+                                                                      <span className="text-gray-400 mx-1">•</span>
+                                                                      <span className="text-gray-500">{card.meaning}</span>
+                                                                    </span>
+                                                                  ))}
+                                                                </div>
+                                                              </div>
                 
                 <div className="mt-6">
                   <Button
