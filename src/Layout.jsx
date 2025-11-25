@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Volume2, LayoutDashboard, Library, Sparkles, PlayCircle } from "lucide-react";
+import { Volume2, LayoutDashboard, Library, Sparkles, PlayCircle, Image } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -20,7 +20,12 @@ import { ChevronDown } from "lucide-react";
 
 const hebrewItems = [
   {
-    title: "Practice",
+    title: "Pictures",
+    url: createPageUrl("Pictures"),
+    icon: Image,
+  },
+  {
+    title: "Words",
     url: createPageUrl("Practice"),
     icon: Volume2,
   },
