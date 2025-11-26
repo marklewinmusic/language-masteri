@@ -262,7 +262,7 @@ export default function Practice() {
                                 </div>
                                 
                                 <div className="space-y-6">
-                                  {[0, 1, 2, 3, 4, 5].map(level => {
+                                  {[5, 4, 3, 2, 1, 0].map(level => {
                                     const levelWords = filteredByFolder.filter(w => (w.times_practiced || 0) === level);
                                     if (levelWords.length === 0) return null;
                                     const levelLabels = {
