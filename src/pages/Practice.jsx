@@ -266,13 +266,13 @@ export default function Practice() {
                                     const levelWords = filteredByFolder.filter(w => (w.times_practiced || 0) === level);
                                     if (levelWords.length === 0) return null;
                                     const levelLabels = {
-                                      5: { label: "⭐ Mastered", bg: "bg-green-50", border: "border-green-200" },
-                                      4: { label: "🔥 Almost There", bg: "bg-emerald-50", border: "border-emerald-200" },
-                                      3: { label: "💪 Getting Better", bg: "bg-blue-50", border: "border-blue-200" },
-                                      2: { label: "📚 Learning", bg: "bg-violet-50", border: "border-violet-200" },
-                                      1: { label: "🌱 Just Started", bg: "bg-purple-50", border: "border-purple-200" },
-                                      0: { label: "✨ New Words", bg: "bg-gray-50", border: "border-gray-200" },
-                                    };
+                                                                                5: { label: "⭐ Fluent", bg: "bg-green-50", border: "border-green-200" },
+                                                                                4: { label: "🔥 Almost Fluent", bg: "bg-emerald-50", border: "border-emerald-200" },
+                                                                                3: { label: "💪 Comfortable", bg: "bg-blue-50", border: "border-blue-200" },
+                                                                                2: { label: "📚 Familiar", bg: "bg-violet-50", border: "border-violet-200" },
+                                                                                1: { label: "🌱 New", bg: "bg-purple-50", border: "border-purple-200" },
+                                                                                0: { label: "✨ New", bg: "bg-gray-50", border: "border-gray-200" },
+                                                                              };
                                     return (
                                       <div key={level}>
                                         <h3 className="text-sm font-semibold text-gray-500 mb-3">{levelLabels[level].label} ({levelWords.length})</h3>
