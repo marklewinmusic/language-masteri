@@ -513,18 +513,13 @@ export default function Videos() {
                                                                                                 exit={{ opacity: 0, height: 0 }}
                                                                                                 className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200"
                                                                                               >
-                                                                                                <div 
-                                                                                                                                                        contentEditable
-                                                                                                                                                        suppressContentEditableWarning
-                                                                                                                                                        onBlur={(e) => setEditedTranscript(prev => ({ ...prev, [idx]: e.currentTarget.innerText }))}
-                                                                                                                                                        className="max-h-96 overflow-y-auto whitespace-pre-wrap focus:outline-none focus:ring-2 focus:ring-blue-300 rounded-lg p-2"
-                                                                                                                                                      >
-                                                                                                                                                        <TranscriptWithClickableWords 
-                                                                                                                                                                                                                  transcript={editedTranscript[idx] || israeliMusicTranscript} 
-                                                                                                                                                                                                                  onWordClick={handleWordClick}
-                                                                                                                                                                                                                  savedWords={wordBankWords}
-                                                                                                                                                                                                                />
-                                                                                                                                                      </div>
+                                                                                                <div className="max-h-96 overflow-y-auto rounded-lg p-2">
+                                                                                                        <TranscriptWithClickableWords 
+                                                                                                          transcript={israeliMusicTranscript} 
+                                                                                                          onWordClick={handleWordClick}
+                                                                                                          savedWords={wordBankWords}
+                                                                                                        />
+                                                                                                      </div>
                                                                                               </motion.div>
                                                                                             )}
                                                                                           </AnimatePresence>
