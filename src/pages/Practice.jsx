@@ -275,7 +275,7 @@ export default function Practice() {
                                                                               };
                                     return (
                                       <div key={level}>
-                                        <h3 className="text-sm font-semibold text-gray-500 mb-3">{levelLabels[level].label} ({levelWords.length})</h3>
+                                        <h3 className="text-sm font-semibold text-gray-500 mb-3">{levelLabels[level].label}</h3>
                                         <div className="flex flex-wrap gap-2">
                                           {levelWords.map((word) => (
                                             <motion.div
