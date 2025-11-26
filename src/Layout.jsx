@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Volume2, LayoutDashboard, Library, Sparkles, PlayCircle, Image } from "lucide-react";
+import { Volume2, LayoutDashboard, Library, Sparkles, PlayCircle, Image, MessageSquare } from "lucide-react";
 import QuickAddWord from "./components/QuickAddWord";
 import {
   Sidebar,
@@ -31,11 +31,6 @@ const hebrewItems = [
     icon: Image,
   },
   {
-    title: "Words I Don't Know",
-    url: createPageUrl("WordBank"),
-    icon: Library,
-  },
-  {
     title: "Words I Know",
     url: createPageUrl("WordsIKnow"),
     icon: Library,
@@ -44,6 +39,11 @@ const hebrewItems = [
     title: "Words",
     url: createPageUrl("Practice"),
     icon: Volume2,
+  },
+  {
+    title: "Sentences",
+    url: createPageUrl("Sentences"),
+    icon: MessageSquare,
   },
   {
     title: "Videos",
