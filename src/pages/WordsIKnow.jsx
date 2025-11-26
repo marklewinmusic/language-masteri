@@ -9,15 +9,18 @@ import ParrotMascot from "../components/mascot/ParrotMascot";
 export default function WordsIKnow() {
   const queryClient = useQueryClient();
 
-  const { data: words = [], isLoading } = useQuery({
-    queryKey: ['words_i_know'],
-    queryFn: () => base44.entities.Word.filter({ category: "words_i_know" }),
+  // Show words that are mastered (rated 5+) from any category
+  const { data: allWords = [], isLoading } = useQuery({
+    queryKey: ['words'],
+    queryFn: () => base44.entities.Word.list(),
   });
+  
+  const words = allWords.filter(w => w.mastered || (w.times_practiced && w.times_practiced >= 5));
 
-  const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Word.delete(id),
+  const updateMutation = useMutation({
+    mutationFn: ({ id }) => base44.entities.Word.update(id, { mastered: false, times_practiced: 0 }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['words_i_know'] });
+      queryClient.invalidateQueries({ queryKey: ['words'] });
     },
   });
 
@@ -38,7 +41,7 @@ export default function WordsIKnow() {
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
               Words I Know
             </h1>
-            <p className="text-gray-500">Words you've rated 5 - well done!</p>
+            <p className="text-gray-500">{words.length} words mastered - well done!</p>
           </div>
         </div>
 
@@ -60,17 +63,20 @@ export default function WordsIKnow() {
                   <div className="flex items-center gap-4">
                     <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
                     <div className="flex flex-col">
-                      <span className="text-xl font-bold text-green-600">{word.phonetic}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl font-bold text-green-600">{word.phonetic || word.word}</span>
+                        <span className="text-lg text-gray-400" dir="rtl">{word.word}</span>
+                      </div>
                       <span className="text-gray-600 text-sm">{word.translation}</span>
                     </div>
                   </div>
                   <Button
                     variant="ghost"
-                    size="icon"
-                    onClick={() => deleteMutation.mutate(word.id)}
-                    className="text-gray-400 hover:text-red-500 hover:bg-red-50"
+                    size="sm"
+                    onClick={() => updateMutation.mutate({ id: word.id })}
+                    className="text-gray-400 hover:text-orange-500 hover:bg-orange-50 text-xs"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    Reset
                   </Button>
                 </motion.div>
               ))}

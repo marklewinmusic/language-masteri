@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Volume2, Trash2, Award, Search } from "lucide-react";
+import { Plus, Volume2, Trash2, Award, Search, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import ParrotMascot from "../components/mascot/ParrotMascot";
 
 export default function Library() {
@@ -23,8 +24,34 @@ export default function Library() {
     difficulty: "beginner",
     example_sentence: "",
   });
+  const [isTranslating, setIsTranslating] = useState(false);
 
   const queryClient = useQueryClient();
+
+  const autoTranslate = async () => {
+    if (!newWord.word.trim()) return;
+    setIsTranslating(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `For the Hebrew word "${newWord.word}", provide the English translation and transliteration (how to pronounce it in English letters).`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            translation: { type: "string" },
+            transliteration: { type: "string" }
+          }
+        }
+      });
+      setNewWord(prev => ({ 
+        ...prev, 
+        translation: result.translation,
+        phonetic: result.transliteration 
+      }));
+    } catch (error) {
+      toast.error("Could not translate");
+    }
+    setIsTranslating(false);
+  };
 
   const { data: words = [], isLoading } = useQuery({
     queryKey: ['words'],
@@ -101,13 +128,25 @@ export default function Library() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label>Hebrew Word *</Label>
-                      <Input
-                        value={newWord.word}
-                        onChange={(e) => setNewWord({ ...newWord, word: e.target.value })}
-                        placeholder="e.g., שלום"
-                        className="mt-1 text-right"
-                        dir="rtl"
-                      />
+                      <div className="relative">
+                        <Input
+                          value={newWord.word}
+                          onChange={(e) => setNewWord({ ...newWord, word: e.target.value })}
+                          placeholder="e.g., שלום"
+                          className="mt-1 text-right pr-24"
+                          dir="rtl"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={!newWord.word.trim() || isTranslating}
+                          onClick={autoTranslate}
+                          className="absolute right-1 top-1/2 -translate-y-1/2 h-7 text-xs text-violet-600 hover:text-violet-700"
+                        >
+                          {isTranslating ? <Loader2 className="w-3 h-3 animate-spin" /> : "Auto-fill ✨"}
+                        </Button>
+                      </div>
                     </div>
                     <div>
                       <Label>English Translation *</Label>
@@ -119,7 +158,7 @@ export default function Library() {
                       />
                     </div>
                     <div>
-                      <Label>Phonetic</Label>
+                      <Label>Phonetic (transliteration)</Label>
                       <Input
                         value={newWord.phonetic}
                         onChange={(e) => setNewWord({ ...newWord, phonetic: e.target.value })}

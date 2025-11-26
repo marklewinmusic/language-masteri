@@ -12,7 +12,8 @@ export default function Progress() {
   });
 
   const totalWords = words.length;
-  const masteredWords = words.filter(w => w.mastered).length;
+  const masteredWords = words.filter(w => w.mastered || (w.times_practiced && w.times_practiced >= 5)).length;
+  const learningWords = words.filter(w => (w.times_practiced || 0) > 0 && (w.times_practiced || 0) < 5).length;
   const totalPracticed = words.reduce((sum, w) => sum + (w.times_practiced || 0), 0);
   const avgPractice = totalWords > 0 ? Math.round(totalPracticed / totalWords) : 0;
 
@@ -62,8 +63,8 @@ export default function Progress() {
             delay={0.1}
           />
           <StatsCard
-            title="Practice Sessions"
-            value={totalPracticed}
+            title="Learning"
+            value={learningWords}
             icon={Zap}
             gradient="from-blue-500 to-cyan-500"
             delay={0.2}
