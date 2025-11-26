@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { Play, ChevronDown, ChevronUp, Plus, Check, FileText, Pencil, X, Save } from "lucide-react";
+import { Play, ChevronDown, ChevronUp, Plus, Check, FileText, Pencil, X, Save, Image, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import YouTubePlayer from "../components/practice/YouTubePlayer";
 import ClozeFlashcard from "../components/videos/ClozeFlashcard";
@@ -349,6 +352,9 @@ export default function Videos() {
   const [editedFlashcards, setEditedFlashcards] = useState({});
   
   const [editedTranscript, setEditedTranscript] = useState({});
+  const [wordDialog, setWordDialog] = useState({ open: false, word: "", meaning: "" });
+  const [picturePrompt, setPicturePrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: words = [] } = useQuery({
@@ -369,19 +375,63 @@ export default function Videos() {
     },
   });
 
-  const handleAddToWordBank = (transliteration, english) => {
-    const alreadySaved = wordBankWords.some(w => w.phonetic === transliteration);
+  const handleWordClick = (transliteration, english) => {
+    setWordDialog({ open: true, word: transliteration, meaning: english });
+    setPicturePrompt("");
+  };
+
+  const handleAddToWordBank = () => {
+    const alreadySaved = wordBankWords.some(w => w.phonetic === wordDialog.word);
     if (alreadySaved) {
       toast.info("This word is already in your Word Bank");
+    } else {
+      addToWordBankMutation.mutate({
+        word: wordDialog.word,
+        translation: wordDialog.meaning,
+        phonetic: wordDialog.word,
+        category: "wordbank",
+        difficulty: "beginner",
+      });
+    }
+    setWordDialog({ open: false, word: "", meaning: "" });
+  };
+
+  const handleGeneratePicture = async () => {
+    if (!picturePrompt.trim()) {
+      toast.error("Please describe the picture first");
       return;
     }
-    addToWordBankMutation.mutate({
-      word: transliteration,
-      translation: english,
-      phonetic: transliteration,
-      category: "wordbank",
-      difficulty: "beginner",
-    });
+    setIsGenerating(true);
+    try {
+      const { url } = await base44.integrations.Core.GenerateImage({
+        prompt: picturePrompt,
+      });
+      
+      // Add to PictureWord entity for Pictures Level 1
+      await base44.entities.PictureWord.create({
+        word_id: wordDialog.word,
+        hebrew_word: wordDialog.word,
+        confidence: 0,
+      });
+
+      // We need to store the picture data - let's add it to Word entity with image
+      await base44.entities.Word.create({
+        word: wordDialog.word,
+        translation: wordDialog.meaning || "meaning",
+        phonetic: wordDialog.word,
+        image_url: url,
+        category: "pictures",
+        difficulty: "beginner",
+      });
+
+      toast.success("Picture created and added to Pictures Level 1!");
+      setWordDialog({ open: false, word: "", meaning: "" });
+      queryClient.invalidateQueries({ queryKey: ['pictureWordRatings'] });
+    } catch (error) {
+      toast.error("Failed to generate picture");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const addWordMutation = useMutation({
@@ -470,10 +520,10 @@ export default function Videos() {
                                                                                                                                                         className="max-h-96 overflow-y-auto whitespace-pre-wrap focus:outline-none focus:ring-2 focus:ring-blue-300 rounded-lg p-2"
                                                                                                                                                       >
                                                                                                                                                         <TranscriptWithClickableWords 
-                                                                                                                                                          transcript={editedTranscript[idx] || israeliMusicTranscript} 
-                                                                                                                                                          onWordClick={handleAddToWordBank}
-                                                                                                                                                          savedWords={wordBankWords}
-                                                                                                                                                        />
+                                                                                                                                                                                                                  transcript={editedTranscript[idx] || israeliMusicTranscript} 
+                                                                                                                                                                                                                  onWordClick={handleWordClick}
+                                                                                                                                                                                                                  savedWords={wordBankWords}
+                                                                                                                                                                                                                />
                                                                                                                                                       </div>
                                                                                               </motion.div>
                                                                                             )}
@@ -636,6 +686,55 @@ export default function Videos() {
           ))}
         </div>
       </div>
+
+      <Dialog open={wordDialog.open} onOpenChange={(open) => setWordDialog({ ...wordDialog, open })}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl">
+              <span className="text-violet-600 font-bold">{wordDialog.word}</span>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              placeholder="Enter English meaning"
+              value={wordDialog.meaning}
+              onChange={(e) => setWordDialog({ ...wordDialog, meaning: e.target.value })}
+            />
+            <div className="flex gap-2">
+              <Button onClick={handleAddToWordBank} variant="outline" className="flex-1">
+                <Plus className="w-4 h-4 mr-2" />
+                Add to Word Bank
+              </Button>
+            </div>
+            <div className="border-t pt-4">
+              <p className="text-sm text-gray-600 mb-2">Or create a picture mnemonic:</p>
+              <Textarea
+                placeholder="Describe what the picture should look like... (e.g., 'A bear wearing a dove costume saying Dov!')"
+                value={picturePrompt}
+                onChange={(e) => setPicturePrompt(e.target.value)}
+                className="mb-3"
+              />
+              <Button 
+                onClick={handleGeneratePicture} 
+                disabled={isGenerating}
+                className="w-full bg-gradient-to-r from-violet-500 to-blue-500 hover:from-violet-600 hover:to-blue-600"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Image className="w-4 h-4 mr-2" />
+                    Generate Picture & Add to Level 1
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
