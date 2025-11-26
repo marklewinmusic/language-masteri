@@ -237,18 +237,37 @@ export default function Practice() {
                                         <h3 className="text-sm font-semibold text-gray-500 mb-3">{levelLabels[level].label} ({levelWords.length})</h3>
                                         <div className="flex flex-wrap gap-2">
                                           {levelWords.map((word) => (
-                                            <motion.button
+                                            <motion.div
                                               key={word.id}
                                               initial={{ opacity: 0, scale: 0.9 }}
                                               animate={{ opacity: 1, scale: 1 }}
-                                              onClick={() => word.audio_url && playAudio(word)}
-                                              className={`${levelLabels[level].bg} ${levelLabels[level].border} border-2 rounded-2xl px-4 py-2 hover:shadow-md transition-all hover:scale-105 flex items-center gap-2`}
+                                              className={`${levelLabels[level].bg} ${levelLabels[level].border} border-2 rounded-2xl px-3 py-2 hover:shadow-md transition-all flex items-center gap-2`}
                                             >
-                                              <span className="font-medium text-gray-700">{word.phonetic}</span>
-                                              <span className="text-lg font-bold text-violet-600" dir="rtl">{word.word}</span>
-                                              <span className="text-gray-400 text-sm">({word.translation})</span>
-                                              {word.audio_url && <Volume2 className="w-3 h-3 text-gray-400" />}
-                                            </motion.button>
+                                              <button 
+                                                onClick={() => word.audio_url && playAudio(word)}
+                                                className="flex items-center gap-2 hover:opacity-80"
+                                              >
+                                                <span className="font-medium text-gray-700">{word.phonetic}</span>
+                                                <span className="text-lg font-bold text-violet-600" dir="rtl">{word.word}</span>
+                                                <span className="text-gray-400 text-sm">({word.translation})</span>
+                                                {word.audio_url && <Volume2 className="w-3 h-3 text-gray-400" />}
+                                              </button>
+                                              <div className="flex gap-1 ml-2 border-l border-gray-200 pl-2">
+                                                {[1, 2, 3, 4, 5].map(num => (
+                                                  <button
+                                                    key={num}
+                                                    onClick={() => handleRate(word.id, num)}
+                                                    className={`w-6 h-6 rounded-full text-xs font-bold transition-all hover:scale-110 ${
+                                                      (word.times_practiced || 0) >= num 
+                                                        ? "bg-violet-500 text-white" 
+                                                        : "bg-white border border-gray-300 text-gray-500 hover:border-violet-400 hover:text-violet-500"
+                                                    }`}
+                                                  >
+                                                    {num}
+                                                  </button>
+                                                ))}
+                                              </div>
+                                            </motion.div>
                                           ))}
                                         </div>
                                       </div>
