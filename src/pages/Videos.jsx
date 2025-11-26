@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Play, ChevronDown, ChevronUp, Plus, Check, FileText, Pencil, X, Save, Image, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Check, FileText, Image, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -348,10 +348,6 @@ export default function Videos() {
   const [expandedVideo, setExpandedVideo] = useState(null);
   const [currentCardIndex, setCurrentCardIndex] = useState({});
   const [showTranscript, setShowTranscript] = useState({});
-  const [editMode, setEditMode] = useState({});
-  const [editedFlashcards, setEditedFlashcards] = useState({});
-  
-  const [editedTranscript, setEditedTranscript] = useState({});
   const [wordDialog, setWordDialog] = useState({ open: false, word: "", meaning: "" });
   const [picturePrompt, setPicturePrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
