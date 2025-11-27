@@ -336,10 +336,10 @@ export default function Practice() {
                                                                           { level: 5, label: "⭐ Fluent", bg: "bg-green-100", activeBg: "bg-green-200", text: "text-green-700" },
                                                                         ].map(({ level, label, bg, activeBg, text }) => {
                                                                           const count = level === 0 
-                                                                                                                      ? filteredByFolder.filter(w => (w.times_practiced || 0) === 0 || (w.times_practiced || 0) === 1).length
+                                                                                                                      ? words.filter(w => (w.times_practiced || 0) === 0 || (w.times_practiced || 0) === 1).length
                                                                                                                       : level === 5
-                                                                                                                        ? filteredByFolder.filter(w => (w.times_practiced || 0) >= 5).length
-                                                                                                                        : filteredByFolder.filter(w => (w.times_practiced || 0) === level).length;
+                                                                                                                        ? words.filter(w => (w.times_practiced || 0) >= 5).length
+                                                                                                                        : words.filter(w => (w.times_practiced || 0) === level).length;
                                                                           if (count === 0) return null;
                                                                           return (
                                                                             <button
@@ -365,7 +365,7 @@ export default function Practice() {
                                                                             className="bg-white/80 backdrop-blur-sm rounded-2xl border border-violet-100 p-4 mb-6"
                                                                           >
                                                                             <div className="flex flex-wrap gap-2">
-                                                                              {filteredByFolder
+                                                                              {words
                                                                                 .filter(w => {
                                                                                                                                   const rating = w.times_practiced || 0;
                                                                                                                                   if (expandedLevel === 0) return rating === 0 || rating === 1;
