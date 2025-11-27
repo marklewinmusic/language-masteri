@@ -329,15 +329,17 @@ export default function Practice() {
                                 
                                 <div className="flex flex-wrap gap-3 mb-6">
                                                                         {[
-                                                                          { level: 0, label: "📝 Rank the following words", bg: "bg-gray-100", activeBg: "bg-gray-200", text: "text-gray-700" },
-                                                                          { level: 2, label: "📚 Familiar", bg: "bg-violet-100", activeBg: "bg-violet-200", text: "text-violet-700" },
-                                                                          { level: 3, label: "💪 Comfortable", bg: "bg-blue-100", activeBg: "bg-blue-200", text: "text-blue-700" },
-                                                                          { level: 4, label: "🔥 Almost Fluent", bg: "bg-emerald-100", activeBg: "bg-emerald-200", text: "text-emerald-700" },
-                                                                          { level: 5, label: "⭐ Fluent", bg: "bg-green-100", activeBg: "bg-green-200", text: "text-green-700" },
-                                                                        ].map(({ level, label, bg, activeBg, text }) => {
-                                                                          const count = level === 0 
-                                                                            ? filteredByFolder.filter(w => (w.times_practiced || 0) === 0 || (w.times_practiced || 0) === 1).length
-                                                                            : filteredByFolder.filter(w => (w.times_practiced || 0) === level).length;
+                                                                                                                  { level: 0, label: "📝 Rank the following words", bg: "bg-gray-100", activeBg: "bg-gray-200", text: "text-gray-700" },
+                                                                                                                  { level: 2, label: "📚 Familiar", bg: "bg-violet-100", activeBg: "bg-violet-200", text: "text-violet-700" },
+                                                                                                                  { level: 3, label: "💪 Comfortable", bg: "bg-blue-100", activeBg: "bg-blue-200", text: "text-blue-700" },
+                                                                                                                  { level: 4, label: "🔥 Almost Fluent", bg: "bg-emerald-100", activeBg: "bg-emerald-200", text: "text-emerald-700" },
+                                                                                                                  { level: 5, label: "⭐ Fluent (Words I Know)", bg: "bg-green-100", activeBg: "bg-green-200", text: "text-green-700" },
+                                                                                                                ].map(({ level, label, bg, activeBg, text }) => {
+                                                                                                                  const count = level === 0 
+                                                                                                                    ? filteredByFolder.filter(w => (w.times_practiced || 0) === 0 || (w.times_practiced || 0) === 1).length
+                                                                                                                    : level === 5
+                                                                                                                    ? filteredByFolder.filter(w => (w.times_practiced || 0) >= 5).length
+                                                                                                                    : filteredByFolder.filter(w => (w.times_practiced || 0) === level).length;
                                                                           if (count === 0) return null;
                                                                           return (
                                                                             <button
@@ -365,10 +367,11 @@ export default function Practice() {
                                                                             <div className="flex flex-wrap gap-2">
                                                                               {filteredByFolder
                                                                                 .filter(w => {
-                                                                                  const rating = w.times_practiced || 0;
-                                                                                  if (expandedLevel === 0) return rating === 0 || rating === 1;
-                                                                                  return rating === expandedLevel;
-                                                                                })
+                                                                                                                                  const rating = w.times_practiced || 0;
+                                                                                                                                  if (expandedLevel === 0) return rating === 0 || rating === 1;
+                                                                                                                                  if (expandedLevel === 5) return rating >= 5;
+                                                                                                                                  return rating === expandedLevel;
+                                                                                                                                })
                                                                                 .map((word) => {
                                                                                   const levelStyles = {
                                                                                     0: { bg: "bg-gray-50", border: "border-gray-200" },
