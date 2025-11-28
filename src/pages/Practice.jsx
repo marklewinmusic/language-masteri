@@ -235,33 +235,37 @@ Focus on the sound-alike English word for "${phoneticCore}" and create a visual 
       toast.error("Please describe the picture");
       return;
     }
-    setIsGeneratingPicture(true);
-    try {
-      const result = await base44.integrations.Core.GenerateImage({
-        prompt: `Cute, funny, colorful mnemonic illustration for learning the Hebrew word "${sentencesDialog.word.phonetic}" (${sentencesDialog.word.translation}): ${promptToUse}. Cartoon style, memorable, educational.`,
-      });
-      const url = result.url;
-      if (!url) {
-        toast.error("No image URL returned");
-        setIsGeneratingPicture(false);
-        return;
-      }
-      await updateWordMutation.mutateAsync({
-        id: sentencesDialog.word.id,
-        data: { image_url: url },
-      });
-      setSentencesDialog(prev => ({ ...prev, word: { ...prev.word, image_url: url } }));
-      toast.success("Picture created!");
-      if (!useLastPrompt) {
-        setLastPicturePrompt(promptToUse);
-      }
-      setPicturePrompt("");
-    } catch (error) {
-      console.error("Generate picture error:", error);
-      toast.error("Failed to generate picture: " + (error.message || "Unknown error"));
-    } finally {
-      setIsGeneratingPicture(false);
+    if (!sentencesDialog.word) {
+      toast.error("No word selected");
+      return;
     }
+    setIsGeneratingPicture(true);
+    toast.info("Generating picture...");
+    const imagePrompt = `Cute, funny, colorful mnemonic illustration for learning the Hebrew word "${sentencesDialog.word.phonetic}" (${sentencesDialog.word.translation}): ${promptToUse}. Cartoon style, memorable, educational.`;
+    console.log("Image prompt:", imagePrompt);
+    
+    const result = await base44.integrations.Core.GenerateImage({
+      prompt: imagePrompt,
+    });
+    console.log("GenerateImage result:", result);
+    
+    const url = result?.url;
+    if (!url) {
+      toast.error("No image URL returned");
+      setIsGeneratingPicture(false);
+      return;
+    }
+    await updateWordMutation.mutateAsync({
+      id: sentencesDialog.word.id,
+      data: { image_url: url },
+    });
+    setSentencesDialog(prev => ({ ...prev, word: { ...prev.word, image_url: url } }));
+    toast.success("Picture created!");
+    if (!useLastPrompt) {
+      setLastPicturePrompt(promptToUse);
+    }
+    setPicturePrompt("");
+    setIsGeneratingPicture(false);
   };
 
   const createWordMutation = useMutation({
