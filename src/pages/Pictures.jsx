@@ -213,7 +213,6 @@ export default function Pictures() {
           />
         )}
       </div>
-      </div>
     </div>
   );
 }
