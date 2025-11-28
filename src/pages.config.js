@@ -13,6 +13,7 @@ import ColorsTest from './pages/ColorsTest';
 import Home from './pages/Home';
 import Store from './pages/Store';
 import Activities from './pages/Activities';
+import AvatarSelect from './pages/AvatarSelect';
 import __Layout from './Layout.jsx';
 
 
@@ -32,6 +33,7 @@ export const PAGES = {
     "Home": Home,
     "Store": Store,
     "Activities": Activities,
+    "AvatarSelect": AvatarSelect,
 }
 
 export const pagesConfig = {
