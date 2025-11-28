@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Volume2, LayoutDashboard, Library, Sparkles, PlayCircle, MessageSquare } from "lucide-react";
+import { Volume2, LayoutDashboard, Library, Sparkles, PlayCircle, MessageSquare, Search, X } from "lucide-react";
 import QuickAddWord from "./components/QuickAddWord";
+import { base44 } from "@/api/base44Client";
+import { Input } from "@/components/ui/input";
 import {
   Sidebar,
   SidebarContent,
@@ -74,6 +76,24 @@ export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const [hebrewOpen, setHebrewOpen] = React.useState(true);
   const [spanishOpen, setSpanishOpen] = React.useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+
+  const handleSearch = async (query) => {
+    setSearchQuery(query);
+    if (query.length >= 2) {
+      const words = await base44.entities.Word.list();
+      const q = query.toLowerCase();
+      setSearchResults(words.filter(w => 
+        w.word?.toLowerCase().includes(q) || 
+        w.phonetic?.toLowerCase().includes(q) || 
+        w.translation?.toLowerCase().includes(q)
+      ).slice(0, 8));
+    } else {
+      setSearchResults([]);
+    }
+  };
 
   return (
     <SidebarProvider>
@@ -168,20 +188,58 @@ export default function Layout({ children, currentPageName }) {
         </Sidebar>
 
         <main className="flex-1 flex flex-col">
-          <header className="bg-white/60 backdrop-blur-md border-b border-violet-100/50 px-6 py-4 md:hidden">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-4">
+                        <header className="bg-white/60 backdrop-blur-md border-b border-violet-100/50 px-4 py-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="md:hidden">
                                 <SidebarTrigger className="hover:bg-violet-50 p-2 rounded-lg transition-colors duration-200" />
-                                <h1 className="text-xl font-bold bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">Masteri Languages</h1>
                               </div>
+                              <button
+                                onClick={() => setSearchOpen(!searchOpen)}
+                                className="p-2 rounded-lg hover:bg-violet-50 text-gray-500 hover:text-violet-600 transition-all"
+                              >
+                                <Search className="w-5 h-5" />
+                              </button>
+                              {searchOpen && (
+                                <div className="relative">
+                                  <Input
+                                    placeholder="Search words..."
+                                    value={searchQuery}
+                                    onChange={(e) => handleSearch(e.target.value)}
+                                    className="w-48 md:w-64 text-sm"
+                                    autoFocus
+                                  />
+                                  {searchQuery && (
+                                    <button
+                                      onClick={() => { setSearchQuery(""); setSearchResults([]); }}
+                                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                  {searchResults.length > 0 && (
+                                    <div className="absolute top-full left-0 mt-1 w-full bg-white rounded-xl shadow-lg border border-violet-100 max-h-64 overflow-y-auto z-50">
+                                      {searchResults.map(w => (
+                                        <div key={w.id} className="p-3 hover:bg-violet-50 border-b border-gray-100 last:border-0">
+                                          <span className="font-medium text-violet-700">{w.phonetic}</span>
+                                          <span className="text-gray-400 mx-2">•</span>
+                                          <span className="text-gray-600">{w.translation}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
-                          </header>
+                            <h1 className="text-lg font-bold bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent md:hidden">Masteri</h1>
+                          </div>
+                        </header>
 
-          <div className="flex-1 overflow-auto">
-            {children}
-          </div>
-          <QuickAddWord />
-        </main>
+                        <div className="flex-1 overflow-auto">
+                          {children}
+                        </div>
+                        <QuickAddWord />
+                      </main>
       </div>
     </SidebarProvider>
   );
