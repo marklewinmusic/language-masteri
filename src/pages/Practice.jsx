@@ -591,10 +591,11 @@ Return the infinitive Hebrew word, its transliteration, and whether it's top 500
                                                                                       <button 
                                                                                         onClick={(e) => openWordDialog(word, e)}
                                                                                         className="flex items-center gap-2 hover:opacity-80"
+                                                                                        title="Click to edit word"
                                                                                       >
-                                                                                        <span className="font-medium text-gray-700">{word.phonetic}</span>
-                                                                                        <span className="text-lg font-bold text-violet-600" dir="rtl">{word.word}</span>
-                                                                                        <span className="text-gray-400 text-sm">({word.translation})</span>
+                                                                                        <span className="font-medium text-gray-700 hover:text-violet-600">{word.phonetic}</span>
+                                                                                        <span className="text-lg font-bold text-violet-600 hover:underline" dir="rtl">{word.word}</span>
+                                                                                        <span className="text-gray-400 text-sm hover:text-gray-600">({word.translation})</span>
                                                                                         {word.image_url && <Image className="w-3 h-3 text-violet-400" />}
                                                                                         {word.audio_url && (
                                                                                           <Volume2 
@@ -755,13 +756,24 @@ Return the infinitive Hebrew word, its transliteration, and whether it's top 500
                                       {sentencesDialog.word?.image_url ? (
                                         <div className="rounded-xl overflow-hidden border-2 border-violet-200 relative">
                                           <img src={sentencesDialog.word.image_url} alt="Mnemonic" className="w-full" />
-                                          <button
-                                            onClick={() => generatePictureForWord(true)}
-                                            disabled={isGeneratingPicture}
-                                            className="absolute bottom-2 right-2 bg-white/90 hover:bg-white text-violet-600 text-xs px-2 py-1 rounded-lg shadow-md transition-all"
-                                          >
-                                            {isGeneratingPicture ? "🔄 Generating..." : "🔄 New Image"}
-                                          </button>
+                                          <div className="absolute bottom-2 right-2 flex gap-2">
+                                            <button
+                                              onClick={() => {
+                                                setSentencesDialog(prev => ({ ...prev, word: { ...prev.word, image_url: null } }));
+                                                updateWordMutation.mutate({ id: sentencesDialog.word.id, data: { image_url: null } });
+                                              }}
+                                              className="bg-white/90 hover:bg-white text-violet-600 text-xs px-2 py-1 rounded-lg shadow-md transition-all"
+                                            >
+                                              ✏️ Describe
+                                            </button>
+                                            <button
+                                              onClick={() => generatePictureForWord(true)}
+                                              disabled={isGeneratingPicture || !lastPicturePrompt}
+                                              className="bg-white/90 hover:bg-white text-violet-600 text-xs px-2 py-1 rounded-lg shadow-md transition-all disabled:opacity-50"
+                                            >
+                                              {isGeneratingPicture ? "🔄 Generating..." : "🔄 New Image"}
+                                            </button>
+                                          </div>
                                         </div>
                                       ) : (
                                         <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">

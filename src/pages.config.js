@@ -5,6 +5,10 @@ import Videos from './pages/Videos';
 import Pictures from './pages/Pictures';
 import PicturesLesson2 from './pages/PicturesLesson2';
 import Sentences from './pages/Sentences';
+import ColorsLesson from './pages/ColorsLesson';
+import BodyPartsLesson from './pages/BodyPartsLesson';
+import DaysLesson from './pages/DaysLesson';
+import MonthsLesson from './pages/MonthsLesson';
 import __Layout from './Layout.jsx';
 
 
@@ -16,6 +20,10 @@ export const PAGES = {
     "Pictures": Pictures,
     "PicturesLesson2": PicturesLesson2,
     "Sentences": Sentences,
+    "ColorsLesson": ColorsLesson,
+    "BodyPartsLesson": BodyPartsLesson,
+    "DaysLesson": DaysLesson,
+    "MonthsLesson": MonthsLesson,
 }
 
 export const pagesConfig = {

@@ -169,11 +169,13 @@ export default function Layout({ children, currentPageName }) {
 
         <main className="flex-1 flex flex-col">
           <header className="bg-white/60 backdrop-blur-md border-b border-violet-100/50 px-6 py-4 md:hidden">
-            <div className="flex items-center gap-4">
-              <SidebarTrigger className="hover:bg-violet-50 p-2 rounded-lg transition-colors duration-200" />
-              <h1 className="text-xl font-bold bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">Masteri Languages</h1>
-            </div>
-          </header>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <SidebarTrigger className="hover:bg-violet-50 p-2 rounded-lg transition-colors duration-200" />
+                                <h1 className="text-xl font-bold bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">Masteri Languages</h1>
+                              </div>
+                            </div>
+                          </header>
 
           <div className="flex-1 overflow-auto">
             {children}

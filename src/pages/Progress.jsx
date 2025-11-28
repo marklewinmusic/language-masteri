@@ -5,10 +5,10 @@ import { Palette, User, Calendar, CalendarDays } from "lucide-react";
 import ParrotMascot from "../components/mascot/ParrotMascot";
 
 const scheduleTopics = [
-  { title: "Colors", icon: Palette, description: "Learn the colors in Hebrew", gradient: "from-pink-500 to-rose-500", page: "ColorsLesson" },
-  { title: "Body Parts", icon: User, description: "Learn body parts in Hebrew", gradient: "from-blue-500 to-cyan-500", page: "BodyPartsLesson" },
-  { title: "Days of the Week", icon: Calendar, description: "Learn the days in Hebrew", gradient: "from-violet-500 to-purple-500", page: "DaysLesson" },
-  { title: "Months of the Year", icon: CalendarDays, description: "Learn the months in Hebrew", gradient: "from-amber-500 to-orange-500", page: "MonthsLesson" },
+  { title: "Colors", icon: Palette, description: "12 colors: adom, kachol, yarok...", gradient: "from-pink-500 to-rose-500", page: "ColorsLesson", count: 12 },
+  { title: "Body Parts", icon: User, description: "18 words: rosh, yad, regel...", gradient: "from-blue-500 to-cyan-500", page: "BodyPartsLesson", count: 18 },
+  { title: "Days of the Week", icon: Calendar, description: "7 days: yom rishon, shabbat...", gradient: "from-violet-500 to-purple-500", page: "DaysLesson", count: 7 },
+  { title: "Months of the Year", icon: CalendarDays, description: "12 months: yanuar, februar...", gradient: "from-amber-500 to-orange-500", page: "MonthsLesson", count: 12 },
 ];
 
 export default function Progress() {
@@ -37,9 +37,10 @@ export default function Progress() {
                   <topic.icon className="w-7 h-7 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-800">{topic.title}</h2>
-                  <p className="text-gray-500 text-sm">{topic.description}</p>
-                </div>
+                                        <h2 className="text-xl font-bold text-gray-800">{topic.title}</h2>
+                                        <p className="text-gray-500 text-sm">{topic.description}</p>
+                                        <span className="text-xs text-gray-400">{topic.count} words</span>
+                                      </div>
               </div>
             </Link>
           ))}
