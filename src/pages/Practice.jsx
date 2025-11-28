@@ -145,14 +145,22 @@ export default function Practice() {
     setIsLoadingSuggestions(true);
     setMnemonicSuggestions([]);
     try {
+      // Remove "le" prefix for verbs and "ha" prefix for nouns to get the core sound
+      let phoneticCore = word.phonetic;
+      if (phoneticCore.toLowerCase().startsWith("le")) {
+        phoneticCore = phoneticCore.substring(2);
+      } else if (phoneticCore.toLowerCase().startsWith("ha")) {
+        phoneticCore = phoneticCore.substring(2);
+      }
+      
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Generate 3 creative mnemonic picture ideas to help remember the Hebrew word "${word.phonetic}" (sounds like) means "${word.translation}". 
+        prompt: `Generate 3 creative mnemonic picture ideas to help remember the Hebrew word "${word.phonetic}" (core sound: "${phoneticCore}") means "${word.translation}". 
         
-IMPORTANT: Each suggestion MUST be based on an English word that SOUNDS SIMILAR to "${word.phonetic}". 
-For example: if the word is "tohniot" (plans), suggest "A tornado spinning plans around" because "tohniot" sounds like "tornado".
-If the word is "kelev" (dog), suggest "A dog named Clive" because "kelev" sounds like "Clive".
+IMPORTANT: Each suggestion MUST be based on an English word that SOUNDS SIMILAR to "${phoneticCore}" (ignore the "le" or "ha" prefix). 
+For example: if the word is "lichtov" (to write), use "tov" which sounds like "tub" - "Writing in a bathtub".
+If the word is "hakelev" (the dog), use "kelev" which sounds like "Clive" - "A dog named Clive".
 
-Focus on the sound-alike English word and create a visual scene connecting it to the meaning "${word.translation}". Keep each under 20 words.`,
+Focus on the sound-alike English word for "${phoneticCore}" and create a visual scene connecting it to the meaning "${word.translation}". Keep each under 20 words.`,
         response_json_schema: {
           type: "object",
           properties: {
@@ -670,32 +678,43 @@ Return the infinitive Hebrew word, its transliteration, and whether it's top 500
                                 <Dialog open={sentencesDialog.open} onOpenChange={(open) => setSentencesDialog({ ...sentencesDialog, open })}>
                                   <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
                                     <DialogHeader>
-                                      <DialogTitle className="flex items-center gap-2 flex-wrap">
-                                        <span className="text-violet-600 text-xl" dir="rtl">{sentencesDialog.word?.word}</span>
-                                        <span className="text-gray-500">({sentencesDialog.word?.phonetic})</span>
-                                        {isEditingMeaning ? (
-                                          <div className="flex items-center gap-1">
-                                            <input
-                                              type="text"
-                                              value={editingMeaning}
-                                              onChange={(e) => setEditingMeaning(e.target.value)}
-                                              className="border rounded px-2 py-1 text-sm w-32"
-                                              autoFocus
-                                            />
-                                            <button onClick={saveMeaning} className="text-green-600 text-sm">✓</button>
-                                            <button onClick={() => setIsEditingMeaning(false)} className="text-gray-400 text-sm">✕</button>
-                                          </div>
-                                        ) : (
-                                          <button 
-                                            onClick={() => { setEditingMeaning(sentencesDialog.word?.translation); setIsEditingMeaning(true); }}
-                                            className="text-gray-500 hover:text-violet-600 transition-all"
-                                            title="Click to edit meaning"
-                                          >
-                                            - {sentencesDialog.word?.translation} ✏️
-                                          </button>
-                                        )}
-                                      </DialogTitle>
-                                    </DialogHeader>
+                                                                                <DialogTitle className="flex items-center gap-2 flex-wrap">
+                                                                                  <span className="text-violet-600 text-xl" dir="rtl">{sentencesDialog.word?.word}</span>
+                                                                                  <span className="text-gray-500">({sentencesDialog.word?.phonetic})</span>
+                                                                                  {isEditingMeaning ? (
+                                                                                    <div className="flex items-center gap-1">
+                                                                                      <input
+                                                                                        type="text"
+                                                                                        value={editingMeaning}
+                                                                                        onChange={(e) => setEditingMeaning(e.target.value)}
+                                                                                        className="border rounded px-2 py-1 text-sm w-32"
+                                                                                        autoFocus
+                                                                                      />
+                                                                                      <button onClick={saveMeaning} className="text-green-600 text-sm">✓</button>
+                                                                                      <button onClick={() => setIsEditingMeaning(false)} className="text-gray-400 text-sm">✕</button>
+                                                                                    </div>
+                                                                                  ) : (
+                                                                                    <button 
+                                                                                      onClick={() => { setEditingMeaning(sentencesDialog.word?.translation); setIsEditingMeaning(true); }}
+                                                                                      className="text-gray-500 hover:text-violet-600 transition-all"
+                                                                                      title="Click to edit meaning"
+                                                                                    >
+                                                                                      - {sentencesDialog.word?.translation} ✏️
+                                                                                    </button>
+                                                                                  )}
+                                                                                </DialogTitle>
+                                                                                <p className="text-xs text-gray-400 mt-1">
+                                                                                  Save as: <button 
+                                                                                    onClick={() => {
+                                                                                      navigator.clipboard.writeText(sentencesDialog.word?.phonetic);
+                                                                                      toast.success("Copied transliteration!");
+                                                                                    }}
+                                                                                    className="text-violet-500 hover:text-violet-700 underline"
+                                                                                  >
+                                                                                    {sentencesDialog.word?.phonetic}
+                                                                                  </button>
+                                                                                </p>
+                                                                              </DialogHeader>
                                     <div className="space-y-4">
                                       {/* Picture section */}
                                       {sentencesDialog.word?.image_url ? (
