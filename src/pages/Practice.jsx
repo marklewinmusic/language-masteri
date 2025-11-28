@@ -331,13 +331,14 @@ export default function Practice() {
                                 <div className="flex flex-wrap gap-3 mb-6">
                                                                         {[
                                                                           { level: 0, label: "📝 New Words", bg: "bg-gray-100", activeBg: "bg-gray-200", text: "text-gray-700" },
+                                                                          { level: 1, label: "❓ Unfamiliar", bg: "bg-red-100", activeBg: "bg-red-200", text: "text-red-700" },
                                                                           { level: 2, label: "📚 Familiar", bg: "bg-violet-100", activeBg: "bg-violet-200", text: "text-violet-700" },
                                                                           { level: 3, label: "💪 Comfortable", bg: "bg-blue-100", activeBg: "bg-blue-200", text: "text-blue-700" },
                                                                           { level: 4, label: "🔥 Almost Fluent", bg: "bg-emerald-100", activeBg: "bg-emerald-200", text: "text-emerald-700" },
                                                                           { level: 5, label: "⭐ Fluent", bg: "bg-green-100", activeBg: "bg-green-200", text: "text-green-700" },
                                                                         ].map(({ level, label, bg, activeBg, text }) => {
                                                                           const count = level === 0 
-                                                                                                                      ? words.filter(w => (w.times_practiced || 0) === 0 || (w.times_practiced || 0) === 1).length
+                                                                                                                      ? words.filter(w => (w.times_practiced || 0) === 0).length
                                                                                                                       : level === 5
                                                                                                                         ? words.filter(w => (w.times_practiced || 0) >= 5).length
                                                                                                                         : words.filter(w => (w.times_practiced || 0) === level).length;
@@ -369,14 +370,15 @@ export default function Practice() {
                                                                               {words
                                                                                 .filter(w => {
                                                                                                                                   const rating = w.times_practiced || 0;
-                                                                                                                                  if (expandedLevel === 0) return rating === 0 || rating === 1;
+                                                                                                                                  if (expandedLevel === 0) return rating === 0;
                                                                                                                                   if (expandedLevel === 5) return rating >= 5;
                                                                                                                                   return rating === expandedLevel;
                                                                                                                                 })
                                                                                 .map((word) => {
                                                                                   const levelStyles = {
                                                                                     0: { bg: "bg-gray-50", border: "border-gray-200" },
-                                                                                    2: { bg: "bg-violet-50", border: "border-violet-200" },
+                                                                                                                                                                         1: { bg: "bg-red-50", border: "border-red-200" },
+                                                                                                                                                                         2: { bg: "bg-violet-50", border: "border-violet-200" },
                                                                                     3: { bg: "bg-blue-50", border: "border-blue-200" },
                                                                                     4: { bg: "bg-emerald-50", border: "border-emerald-200" },
                                                                                     5: { bg: "bg-green-50", border: "border-green-200" },
