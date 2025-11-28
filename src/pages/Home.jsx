@@ -153,17 +153,32 @@ export default function Home() {
                   <span className="text-white text-sm font-medium">Words</span>
                 </Link>
                 <Link
-                  to={createPageUrl("Videos")}
-                  className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/50 rounded-xl p-4 text-center hover:bg-purple-500/30 transition-all"
+                  to={createPageUrl("Pictures")}
+                  className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/50 rounded-xl p-4 text-center hover:bg-green-500/30 transition-all"
                 >
-                  <Video className="w-6 h-6 text-purple-400 mx-auto mb-2" />
-                  <span className="text-white text-sm font-medium">Videos</span>
+                  <Sparkles className="w-6 h-6 text-green-400 mx-auto mb-2" />
+                  <span className="text-white text-sm font-medium">Pictures</span>
+                </Link>
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <Link
+                  to={createPageUrl("Videos")}
+                  className="flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/50 rounded-xl text-purple-400 font-medium hover:bg-purple-500/30 transition-all"
+                >
+                  <Video className="w-5 h-5" /> Videos
+                </Link>
+                <Link
+                  to={createPageUrl("Sentences")}
+                  className="flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/50 rounded-xl text-blue-400 font-medium hover:bg-blue-500/30 transition-all"
+                >
+                  <Play className="w-5 h-5" /> Sentences
                 </Link>
               </div>
 
               <Link
                 to={createPageUrl("Store")}
-                className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border border-yellow-500/50 rounded-xl text-yellow-400 font-medium hover:bg-yellow-500/30 transition-all"
+                className="mt-3 flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border border-yellow-500/50 rounded-xl text-yellow-400 font-medium hover:bg-yellow-500/30 transition-all"
               >
                 <Sparkles className="w-5 h-5" /> Treasure Store
               </Link>
