@@ -388,9 +388,7 @@ export default function Backpack() {
                           onClick={() => {
                             const cleanWord = word.replace(/[.,!?]/g, '');
                             const meaning = wordInfo?.meaning || "";
-                            setEditingWord({ word: cleanWord, meaning, isNew: true });
-                            setEditWord(cleanWord);
-                            setEditMeaning(meaning);
+                            addToNewWords(cleanWord, meaning);
                           }}
                           className={`px-1 rounded ${
                             isQueued 
