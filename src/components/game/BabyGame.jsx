@@ -855,7 +855,7 @@ const [imageApproved, setImageApproved] = useState(false);
 
         {/* Sentences */}
         <div className="mb-6">
-          <h4 className="text-white font-semibold mb-3">📝 Example Sentences <span className="text-white/40 text-sm">(tap words to add to backpack)</span></h4>
+          <h4 className="text-white font-semibold mb-3">📝 Example Sentences <span className="text-white/40 text-sm">(tap words to add)</span></h4>
           {loadingPostPickSentences ? (
             <div className="flex items-center gap-2 text-white/60">
               <Loader2 className="w-4 h-4 animate-spin" /> Generating sentences...
@@ -869,12 +869,17 @@ const [imageApproved, setImageApproved] = useState(false);
                       const wordInfo = sentence.words?.find(w => 
                         w.word.toLowerCase() === word.toLowerCase().replace(/[.,!?]/g, '')
                       );
+                      const isQueued = newWordsQueue.find(w => w.word.toLowerCase() === wordInfo?.word?.toLowerCase());
                       return (
                         <button
                           key={widx}
                           onClick={() => wordInfo && addWordToBackpack(wordInfo.word, wordInfo.meaning)}
                           className={`px-1 rounded ${
-                            wordInfo ? "text-cyan-400 hover:bg-cyan-500/20 underline decoration-dotted cursor-pointer" : "text-white/80"
+                            isQueued 
+                              ? "text-green-400 bg-green-500/20" 
+                              : wordInfo 
+                              ? "text-cyan-400 hover:bg-cyan-500/20 underline decoration-dotted cursor-pointer" 
+                              : "text-white/80"
                           }`}
                           title={wordInfo ? `Add: ${wordInfo.meaning}` : undefined}
                         >
@@ -890,12 +895,138 @@ const [imageApproved, setImageApproved] = useState(false);
           ) : null}
         </div>
 
+        {/* New Words Queue */}
+        {newWordsQueue.length > 0 && !activeNewWord && (
+          <div className="mb-6 bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
+            <h4 className="text-amber-400 font-semibold mb-3">📝 New Words ({newWordsQueue.length})</h4>
+            <div className="flex flex-wrap gap-2">
+              {newWordsQueue.map((w, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveNewWord(w)}
+                  className="bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 rounded-lg px-3 py-2 text-amber-300 transition-all"
+                >
+                  {w.word} <span className="text-amber-400/60 text-sm">({w.meaning})</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Active New Word - Rating & Mnemonic */}
+        {activeNewWord && (
+          <div className="mb-6 bg-purple-500/10 border border-purple-500/30 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-purple-400 font-semibold">Rate: {activeNewWord.word}</h4>
+              <button onClick={() => setActiveNewWord(null)} className="text-white/40 hover:text-white">✕</button>
+            </div>
+            <p className="text-white/60 text-sm mb-3">= {activeNewWord.meaning}</p>
+            
+            {/* Rating */}
+            <div className="flex gap-2 mb-4">
+              {[1, 2, 3, 4, 5].map((num) => (
+                <motion.button
+                  key={num}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleNewWordRate(num)}
+                  className={`w-10 h-10 rounded-lg font-bold text-sm ${
+                    num === 5 ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+                    : "bg-white/20 text-white/80 hover:bg-white/30"
+                  }`}
+                >
+                  {num}{num === 5 && "⭐"}
+                </motion.button>
+              ))}
+            </div>
+
+            {/* Mnemonics for new word */}
+            {loadingNewWordMnemonics && (
+              <div className="flex items-center gap-2 text-white/60">
+                <Loader2 className="w-4 h-4 animate-spin" /> Generating ideas...
+              </div>
+            )}
+
+            {newWordMnemonics && (
+              <>
+                {/* Custom input */}
+                <div className="mb-3 flex gap-2">
+                  <Textarea
+                    value={newWordCustomMnemonic}
+                    onChange={(e) => setNewWordCustomMnemonic(e.target.value)}
+                    placeholder="Your own mnemonic..."
+                    className="bg-white/5 border-white/20 text-white text-sm resize-none h-12 flex-1"
+                  />
+                  <Button
+                    onClick={() => generateNewWordImage(newWordCustomMnemonic)}
+                    disabled={!newWordCustomMnemonic.trim() || generatingNewWordImage}
+                    className="bg-gradient-to-r from-purple-500 to-pink-500"
+                  >
+                    {generatingNewWordImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                  </Button>
+                </div>
+
+                {/* Suggestions */}
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {newWordMnemonics.map((s, i) => (
+                    <button
+                      key={i}
+                      onClick={() => generateNewWordImage(s.imagePrompt)}
+                      disabled={generatingNewWordImage}
+                      className="bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/50 rounded-lg px-3 py-1.5 text-purple-300 text-sm transition-all"
+                    >
+                      {s.phrase}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Generated Image */}
+                {newWordImage && (
+                  <div className="flex justify-center mb-3">
+                    <div className="relative inline-block">
+                      <img src={newWordImage} alt="Mnemonic" className="w-40 rounded-xl border border-white/20" />
+                      <button
+                        onClick={() => generateNewWordImage(lastNewWordImagePrompt || newWordCustomMnemonic || newWordMnemonics?.[0]?.imagePrompt)}
+                        disabled={generatingNewWordImage}
+                        className="absolute bottom-2 left-2 w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center"
+                      >
+                        {generatingNewWordImage ? <Loader2 className="w-3 h-3 text-white animate-spin" /> : <span className="text-sm">🔄</span>}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setNewWordImageApproved(true);
+                          toast.success("Image saved! ✓");
+                        }}
+                        className={`absolute bottom-2 right-2 w-7 h-7 rounded-full flex items-center justify-center ${
+                          newWordImageApproved ? "bg-green-500" : "bg-white/20 hover:bg-white/30"
+                        }`}
+                      >
+                        <Check className={`w-3 h-3 ${newWordImageApproved ? "text-white" : "text-white/60"}`} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Done button */}
+                <Button onClick={finishNewWord} className="w-full bg-gradient-to-r from-green-500 to-emerald-500">
+                  Done with this word ✓
+                </Button>
+              </>
+            )}
+          </div>
+        )}
+
         {/* Next Button */}
         <Button
           onClick={finishMnemonicPhase}
-          className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 py-6 text-lg font-bold"
+          disabled={newWordsQueue.length > 0}
+          className={`w-full py-6 text-lg font-bold ${
+            newWordsQueue.length > 0 
+              ? "bg-white/10 text-white/40" 
+              : "bg-gradient-to-r from-cyan-500 to-purple-500"
+          }`}
         >
-          Next Word →
+          {newWordsQueue.length > 0 ? `Rate ${newWordsQueue.length} new word${newWordsQueue.length > 1 ? 's' : ''} first` : "Next Word →"}
         </Button>
       </div>
     );
