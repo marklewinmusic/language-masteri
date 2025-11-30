@@ -15,7 +15,7 @@ import ActivityCard from "../components/game/ActivityCard";
 import TimelineBar from "../components/game/TimelineBar";
 import BabyGame from "../components/game/BabyGame";
 import AvatarMenu from "../components/game/AvatarMenu";
-import { Input } from "@/components/ui/input";
+
 
 const activities = [
   { id: "supermarket", name: "Supermarket", icon: ShoppingCart, gradient: "from-green-500 to-emerald-500", cost: 50, minAge: 5, description: "Buy groceries in Hebrew" },
@@ -191,167 +191,73 @@ export default function Home() {
       
       <TimelineBar currentAge={currentAge} />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left: Avatar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8">
-              <AvatarDisplay 
-                    profile={userProfile} 
-                    equippedItem={equippedItem} 
-                    hasDiaper={hasDiaper}
-                    onClick={() => setAvatarMenuOpen(true)}
-                    className="mx-auto" 
+      <div className="relative z-10 max-w-4xl mx-auto px-4 py-8">
+        {/* Baby Stage: Baby Game - Clean and simple */}
+        {isBaby && (
+          <BabyGame 
+            avatarName={userProfile?.avatar_name || 'Baby'}
+            correctCount={userProfile?.toddler_needs_completed || 0}
+            onCorrect={handleToddlerNeedComplete}
+            onWatchTV={() => navigate(createPageUrl("BabyVideos"))}
+          />
+        )}
+
+        {/* School unlocked at age 5 */}
+        {currentAge >= 5 && (
+          <div className="mb-6">
+            <Link
+              to={createPageUrl("Progress")}
+              className="block bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border-2 border-blue-500/50 rounded-2xl p-6 hover:border-blue-400 transition-all"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center shadow-lg">
+                  <School className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">School</h2>
+                  <p className="text-white/60">Learn words, earn scholarships!</p>
+                </div>
+              </div>
+            </Link>
+          </div>
+        )}
+
+        {/* Life Activities - only show after age 5 */}
+        {currentAge >= 5 && (
+          <>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">Life Activities</h2>
+              <div className="flex items-center gap-2 text-white/60">
+                <Flame className="w-5 h-5 text-orange-400" />
+                <span>Complete activities to grow!</span>
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {activities.map((activity) => {
+                const canAfford = coins >= activity.cost;
+                return (
+                  <ActivityCard
+                    key={activity.id}
+                    activity={activity}
+                    isUnlocked={isUnlocked(activity) && canAfford}
+                    completions={getProgress(activity.id)?.completions || 0}
+                    minAge={activity.minAge}
+                    currentAge={currentAge}
+                    canAfford={canAfford}
+                    onClick={() => {
+                      if (!canAfford) {
+                        toast.error(`You need ${activity.cost} coins for this activity!`);
+                        return;
+                      }
+                      navigate(createPageUrl("Activities") + `?id=${activity.id}`);
+                    }}
                   />
-
-                  {/* Editable Name */}
-                  <div className="mt-4 text-center">
-                    {editingName ? (
-                      <div className="flex items-center gap-2 justify-center">
-                        <Input
-                          value={newName}
-                          onChange={(e) => setNewName(e.target.value)}
-                          placeholder="Enter name..."
-                          className="bg-white/10 border-white/20 text-white text-center w-32"
-                          autoFocus
-                          onKeyDown={(e) => e.key === "Enter" && handleSaveName()}
-                        />
-                        <Button size="sm" onClick={handleSaveName} className="bg-green-500">Save</Button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => { setNewName(userProfile?.avatar_name || ""); setEditingName(true); }}
-                        className="text-xl font-bold text-white hover:text-cyan-400 transition-colors"
-                      >
-                        {userProfile?.avatar_name || "Baby"} ✏️
-                      </button>
-                    )}
-                  </div>
-              
-
-
-
+                );
+              })}
             </div>
-          </div>
-
-          {/* Right: Activities or Toddler Needs */}
-          <div className="lg:col-span-2">
-            {/* Quick Earn Coins - MOVED TO TOP */}
-            <div className="mb-6 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-white/10 rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4">⚡ Quick Earn Coins</h3>
-              <div className="grid sm:grid-cols-3 gap-4">
-                <Link
-                  to={createPageUrl("Practice")}
-                  className="flex items-center gap-3 bg-white/5 hover:bg-white/10 rounded-xl p-4 transition-all"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-                    <Book className="w-5 h-5 text-green-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">Learn Words</p>
-                    <p className="text-green-400 text-sm">+10 coins each</p>
-                  </div>
-                </Link>
-                <Link
-                  to={createPageUrl("Videos")}
-                  className="flex items-center gap-3 bg-white/5 hover:bg-white/10 rounded-xl p-4 transition-all"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                    <Video className="w-5 h-5 text-purple-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">Watch Videos</p>
-                    <p className="text-purple-400 text-sm">+25 coins each</p>
-                  </div>
-                </Link>
-                <Link
-                  to={createPageUrl("Progress")}
-                  className="flex items-center gap-3 bg-white/5 hover:bg-white/10 rounded-xl p-4 transition-all"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                    <Trophy className="w-5 h-5 text-blue-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">Complete Lessons</p>
-                    <p className="text-blue-400 text-sm">+100 coins each</p>
-                  </div>
-                </Link>
-              </div>
-            </div>
-
-            {/* Baby Stage: Baby Game */}
-            {isBaby && (
-              <BabyGame 
-                avatarName={userProfile?.avatar_name || 'Baby'}
-                correctCount={userProfile?.toddler_needs_completed || 0}
-                onCorrect={handleToddlerNeedComplete}
-                onWatchTV={() => navigate(createPageUrl("BabyVideos"))}
-              />
-            )}
-
-            {/* School unlocked at age 5 */}
-            {currentAge >= 5 && (
-              <div className="mb-6">
-                <Link
-                  to={createPageUrl("Progress")}
-                  className="block bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border-2 border-blue-500/50 rounded-2xl p-6 hover:border-blue-400 transition-all"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center shadow-lg">
-                      <School className="w-7 h-7 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-white">School</h2>
-                      <p className="text-white/60">Learn words, earn scholarships!</p>
-                    </div>
-                    <div className="ml-auto">
-                      <div className="bg-yellow-500/20 px-3 py-1 rounded-full">
-                        <span className="text-yellow-400 text-sm font-bold">📚 To-do: Learn 30 words</span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            )}
-
-            {/* Life Activities - only show after age 5 */}
-            {currentAge >= 5 && (
-              <>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-white">Life Activities</h2>
-                  <div className="flex items-center gap-2 text-white/60">
-                    <Flame className="w-5 h-5 text-orange-400" />
-                    <span>Complete activities to grow!</span>
-                  </div>
-                </div>
-
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {activities.map((activity) => {
-                    const canAfford = coins >= activity.cost;
-                    return (
-                      <ActivityCard
-                        key={activity.id}
-                        activity={activity}
-                        isUnlocked={isUnlocked(activity) && canAfford}
-                        completions={getProgress(activity.id)?.completions || 0}
-                        minAge={activity.minAge}
-                        currentAge={currentAge}
-                        canAfford={canAfford}
-                        onClick={() => {
-                          if (!canAfford) {
-                            toast.error(`You need ${activity.cost} coins for this activity!`);
-                            return;
-                          }
-                          navigate(createPageUrl("Activities") + `?id=${activity.id}`);
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+          </>
+        )}
       </div>
 
       {/* Buy Coins Dialog */}
