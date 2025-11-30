@@ -832,9 +832,9 @@ const [imageApproved, setImageApproved] = useState(false);
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleRate(num)}
                   disabled={false}
-                  className={`w-8 h-8 rounded-lg font-bold text-sm ${
+                  className={`w-8 h-8 rounded-lg font-bold text-sm transition-all ${
                     pendingRating === num 
-                      ? "bg-cyan-500 text-white" 
+                      ? "bg-cyan-500 text-white ring-2 ring-cyan-300" 
                       : "bg-white/20 text-white/80 hover:bg-white/30"
                   }`}
                 >
