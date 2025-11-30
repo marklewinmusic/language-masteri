@@ -539,9 +539,6 @@ export default function BabyGame({ avatarName, onCorrect, onWatchTV }) {
           <button onClick={() => setBackpackOpen(true)} className="ml-2 text-xl">🎒</button>
         </div>
 
-        {/* Instructions */}
-        <p className="text-center text-white/60 text-sm mb-4">Rate 1-5 how well you know this word</p>
-
         {/* Word with inline rating */}
         <div className="text-center mb-6">
           <span className="text-5xl mb-3 block">👶</span>
@@ -574,6 +571,9 @@ export default function BabyGame({ avatarName, onCorrect, onWatchTV }) {
             </div>
           ))}
         </div>
+
+        {/* Instructions */}
+        <p className="text-center text-white/60 text-sm mt-4">Rate 1-5 how well you know this word. Then choose the correct image.</p>
 
         {/* Backpack Dialog */}
         <Dialog open={backpackOpen} onOpenChange={setBackpackOpen}>
