@@ -728,35 +728,26 @@ const [lastImagePrompt, setLastImagePrompt] = useState("");
 
           {/* AI Suggestions */}
           {loadingMnemonics ? (
-            <div className="flex items-center gap-2 text-white/60">
-              <Loader2 className="w-4 h-4 animate-spin" /> Generating ideas...
-            </div>
-          ) : mnemonicSuggestions ? (
-            <div className="space-y-2">
-              {mnemonicSuggestions.map((s, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="bg-white/5 border border-white/10 rounded-xl p-3 flex items-start justify-between"
-                >
-                  <div className="flex-1">
-                    <p className="text-purple-300 font-medium">{s.title}</p>
-                    <p className="text-white/60 text-sm">{s.description}</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    onClick={() => generateMnemonicImage(s.imagePrompt)}
-                    disabled={generatingImage}
-                    className="bg-purple-500 hover:bg-purple-600 ml-2"
-                  >
-                    {generatingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
-                  </Button>
-                </motion.div>
-              ))}
-            </div>
-          ) : null}
+                          <div className="flex items-center gap-2 text-white/60">
+                            <Loader2 className="w-4 h-4 animate-spin" /> Generating ideas...
+                          </div>
+                        ) : mnemonicSuggestions ? (
+                          <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex flex-wrap items-center gap-2">
+                            {mnemonicSuggestions.map((s, i) => (
+                              <motion.button
+                                key={i}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: i * 0.1 }}
+                                onClick={() => generateMnemonicImage(s.imagePrompt)}
+                                disabled={generatingImage}
+                                className="bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/50 rounded-lg px-3 py-1.5 text-purple-300 text-sm transition-all"
+                              >
+                                {s.phrase}
+                              </motion.button>
+                            ))}
+                          </div>
+                        ) : null}
         </div>
 
         {/* Sentences */}
