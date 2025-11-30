@@ -708,14 +708,19 @@ export default function BabyGame({ avatarName, onCorrect, onWatchTV }) {
             >
               <div className="relative">
                 <img src={generatedMnemonicImage} alt="Mnemonic" className="w-1/4 rounded-xl border border-white/20" />
-                <Button
-                  size="sm"
+                <button
                   onClick={() => generateMnemonicImage(customMnemonic || mnemonicSuggestions?.[0]?.imagePrompt || currentWord.meaning)}
                   disabled={generatingImage}
-                  className="absolute bottom-2 left-2 bg-purple-500/80 hover:bg-purple-600 text-xs px-2 py-1 h-auto"
+                  className="absolute bottom-2 left-2 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center"
                 >
-                  {generatingImage ? <Loader2 className="w-3 h-3 animate-spin" /> : "🔄 Regenerate"}
-                </Button>
+                  {generatingImage ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <span className="text-lg">🔄</span>}
+                </button>
+                <button
+                  onClick={() => toast.success("Image saved! ✓")}
+                  className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center"
+                >
+                  <Check className="w-4 h-4 text-white" />
+                </button>
               </div>
             </motion.div>
           )}
