@@ -335,8 +335,9 @@ export default function BabyGame({ avatarName, onCorrect, onWatchTV }) {
     try {
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `Create 3 mnemonic ideas to remember the Hebrew word "${word.transliteration}" which means "${word.meaning}".
-        Use the SOUND of the word to create memorable associations.
-        Be creative, funny, or absurd to make them memorable.`,
+        Use the SOUND of the word to create memorable associations with OBJECTS or THINGS in English (not people's names).
+        For example: "Mayim" sounds like "my yam" - imagine a yam drinking water.
+        Be creative, funny, or absurd. Only use common English objects, animals, or things - NO proper names.`,
         response_json_schema: {
           type: "object",
           properties: {
