@@ -13,7 +13,7 @@ import AvatarDisplay from "../components/game/AvatarDisplay";
 import BadgeDisplay from "../components/game/BadgeDisplay";
 import ActivityCard from "../components/game/ActivityCard";
 import TimelineBar from "../components/game/TimelineBar";
-import ToddlerNeeds from "../components/game/ToddlerNeeds";
+import BabyGame from "../components/game/BabyGame";
 import AvatarMenu from "../components/game/AvatarMenu";
 
 const activities = [
@@ -292,11 +292,13 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Baby Stage: Toddler Needs */}
+            {/* Baby Stage: Baby Game */}
             {isBaby && (
-              <ToddlerNeeds 
-                onComplete={handleToddlerNeedComplete}
+              <BabyGame 
                 avatarName={userProfile?.avatar_name || 'Baby'}
+                correctCount={userProfile?.toddler_needs_completed || 0}
+                onCorrect={handleToddlerNeedComplete}
+                onWatchTV={() => navigate(createPageUrl("BabyVideos"))}
               />
             )}
 
