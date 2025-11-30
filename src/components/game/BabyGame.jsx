@@ -402,14 +402,15 @@ const [lastImagePrompt, setLastImagePrompt] = useState("");
   };
 
   const generateMnemonicImage = async (prompt) => {
-    setGeneratingImage(true);
-    try {
-      const result = await base44.integrations.Core.GenerateImage({
-        prompt: `A colorful, memorable mnemonic illustration: ${prompt}. 
-        For learning Hebrew word "${currentWord.transliteration}" meaning "${currentWord.meaning}".
-        Cartoon style, vibrant colors, educational, fun and memorable.`
-      });
-      setGeneratedMnemonicImage(result.url);
+        setGeneratingImage(true);
+        setLastImagePrompt(prompt);
+        try {
+          const result = await base44.integrations.Core.GenerateImage({
+            prompt: `A colorful, memorable mnemonic illustration: ${prompt}. 
+            For learning Hebrew word "${currentWord.transliteration}" meaning "${currentWord.meaning}".
+            Cartoon style, vibrant colors, educational, fun and memorable.`
+          });
+          setGeneratedMnemonicImage(result.url);
       
       // Save image to the word
       const existingWord = wordRatings.find(w => w.word === currentWord.hebrew);
