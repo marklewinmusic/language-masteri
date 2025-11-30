@@ -283,6 +283,7 @@ const [imageApproved, setImageApproved] = useState(false);
     setPostPickSentences(null);
     setCustomMnemonic("");
     setGeneratedMnemonicImage(null);
+    setImageApproved(false);
     setGamePhase("rating");
   };
 
