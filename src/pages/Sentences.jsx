@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import SoundWave from "../components/practice/SoundWave";
 import GameHeader from "../components/game/GameHeader";
+import ClickableWord from "../components/learning/ClickableWord";
 
 export default function Sentences() {
   const [mode, setMode] = useState("list");
@@ -139,15 +140,28 @@ export default function Sentences() {
                           animate={{ opacity: 1, scale: 1 }}
                           className={`${levelLabels[level].bg} ${levelLabels[level].border} border rounded-2xl px-4 py-3 flex items-center justify-between`}
                         >
-                          <button 
-                            onClick={() => sentence.audio_url && playAudio(sentence)}
-                            className="flex-1 text-left flex items-center gap-3 hover:opacity-80"
-                          >
-                            <span className="font-medium text-white/80">{sentence.phonetic}</span>
-                            <span className="text-lg font-bold text-cyan-400" dir="rtl">{sentence.word}</span>
+                          <div className="flex-1 text-left flex items-center gap-3">
+                            <ClickableWord
+                              word={sentence.word}
+                              transliteration={sentence.phonetic}
+                              translation={sentence.translation}
+                              variant="transliteration"
+                              className="font-medium text-white/80"
+                            />
+                            <ClickableWord
+                              word={sentence.word}
+                              transliteration={sentence.phonetic}
+                              translation={sentence.translation}
+                              variant="hebrew"
+                              className="text-lg font-bold text-cyan-400"
+                            />
                             <span className="text-white/50 text-sm">({sentence.translation})</span>
-                            {sentence.audio_url && <Volume2 className="w-3 h-3 text-white/40" />}
-                          </button>
+                            {sentence.audio_url && (
+                              <button onClick={() => playAudio(sentence)}>
+                                <Volume2 className="w-3 h-3 text-white/40 hover:text-white" />
+                              </button>
+                            )}
+                          </div>
                           <div className="flex gap-1 ml-2 border-l border-white/10 pl-2">
                             {[1, 2, 3, 4, 5].map(num => (
                               <button
@@ -192,7 +206,15 @@ export default function Sentences() {
                   exit={{ opacity: 0, x: -50 }}
                   className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-8 text-center"
                 >
-                  <p className="text-2xl font-bold text-cyan-400 mb-4" dir="rtl">{sentences[currentIndex].word}</p>
+                  <div className="mb-4">
+                    <ClickableWord
+                      word={sentences[currentIndex].word}
+                      transliteration={sentences[currentIndex].phonetic}
+                      translation={sentences[currentIndex].translation}
+                      variant="hebrew"
+                      className="text-2xl font-bold text-cyan-400"
+                    />
+                  </div>
                   <p className="text-lg text-white/80 mb-2">{sentences[currentIndex].phonetic}</p>
                   <p className="text-white/60 mb-6">{sentences[currentIndex].translation}</p>
                   {sentences[currentIndex].audio_url && (

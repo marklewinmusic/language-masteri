@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import ClickableWord from "../learning/ClickableWord";
 
 export default function PictureCard({ card, onNext, onPrev, currentIndex, total, onRate, currentRating }) {
   const [showAnswer, setShowAnswer] = useState(false);
@@ -39,9 +40,13 @@ export default function PictureCard({ card, onNext, onPrev, currentIndex, total,
           <div className="flex items-center justify-center gap-3">
             {showAnswer && (
               <>
-                <span className="text-3xl font-bold text-violet-600">
-                  {card.transliteration}
-                </span>
+                <ClickableWord
+                  word={card.hebrewWord}
+                  transliteration={card.transliteration}
+                  translation={card.meaning}
+                  variant="transliteration"
+                  className="text-3xl font-bold text-violet-600"
+                />
                 <span className="text-2xl text-gray-400">=</span>
               </>
             )}
