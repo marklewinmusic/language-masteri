@@ -41,6 +41,16 @@ export default function Backpack() {
     queryFn: () => base44.entities.Word.filter({ category: "wordbank" }),
   });
 
+  const createWordMutation = useMutation({
+    mutationFn: (word) => base44.entities.Word.create(word),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wordRatings'] }),
+  });
+
+  const updateWordMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Word.update(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wordRatings'] }),
+  });
+
   const fluentWords = wordRatings.filter(w => w.times_practiced >= 5);
   const learningWords = wordRatings.filter(w => w.times_practiced > 0 && w.times_practiced < 5);
 
