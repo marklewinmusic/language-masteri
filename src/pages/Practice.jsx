@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import WordCard from "../components/practice/WordCard";
 import GameHeader from "../components/game/GameHeader";
+import ClickableWord from "../components/learning/ClickableWord";
 import { toast } from "sonner";
 
 export default function Practice() {
@@ -361,8 +362,20 @@ export default function Practice() {
                           whileHover={{ scale: 1.05 }}
                           className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 flex items-center gap-2"
                         >
-                          <span className="text-white font-medium">{word.phonetic}</span>
-                          <span className="text-cyan-400" dir="rtl">{word.word}</span>
+                          <ClickableWord
+                            word={word.word}
+                            transliteration={word.phonetic}
+                            translation={word.translation}
+                            variant="transliteration"
+                            className="text-white font-medium"
+                          />
+                          <ClickableWord
+                            word={word.word}
+                            transliteration={word.phonetic}
+                            translation={word.translation}
+                            variant="hebrew"
+                            className="text-cyan-400"
+                          />
                           <div className="flex items-center gap-1 ml-2">
                             <button
                               onClick={(e) => { e.stopPropagation(); generateMnemonic(word); }}
