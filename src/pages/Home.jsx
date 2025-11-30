@@ -4,12 +4,12 @@ import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingCart, Dumbbell, Church, UtensilsCrossed, Heart, ShoppingBag, BookOpen, Users, Play, Book, Video, Trophy, Sparkles, ArrowRight, Flame, Briefcase, School, Zap, Coins } from "lucide-react";
+import { ShoppingCart, Dumbbell, Church, UtensilsCrossed, Heart, ShoppingBag, BookOpen, Users, Play, Trophy, Sparkles, ArrowRight, Flame, Briefcase, School } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import GameHeader from "../components/game/GameHeader";
-import AvatarDisplay from "../components/game/AvatarDisplay";
+
 
 import ActivityCard from "../components/game/ActivityCard";
 import TimelineBar from "../components/game/TimelineBar";
@@ -43,8 +43,6 @@ export default function Home() {
   const queryClient = useQueryClient();
   const [buyCoinsDialog, setBuyCoinsDialog] = useState(false);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
-  const [editingName, setEditingName] = useState(false);
-  const [newName, setNewName] = useState("");
 
   const { data: userProfile, isLoading: profileLoading } = useQuery({
     queryKey: ['userProfile'],
@@ -155,14 +153,6 @@ export default function Home() {
     });
     deleteProfileMutation.mutate();
     toast.success("Starting new life from the beginning!");
-  };
-
-  const handleSaveName = () => {
-    if (newName.trim()) {
-      updateProfileMutation.mutate({ avatar_name: newName.trim() });
-      toast.success("Name updated!");
-    }
-    setEditingName(false);
   };
 
   const handleChangeAvatar = () => {
