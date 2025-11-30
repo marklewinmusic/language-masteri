@@ -12,8 +12,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 export default function Backpack() {
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("fluent");
   const [expandedId, setExpandedId] = useState(null);
+  const [selectedWord, setSelectedWord] = useState(null);
+  const [sentences, setSentences] = useState(null);
+  const [loadingSentences, setLoadingSentences] = useState(false);
+  const [newWords, setNewWords] = useState([]);
+  const [activeNewWord, setActiveNewWord] = useState(null);
+  const [newWordMnemonics, setNewWordMnemonics] = useState(null);
+  const [loadingMnemonics, setLoadingMnemonics] = useState(false);
+  const [newWordImage, setNewWordImage] = useState(null);
+  const [generatingImage, setGeneratingImage] = useState(false);
+  const [newWordCustomMnemonic, setNewWordCustomMnemonic] = useState("");
+  const [lastImagePrompt, setLastImagePrompt] = useState("");
+  const [imageApproved, setImageApproved] = useState(false);
 
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile'],
