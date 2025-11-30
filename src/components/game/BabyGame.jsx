@@ -831,7 +831,7 @@ const [imageApproved, setImageApproved] = useState(false);
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleRate(num)}
-                  disabled={pendingRating !== null}
+                  disabled={false}
                   className={`w-8 h-8 rounded-lg font-bold text-sm ${
                     pendingRating === num 
                       ? "bg-cyan-500 text-white" 
