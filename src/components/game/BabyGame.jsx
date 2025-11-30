@@ -587,18 +587,70 @@ export default function BabyGame({ avatarName, onCorrect, onWatchTV }) {
 
         {/* Backpack Dialog */}
         <Dialog open={backpackOpen} onOpenChange={setBackpackOpen}>
-          <DialogContent className="bg-slate-900 border-white/20 text-white max-w-md">
+          <DialogContent className="bg-slate-900 border-white/20 text-white max-w-md max-h-[80vh] overflow-hidden flex flex-col">
             <DialogHeader>
               <DialogTitle>🎒 My Backpack</DialogTitle>
             </DialogHeader>
-            <div className="max-h-60 overflow-y-auto space-y-1">
-              {wordRatings.map((word) => (
-                <div key={word.id} className="bg-white/5 rounded-lg px-3 py-2 flex items-center justify-between">
-                  <span className="text-cyan-400">{word.phonetic || word.word}</span>
-                  <span className="text-white/60 text-sm">{word.translation}</span>
-                  {word.times_practiced >= 5 && <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />}
+            
+            <div className="flex-1 overflow-y-auto space-y-4">
+              {/* Fluent Folder */}
+              <div>
+                <h4 className="text-sm font-semibold text-green-400 mb-2 flex items-center gap-2">
+                  <span>⭐ Fluent</span>
+                  <span className="bg-green-500/20 px-2 py-0.5 rounded-full text-xs">{counts.fluent}</span>
+                </h4>
+                <div className="space-y-1 max-h-32 overflow-y-auto">
+                  {wordRatings.filter(w => w.times_practiced >= 5).length === 0 ? (
+                    <p className="text-white/40 text-sm">No fluent words yet</p>
+                  ) : wordRatings.filter(w => w.times_practiced >= 5).map((word) => (
+                    <div key={word.id} className="bg-green-500/10 rounded-lg px-3 py-2 flex items-center justify-between">
+                      <span className="text-cyan-400">{word.phonetic || word.word}</span>
+                      <span className="text-white/60 text-sm">{word.translation}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+
+              {/* Learning Folder */}
+              <div>
+                <h4 className="text-sm font-semibold text-yellow-400 mb-2 flex items-center gap-2">
+                  <span>📚 Learning</span>
+                  <span className="bg-yellow-500/20 px-2 py-0.5 rounded-full text-xs">{counts.learning}</span>
+                </h4>
+                <div className="space-y-1 max-h-32 overflow-y-auto">
+                  {wordRatings.filter(w => w.times_practiced > 0 && w.times_practiced < 5).length === 0 ? (
+                    <p className="text-white/40 text-sm">No words in progress</p>
+                  ) : wordRatings.filter(w => w.times_practiced > 0 && w.times_practiced < 5).map((word) => (
+                    <div key={word.id} className="bg-yellow-500/10 rounded-lg px-3 py-2 flex items-center justify-between">
+                      <span className="text-cyan-400">{word.phonetic || word.word}</span>
+                      <span className="text-white/60 text-sm">{word.translation}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Unlocked Rewards */}
+              <div className="border-t border-white/10 pt-4">
+                <h4 className="text-sm font-semibold text-purple-400 mb-2">🎁 Rewards</h4>
+                {canWatchTV ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      onClick={() => { setBackpackOpen(false); onWatchTV(); }}
+                      className="bg-gradient-to-r from-purple-500 to-pink-500"
+                    >
+                      <Tv className="w-4 h-4 mr-1" /> Hebrew TV
+                    </Button>
+                    <Button
+                      onClick={() => { setBackpackOpen(false); setGamePhase("wordgame"); }}
+                      className="bg-gradient-to-r from-green-500 to-emerald-500"
+                    >
+                      <Gamepad2 className="w-4 h-4 mr-1" /> Flashcards
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-white/40 text-sm">Rate {100 - totalRated} more words to unlock TV & games!</p>
+                )}
+              </div>
             </div>
           </DialogContent>
         </Dialog>
