@@ -823,7 +823,7 @@ Create about 15-20 conversational lines that naturally introduce and use these v
             </div>
           </motion.div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {level1Videos.map((video) => (
               <motion.div
                 key={video.id}
@@ -833,7 +833,7 @@ Create about 15-20 conversational lines that naturally introduce and use these v
               >
                 {/* Video Header */}
                 <div 
-                  onClick={() => setSelectedVideo(video)}
+                  onClick={() => setSelectedVideo(selectedVideo?.id === video.id ? null : video)}
                   className="cursor-pointer hover:bg-white/5 transition-all"
                 >
                   <div className="flex gap-4 p-4">
@@ -868,75 +868,91 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                         </div>
                       </div>
                     </div>
+                    <ChevronRight className={`w-5 h-5 text-white/40 transition-transform ${selectedVideo?.id === video.id ? 'rotate-90' : ''}`} />
                   </div>
                 </div>
 
-                {/* Full Transcript Button & Content */}
-                <div className="border-t border-white/10 p-4">
-                  {!fullTranscripts[video.id] ? (
-                    <Button
-                      onClick={() => generateFullTranscript(video)}
-                      disabled={loadingTranscript === video.id}
-                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500"
-                    >
-                      {loadingTranscript === video.id ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Generating transcript...
-                        </>
+                {/* Expanded Content - Only show when clicked */}
+                {selectedVideo?.id === video.id && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    className="border-t border-white/10"
+                  >
+                    {/* Video Player */}
+                    <div className="aspect-video bg-black">
+                      <iframe
+                        width="100%"
+                        height="100%"
+                        src={`https://www.youtube.com/embed/${video.youtubeId}`}
+                        title={video.title}
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+
+                    <div className="p-4 space-y-4">
+                      {/* Full Transcript Button & Content */}
+                      {!fullTranscripts[video.id] ? (
+                        <Button
+                          onClick={(e) => { e.stopPropagation(); generateFullTranscript(video); }}
+                          disabled={loadingTranscript === video.id}
+                          className="w-full bg-gradient-to-r from-purple-500 to-pink-500"
+                        >
+                          {loadingTranscript === video.id ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Generating transcript...
+                            </>
+                          ) : (
+                            <>
+                              <FileText className="w-4 h-4 mr-2" />
+                              📝 Show Full Transcript
+                            </>
+                          )}
+                        </Button>
                       ) : (
-                        <>
-                          <FileText className="w-4 h-4 mr-2" />
-                          📝 Show Full Transcript (Subtitles)
-                        </>
-                      )}
-                    </Button>
-                  ) : (
-                    <div className="space-y-3">
-                      <p className="text-white/50 text-xs font-medium flex items-center gap-2">
-                        <FileText className="w-4 h-4" />
-                        Full Transcript - Tap any word to add to backpack:
-                      </p>
-                      <div className="space-y-2 max-h-96 overflow-y-auto">
-                        {fullTranscripts[video.id].map((line, idx) => (
-                          <div
-                            key={idx}
-                            className="bg-white/5 border border-white/10 rounded-xl p-3"
-                          >
-                            <p className="text-cyan-400 text-lg font-bold mb-1" dir="rtl">{line.hebrew}</p>
-                            <p className="text-white/70 text-sm">{line.transliteration}</p>
-                            <p className="text-white/50 text-xs">{line.english}</p>
+                        <div className="space-y-2">
+                          <p className="text-white/50 text-xs font-medium">📝 Full Transcript:</p>
+                          <div className="space-y-1 max-h-64 overflow-y-auto">
+                            {fullTranscripts[video.id].map((line, idx) => (
+                              <div key={idx} className="bg-white/5 rounded-lg p-2">
+                                <p className="text-cyan-400 font-bold" dir="rtl">{line.hebrew}</p>
+                                <p className="text-white/60 text-xs">{line.transliteration} — {line.english}</p>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        </div>
+                      )}
+                      
+                      {/* Vocabulary Words */}
+                      <div className="pt-3 border-t border-white/10">
+                        <p className="text-white/50 text-xs mb-2">📚 Vocabulary ({video.transcript.length} words):</p>
+                        <div className="flex flex-wrap gap-1">
+                          {video.transcript.map((item, idx) => {
+                            const inBackpack = wordRatings.find(w => w.word === item.hebrew);
+                            return (
+                              <button
+                                key={idx}
+                                onClick={(e) => { e.stopPropagation(); !inBackpack && addToBackpack(item); }}
+                                className={`px-2 py-1 rounded text-xs transition-all ${
+                                  inBackpack 
+                                    ? "bg-green-500/20 border border-green-500/50" 
+                                    : "bg-white/5 border border-white/20 hover:border-cyan-400"
+                                }`}
+                              >
+                                <span className="text-cyan-400 font-bold" dir="rtl">{item.hebrew}</span>
+                                <span className="text-white/40 ml-1">= {item.meaning}</span>
+                                {inBackpack && <span className="ml-1 text-green-400">✓</span>}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
-                  )}
-                  
-                  {/* Vocabulary Words */}
-                  <div className="mt-4 pt-4 border-t border-white/10">
-                    <p className="text-white/50 text-xs mb-2">📚 Vocabulary ({video.transcript.length} words):</p>
-                    <div className="flex flex-wrap gap-2">
-                      {video.transcript.map((item, idx) => {
-                        const inBackpack = wordRatings.find(w => w.word === item.hebrew);
-                        return (
-                          <button
-                            key={idx}
-                            onClick={() => !inBackpack && addToBackpack(item)}
-                            className={`px-2 py-1 rounded-lg text-xs transition-all ${
-                              inBackpack 
-                                ? "bg-green-500/20 border border-green-500/50 cursor-default" 
-                                : "bg-white/5 border border-white/20 hover:border-cyan-400"
-                            }`}
-                          >
-                            <span className="text-cyan-400 font-bold" dir="rtl">{item.hebrew}</span>
-                            <span className="text-white/40 ml-1">= {item.meaning}</span>
-                            {inBackpack && <span className="ml-1 text-green-400">✓</span>}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
+                  </motion.div>
+                )}
               </motion.div>
             ))}
           </div>
