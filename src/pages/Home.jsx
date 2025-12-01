@@ -212,7 +212,37 @@ export default function Home() {
       <TimelineBar currentAge={currentAge} />
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 py-8">
-        {/* Baby Stage: Baby Game - Clean and simple */}
+        {/* 5 Levels */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-white mb-6 text-center">Choose Your Level</h2>
+          <div className="flex justify-center gap-4 flex-wrap">
+            {levels.map((level, idx) => {
+              const Icon = level.icon;
+              return (
+                <motion.button
+                  key={level.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  whileHover={{ scale: 1.1, y: -5 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setSelectedLevel(level)}
+                  className={`relative w-20 h-20 rounded-2xl bg-gradient-to-br ${level.gradient} shadow-lg flex flex-col items-center justify-center cursor-pointer border-2 border-white/20 hover:border-white/50 transition-all`}
+                >
+                  <Icon className="w-8 h-8 text-white mb-1" />
+                  <span className="text-white font-bold text-sm">{level.id}</span>
+                  <motion.div
+                    className="absolute -inset-1 rounded-2xl bg-white/20"
+                    animate={{ opacity: [0, 0.5, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: idx * 0.2 }}
+                  />
+                </motion.button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Baby Stage: Baby Game */}
         {isBaby && (
           <BabyGame 
             avatarName={userProfile?.avatar_name || 'Baby'}
@@ -220,63 +250,6 @@ export default function Home() {
             onCorrect={handleToddlerNeedComplete}
             onWatchTV={() => navigate(createPageUrl("BabyVideos"))}
           />
-        )}
-
-        {/* School unlocked at age 5 */}
-        {currentAge >= 5 && (
-          <div className="mb-6">
-            <Link
-              to={createPageUrl("Progress")}
-              className="block bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border-2 border-blue-500/50 rounded-2xl p-6 hover:border-blue-400 transition-all"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center shadow-lg">
-                  <School className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white">School</h2>
-                  <p className="text-white/60">Learn words, earn scholarships!</p>
-                </div>
-              </div>
-            </Link>
-          </div>
-        )}
-
-        {/* Life Activities - only show after age 5 */}
-        {currentAge >= 5 && (
-          <>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">Life Activities</h2>
-              <div className="flex items-center gap-2 text-white/60">
-                <Flame className="w-5 h-5 text-orange-400" />
-                <span>Complete activities to grow!</span>
-              </div>
-            </div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {activities.map((activity) => {
-                const canAfford = coins >= activity.cost;
-                return (
-                  <ActivityCard
-                    key={activity.id}
-                    activity={activity}
-                    isUnlocked={isUnlocked(activity) && canAfford}
-                    completions={getProgress(activity.id)?.completions || 0}
-                    minAge={activity.minAge}
-                    currentAge={currentAge}
-                    canAfford={canAfford}
-                    onClick={() => {
-                      if (!canAfford) {
-                        toast.error(`You need ${activity.cost} coins for this activity!`);
-                        return;
-                      }
-                      navigate(createPageUrl("Activities") + `?id=${activity.id}`);
-                    }}
-                  />
-                );
-              })}
-            </div>
-          </>
         )}
       </div>
 
