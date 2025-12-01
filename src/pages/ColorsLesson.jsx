@@ -624,7 +624,7 @@ export default function ColorsLesson() {
               </Button>
             </motion.div>
 
-            {/* Easy Sentences Button - Unlocks after game completed */}
+            {/* Color Sentences Game Button - Unlocks after game completed */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -632,20 +632,24 @@ export default function ColorsLesson() {
               className="mt-3"
             >
               <Button
-                onClick={generateSentences}
-                disabled={!canSeeSentences || loadingSentences}
+                onClick={() => {
+                  if (canSeeSentences) {
+                    generateSentences();
+                  } else {
+                    toast.error("Complete the Color Game above first to unlock this!");
+                  }
+                }}
+                disabled={loadingSentences}
                 className={`w-full py-6 text-lg ${
                   canSeeSentences 
                     ? "bg-gradient-to-r from-purple-500 to-pink-500" 
-                    : "bg-white/10 text-white/40 cursor-not-allowed"
+                    : "bg-white/10 text-white/40"
                 }`}
               >
                 {loadingSentences ? (
                   <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                ) : canSeeSentences ? (
-                  "📝 Easy Sentences with Colors"
                 ) : (
-                  "🔒 Complete game to unlock sentences"
+                  <>📝 Color Sentences Game {!canSeeSentences && "🔒"}</>
                 )}
               </Button>
             </motion.div>
