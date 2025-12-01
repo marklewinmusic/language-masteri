@@ -434,12 +434,14 @@ export default function Backpack() {
           </div>
 
           {/* Mnemonic section */}
+          <p className="text-white/60 text-sm mb-2">Describe your own picture to remember this word:</p>
+
           {/* Custom input */}
           <div className="flex gap-2 mb-3">
             <Textarea
               value={newWordCustomMnemonic}
               onChange={(e) => setNewWordCustomMnemonic(e.target.value)}
-              placeholder="Describe a picture to remember this word..."
+              placeholder="e.g. A dog eating an apple..."
               className="bg-white/5 border-white/20 text-white text-sm resize-none h-16 flex-1"
             />
             <Button
@@ -478,9 +480,9 @@ export default function Backpack() {
             </div>
           )}
 
-          {/* Done button */}
+          {/* Next Word button */}
           <Button onClick={finishNewWord} className="w-full bg-gradient-to-r from-green-500 to-emerald-500">
-            Done with this word ✓
+            Next Word →
           </Button>
         </DialogContent>
       </Dialog>
