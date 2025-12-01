@@ -132,103 +132,79 @@ export default function ColorsLesson() {
         {/* Color Grid */}
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
           {colors.map((color) => {
+            const isExpanded = selectedColor?.meaning === color.meaning;
             const isRated = colorRatings[color.meaning] !== undefined;
             const rating = colorRatings[color.meaning];
+            const isDark = !['white', 'yellow', 'gold'].includes(color.meaning);
             
             return (
-              <motion.button
+              <motion.div
                 key={color.meaning}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setSelectedColor(color)}
-                className={`relative rounded-2xl p-4 transition-all border-2 ${
+                layout
+                onClick={() => setSelectedColor(isExpanded ? null : color)}
+                className={`relative rounded-2xl p-4 transition-all border-2 cursor-pointer ${
                   isRated 
                     ? "border-green-500/50" 
-                    : "border-white/10 hover:border-cyan-400/50"
+                    : isExpanded
+                      ? "border-cyan-400"
+                      : "border-white/10 hover:border-cyan-400/50"
                 }`}
                 style={{ backgroundColor: color.color }}
               >
-                <p className={`text-center font-bold capitalize text-lg ${
-                  ['white', 'yellow', 'gold'].includes(color.meaning) ? 'text-gray-800' : 'text-white'
-                }`}>
+                <p className={`text-center font-bold capitalize text-lg ${isDark ? 'text-white' : 'text-gray-800'}`}>
                   {color.meaning}
                 </p>
                 
-                {isRated && (
+                {/* Show Hebrew when expanded */}
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <p className={`text-2xl font-bold text-center ${isDark ? 'text-cyan-300' : 'text-purple-700'}`} dir="rtl">
+                        {color.hebrew}
+                      </p>
+                      <p className={`text-sm text-center ${isDark ? 'text-white/80' : 'text-gray-600'}`}>
+                        {color.transliteration}
+                      </p>
+                      
+                      {/* Rating buttons */}
+                      <div className="flex gap-1 justify-center mt-3">
+                        {[1, 2, 3, 4, 5].map((num) => (
+                          <button
+                            key={num}
+                            onClick={(e) => { e.stopPropagation(); handleRating(color, num); }}
+                            className={`w-8 h-8 rounded-lg font-bold text-sm transition-all ${
+                              rating === num
+                                ? num === 5 
+                                  ? "bg-green-500 text-white" 
+                                  : "bg-cyan-500 text-white"
+                                : isDark
+                                  ? "bg-white/20 text-white hover:bg-white/30"
+                                  : "bg-black/20 text-gray-800 hover:bg-black/30"
+                            }`}
+                          >
+                            {num}
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                
+                {isRated && !isExpanded && (
                   <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white text-xs font-bold">
                     {rating}
                   </div>
                 )}
-              </motion.button>
+              </motion.div>
             );
           })}
         </div>
-
-        {/* Selected Color Detail */}
-        <AnimatePresence>
-          {selectedColor && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-              onClick={() => setSelectedColor(null)}
-            >
-              <motion.div
-                initial={{ scale: 0.9 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0.9 }}
-                onClick={(e) => e.stopPropagation()}
-                className="bg-slate-900 border border-white/20 rounded-2xl p-6 w-full max-w-sm"
-              >
-                {/* Color swatch */}
-                <div 
-                  className="w-24 h-24 rounded-2xl mx-auto mb-4 shadow-lg"
-                  style={{ backgroundColor: selectedColor.color }}
-                />
-                
-                <div className="text-center mb-6">
-                  <p className="text-white/60 text-sm mb-1 capitalize">{selectedColor.meaning}</p>
-                  <p className="text-4xl font-bold text-cyan-400" dir="rtl">{selectedColor.hebrew}</p>
-                  <p className="text-white/80 text-lg">{selectedColor.transliteration}</p>
-                </div>
-
-                {/* Rating */}
-                <p className="text-white/60 text-sm text-center mb-3">How well do you know this color?</p>
-                <div className="flex gap-2 justify-center mb-4">
-                  {[1, 2, 3, 4, 5].map((num) => {
-                    const currentRating = colorRatings[selectedColor.meaning];
-                    return (
-                      <motion.button
-                        key={num}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleRating(selectedColor, num)}
-                        className={`w-12 h-12 rounded-xl font-bold transition-all ${
-                          currentRating === num
-                            ? num === 5 
-                              ? "bg-green-500 text-white" 
-                              : "bg-cyan-500 text-white"
-                            : "bg-white/10 text-white/60 hover:bg-white/20"
-                        }`}
-                      >
-                        {num}
-                      </motion.button>
-                    );
-                  })}
-                </div>
-
-                <Button
-                  onClick={() => setSelectedColor(null)}
-                  variant="outline"
-                  className="w-full border-white/20 text-white hover:bg-white/10"
-                >
-                  Close
-                </Button>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* Complete button */}
         {ratedCount === colors.length && (
