@@ -345,6 +345,15 @@ export default function Home() {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
+                      // Parse duration to get minutes
+                      const durationMatch = activity.duration.match(/(\d+)\s*(minute|hour)/i);
+                      if (durationMatch) {
+                        const amount = parseInt(durationMatch[1]);
+                        const unit = durationMatch[2].toLowerCase();
+                        const minutes = unit === 'hour' ? amount * 60 : amount;
+                        startTimer(minutes);
+                      }
+                      
                       if (activity.id === "baby_words") {
                         setSelectedActivity(activity);
                       } else {
