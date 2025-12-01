@@ -411,30 +411,14 @@ export default function Backpack() {
       <Dialog open={!!activeNewWord} onOpenChange={() => setActiveNewWord(null)}>
         <DialogContent className="bg-slate-900 border-white/20 text-white max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Rate: {activeNewWord?.word}</DialogTitle>
+            <DialogTitle className="text-center">
+              <span className="text-white/70 text-lg block" dir="rtl">{activeNewWord?.hebrew}</span>
+              <span className="text-cyan-400 text-2xl">{activeNewWord?.word}</span>
+              <span className="text-white/60 text-lg block">= {activeNewWord?.meaning}</span>
+            </DialogTitle>
           </DialogHeader>
           
-          <p className="text-white/60">= {activeNewWord?.meaning}</p>
-          
-          {/* Rating */}
-          <div className="flex gap-2 justify-center my-4">
-            {[1, 2, 3, 4, 5].map((num) => (
-              <motion.button
-                key={num}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleNewWordRate(num)}
-                className={`w-12 h-12 rounded-xl font-bold ${
-                  num === 5 ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
-                  : "bg-white/20 text-white/80 hover:bg-white/30"
-                }`}
-              >
-                {num}{num === 5 && "⭐"}
-              </motion.button>
-            ))}
-          </div>
-
-          {/* Mnemonic section */}
+          {/* Mnemonic section - First */}
           <p className="text-white/60 text-sm mb-2">Describe your own picture to remember this word:</p>
 
           {/* Custom input */}
@@ -480,6 +464,25 @@ export default function Backpack() {
               </div>
             </div>
           )}
+
+          {/* Rating - After picture */}
+          <p className="text-white/60 text-sm mb-2 text-center">How well do you know this word?</p>
+          <div className="flex gap-2 justify-center mb-4">
+            {[1, 2, 3, 4, 5].map((num) => (
+              <motion.button
+                key={num}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleNewWordRate(num)}
+                className={`w-12 h-12 rounded-xl font-bold ${
+                  num === 5 ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+                  : "bg-white/20 text-white/80 hover:bg-white/30"
+                }`}
+              >
+                {num}{num === 5 && "⭐"}
+              </motion.button>
+            ))}
+          </div>
 
           {/* Next Word button */}
           <Button onClick={finishNewWord} className="w-full bg-gradient-to-r from-green-500 to-emerald-500">
