@@ -130,20 +130,21 @@ export default function Backpack() {
     if (!activeNewWord) return;
     
     await createWordMutation.mutateAsync({
-      word: activeNewWord.word,
+      word: activeNewWord.hebrew || activeNewWord.word,
       translation: activeNewWord.meaning,
       phonetic: activeNewWord.word,
       category: "wordbank",
       times_practiced: rating,
       mastered: rating >= 5,
+      image_url: newWordImage || null,
     });
 
     if (rating >= 5) {
       toast.success("Added to Fluent! ⭐");
-      finishNewWord();
     } else {
-      generateMnemonics(activeNewWord);
+      toast.success("Word saved!");
     }
+    finishNewWord();
   };
 
 
