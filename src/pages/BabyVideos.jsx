@@ -867,13 +867,18 @@ Create about 15-20 conversational lines that naturally introduce and use these v
             {/* Add Custom Video Section */}
             <div 
               className={`bg-white/5 backdrop-blur-xl rounded-2xl border-2 border-dashed ${isDragging ? 'border-cyan-400 bg-cyan-500/10' : 'border-white/20'} p-6 text-center transition-all`}
-              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-              onDragLeave={() => setIsDragging(false)}
+              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+              onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+              onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
               onDrop={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 setIsDragging(false);
-                const text = e.dataTransfer.getData('text');
-                if (text) setCustomVideoUrl(text);
+                const text = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text');
+                if (text) {
+                  setCustomVideoUrl(text);
+                  toast.success("Link dropped! Click + to add.");
+                }
               }}
             >
               <p className="text-white/60 mb-3">🎬 Drag a YouTube link here or paste below</p>
