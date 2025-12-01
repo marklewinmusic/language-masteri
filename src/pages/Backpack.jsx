@@ -216,11 +216,39 @@ export default function Backpack() {
       <GameHeader profile={userProfile} coins={0} onBuyCoins={() => {}} />
 
       <div className="max-w-4xl mx-auto px-4 py-6">
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center gap-4 mb-4">
           <Link to={createPageUrl("Home")} className="text-white/60 hover:text-white">
             <ArrowLeft className="w-6 h-6" />
           </Link>
           <h1 className="text-3xl font-bold text-white">🎒 My Backpack</h1>
+        </div>
+
+        {/* Quick Actions - Top */}
+        <div className="grid grid-cols-4 gap-2 mb-6">
+          <Link to={createPageUrl("Home")}>
+            <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10 h-auto py-2 flex-col">
+              <Gamepad2 className="w-4 h-4 mb-1" />
+              <span className="text-xs">Home</span>
+            </Button>
+          </Link>
+          <Link to={createPageUrl("BabyVideos")}>
+            <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10 h-auto py-2 flex-col">
+              <span className="text-sm mb-1">📺</span>
+              <span className="text-xs">Videos</span>
+            </Button>
+          </Link>
+          <Link to={createPageUrl("Practice")}>
+            <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10 h-auto py-2 flex-col">
+              <span className="text-sm mb-1">📚</span>
+              <span className="text-xs">Practice</span>
+            </Button>
+          </Link>
+          <Link to={createPageUrl("Library")}>
+            <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10 h-auto py-2 flex-col">
+              <span className="text-sm mb-1">📖</span>
+              <span className="text-xs">Library</span>
+            </Button>
+          </Link>
         </div>
 
         {/* Tabs */}
