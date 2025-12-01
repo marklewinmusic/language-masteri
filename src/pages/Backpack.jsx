@@ -458,14 +458,14 @@ export default function Backpack() {
             ))}
           </div>
 
-          {/* Mnemonics */}
+          {/* Mnemonic section */}
           {loadingMnemonics && (
             <div className="flex items-center gap-2 text-white/60 justify-center">
               <Loader2 className="w-4 h-4 animate-spin" /> Generating ideas...
             </div>
           )}
 
-          {newWordMnemonics && (
+          {!loadingMnemonics && (
             <>
               {/* Custom input */}
               <div className="flex gap-2 mb-3">
@@ -484,25 +484,38 @@ export default function Backpack() {
                 </Button>
               </div>
 
-              {/* Suggestions */}
+              {/* Generate ideas button + suggestions */}
               <div className="flex flex-wrap gap-2 mb-3">
-                {newWordMnemonics.map((s, i) => (
-                  <button
-                    key={i}
-                    onClick={() => generateImage(s.imagePrompt)}
-                    disabled={generatingImage}
-                    className="bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/50 rounded-lg px-3 py-1.5 text-purple-300 text-sm transition-all"
+                {!newWordMnemonics ? (
+                  <Button
+                    onClick={() => generateMnemonics(activeNewWord)}
+                    disabled={loadingMnemonics}
+                    variant="outline"
+                    className="border-purple-500/50 text-purple-300 hover:bg-purple-500/20"
                   >
-                    {s.phrase}
-                  </button>
-                ))}
-                <button
-                  onClick={() => generateMnemonics(activeNewWord)}
-                  disabled={loadingMnemonics}
-                  className="bg-white/10 hover:bg-white/20 rounded-lg px-2 py-1.5 text-white/60 text-sm"
-                >
-                  🔄
-                </button>
+                    <Wand2 className="w-4 h-4 mr-2" /> Generate Ideas
+                  </Button>
+                ) : (
+                  <>
+                    {newWordMnemonics.map((s, i) => (
+                      <button
+                        key={i}
+                        onClick={() => generateImage(s.imagePrompt)}
+                        disabled={generatingImage}
+                        className="bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/50 rounded-lg px-3 py-1.5 text-purple-300 text-sm transition-all"
+                      >
+                        {s.phrase}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => generateMnemonics(activeNewWord)}
+                      disabled={loadingMnemonics}
+                      className="bg-white/10 hover:bg-white/20 rounded-lg px-2 py-1.5 text-white/60 text-sm"
+                    >
+                      🔄
+                    </button>
+                  </>
+                )}
               </div>
 
               {/* Generated Image */}
