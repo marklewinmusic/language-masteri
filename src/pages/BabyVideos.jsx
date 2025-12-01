@@ -369,6 +369,7 @@ export default function BabyVideos() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [expandedVideoId, setExpandedVideoId] = useState(null);
+  const [showVocabForVideo, setShowVocabForVideo] = useState(null);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [backpackOpen, setBackpackOpen] = useState(false);
   const [showFluent, setShowFluent] = useState(false);
@@ -380,6 +381,8 @@ export default function BabyVideos() {
   const [exerciseResults, setExerciseResults] = useState(null);
   const [fullTranscripts, setFullTranscripts] = useState({});
   const [loadingTranscript, setLoadingTranscript] = useState(null);
+  const [customVideoUrl, setCustomVideoUrl] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
 
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile'],
@@ -416,6 +419,42 @@ export default function BabyVideos() {
     mutationFn: ({ id, data }) => base44.entities.Word.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wordRatings'] }),
   });
+
+  const deleteWordMutation = useMutation({
+    mutationFn: (id) => base44.entities.Word.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wordRatings'] }),
+  });
+
+  const removeFromBackpack = async (word) => {
+    const existingWord = wordRatings.find(w => w.word === word.hebrew || w.word === word);
+    if (existingWord) {
+      await deleteWordMutation.mutateAsync(existingWord.id);
+      toast.success("Removed from backpack");
+    }
+  };
+
+  const addTranscriptWordToBackpack = async (line) => {
+    const existingWord = wordRatings.find(w => w.word === line.hebrew);
+    if (existingWord) {
+      toast.info("Already in backpack!");
+      return;
+    }
+    await createWordMutation.mutateAsync({
+      word: line.hebrew,
+      translation: line.english,
+      phonetic: line.transliteration,
+      category: "wordbank",
+      times_practiced: 1,
+      mastered: false,
+    });
+    toast.success(`Added "${line.transliteration}" to backpack! 🎒`);
+  };
+
+  // Extract YouTube ID from URL
+  const extractYouTubeId = (url) => {
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+    return match ? match[1] : null;
+  };
 
   const getWordRating = (hebrew) => {
     const found = wordRatings.find(w => w.word === hebrew);
@@ -825,11 +864,48 @@ Create about 15-20 conversational lines that naturally introduce and use these v
           </motion.div>
         ) : (
           <div className="space-y-4">
+            {/* Add Custom Video Section */}
+            <div 
+              className={`bg-white/5 backdrop-blur-xl rounded-2xl border-2 border-dashed ${isDragging ? 'border-cyan-400 bg-cyan-500/10' : 'border-white/20'} p-6 text-center transition-all`}
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragging(false);
+                const text = e.dataTransfer.getData('text');
+                if (text) setCustomVideoUrl(text);
+              }}
+            >
+              <p className="text-white/60 mb-3">🎬 Drag a YouTube link here or paste below</p>
+              <div className="flex gap-2">
+                <Input
+                  value={customVideoUrl}
+                  onChange={(e) => setCustomVideoUrl(e.target.value)}
+                  placeholder="Paste YouTube URL..."
+                  className="bg-white/10 border-white/20 text-white"
+                />
+                <Button
+                  onClick={() => {
+                    const ytId = extractYouTubeId(customVideoUrl);
+                    if (ytId) {
+                      toast.success("Video added! Feature coming soon.");
+                      setCustomVideoUrl("");
+                    } else {
+                      toast.error("Invalid YouTube URL");
+                    }
+                  }}
+                  className="bg-cyan-500"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
             {level1Videos.map((video) => {
               const isExpanded = expandedVideoId === video.id;
               const hasTranscript = fullTranscripts[video.id];
               const isLoading = loadingTranscript === video.id;
-              const [showVocab, setShowVocab] = React.useState(false);
+              const showingVocab = showVocabForVideo === video.id;
               
               return (
                 <div
@@ -841,6 +917,7 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                     onClick={() => {
                       const newExpanded = expandedVideoId === video.id ? null : video.id;
                       setExpandedVideoId(newExpanded);
+                      if (newExpanded !== video.id) setShowVocabForVideo(null);
                       // Auto-generate transcript when expanding
                       if (newExpanded && !fullTranscripts[video.id] && loadingTranscript !== video.id) {
                         generateFullTranscript(video);
@@ -907,29 +984,42 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                       )}
 
                       {hasTranscript && (
-                        <div className="space-y-2 max-h-64 overflow-y-auto bg-white/5 rounded-xl p-3">
-                          <p className="text-white/50 text-xs font-medium mb-2">📝 Full Transcript:</p>
-                          {fullTranscripts[video.id].map((line, idx) => (
-                            <div key={idx} className="bg-white/5 rounded-lg p-2">
-                              <p className="text-cyan-400 font-bold" dir="rtl">{line.hebrew}</p>
-                              <p className="text-white/60 text-xs">{line.transliteration} — {line.english}</p>
-                            </div>
-                          ))}
+                        <div className="space-y-1 max-h-64 overflow-y-auto bg-white/5 rounded-xl p-3">
+                          <p className="text-white/50 text-xs font-medium mb-2">📝 Full Transcript (tap any line to add):</p>
+                          {fullTranscripts[video.id].map((line, idx) => {
+                            const inBackpack = wordRatings.find(w => w.word === line.hebrew);
+                            return (
+                              <button
+                                key={idx}
+                                onClick={() => addTranscriptWordToBackpack(line)}
+                                className={`w-full text-left rounded-lg p-2 transition-all ${
+                                  inBackpack 
+                                    ? "bg-green-500/10 border border-green-500/30" 
+                                    : "bg-white/5 hover:bg-white/10 border border-transparent hover:border-cyan-400/50"
+                                }`}
+                              >
+                                <p className="text-cyan-400 font-bold leading-tight" dir="rtl">{line.hebrew}</p>
+                                <p className="text-white/70 text-xs leading-tight">{line.transliteration}</p>
+                                <p className="text-white/50 text-xs leading-tight">{line.english}</p>
+                                {inBackpack && <span className="text-green-400 text-xs">✓ in backpack</span>}
+                              </button>
+                            );
+                          })}
                         </div>
                       )}
 
                       {/* Vocab Button */}
                       <button
-                        onClick={() => setExpandedVideoId(expandedVideoId === `vocab-${video.id}` ? video.id : `vocab-${video.id}`)}
-                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white py-3 rounded-xl font-bold"
+                        onClick={() => setShowVocabForVideo(showingVocab ? null : video.id)}
+                        className={`w-full flex items-center justify-center gap-2 ${showingVocab ? 'bg-amber-600' : 'bg-gradient-to-r from-amber-500 to-orange-500'} text-white py-3 rounded-xl font-bold`}
                       >
                         <BookOpen className="w-5 h-5" />
-                        📚 Show Vocabulary ({video.transcript.length} words)
+                        {showingVocab ? '📚 Hide Vocabulary' : `📚 Show Vocabulary (${video.transcript.length} words)`}
                       </button>
 
                       {/* Vocabulary Words - Inline */}
-                      {expandedVideoId === `vocab-${video.id}` && (
-                        <div className="bg-white/5 rounded-xl p-4 space-y-2">
+                      {showingVocab && (
+                        <div className="bg-white/5 rounded-xl p-4 space-y-2 max-h-80 overflow-y-auto">
                           {video.transcript.map((item, idx) => {
                             const inBackpack = wordRatings.find(w => w.word === item.hebrew);
                             return (
@@ -941,18 +1031,26 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                               >
                                 <div>
                                   <span className="text-cyan-400 font-bold text-lg" dir="rtl">{item.hebrew}</span>
-                                  <p className="text-white/60 text-sm">{item.transliteration} = {item.meaning}</p>
+                                  <p className="text-white/70 text-sm">{item.transliteration}</p>
+                                  <p className="text-white/50 text-xs">{item.meaning}</p>
                                 </div>
-                                {!inBackpack ? (
-                                  <button
-                                    onClick={() => addToBackpack(item)}
-                                    className="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-lg text-sm hover:bg-amber-500/30"
-                                  >
-                                    + Add
-                                  </button>
-                                ) : (
-                                  <span className="text-green-400 text-sm">✓ Added</span>
-                                )}
+                                <div className="flex items-center gap-2">
+                                  {inBackpack ? (
+                                    <button
+                                      onClick={() => removeFromBackpack(item)}
+                                      className="px-3 py-1 bg-red-500/20 text-red-400 rounded-lg text-sm hover:bg-red-500/30"
+                                    >
+                                      ✕ Remove
+                                    </button>
+                                  ) : (
+                                    <button
+                                      onClick={() => addToBackpack(item)}
+                                      className="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-lg text-sm hover:bg-amber-500/30"
+                                    >
+                                      + Add
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             );
                           })}
