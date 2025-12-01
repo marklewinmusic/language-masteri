@@ -96,6 +96,11 @@ export default function Home() {
     queryFn: () => base44.entities.ActivityProgress.list(),
   });
 
+  const { data: lessonProgress = [] } = useQuery({
+    queryKey: ['lessonProgress'],
+    queryFn: () => base44.entities.LessonProgress.list(),
+  });
+
   const updateCoinsMutation = useMutation({
     mutationFn: (data) => base44.entities.UserCoins.update(userCoins?.id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['userCoins'] }),
