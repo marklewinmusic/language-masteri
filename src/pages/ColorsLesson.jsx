@@ -322,6 +322,36 @@ export default function ColorsLesson() {
               })}
             </div>
 
+            {/* Color Sentences Game - Unlocked after game complete */}
+            <Button
+              onClick={generateSentences}
+              disabled={loadingSentences}
+              className="w-full py-4 mb-3 bg-gradient-to-r from-purple-500 to-pink-500"
+            >
+              {loadingSentences ? (
+                <Loader2 className="w-5 h-5 animate-spin mr-2" />
+              ) : (
+                <>📝 Color Sentences Game</>
+              )}
+            </Button>
+
+            {/* Sentences Display */}
+            {sentences && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 space-y-2 max-h-60 overflow-y-auto"
+              >
+                {sentences.map((s, idx) => (
+                  <div key={idx} className="bg-white/5 border border-white/10 rounded-xl p-3">
+                    <p className="text-cyan-400 text-lg font-bold" dir="rtl">{s.hebrew}</p>
+                    <p className="text-white/70 text-sm">{s.transliteration}</p>
+                    <p className="text-white/50 text-xs">{s.english}</p>
+                  </div>
+                ))}
+              </motion.div>
+            )}
+
             <div className="flex gap-3">
               <Button
                 onClick={startGame}
