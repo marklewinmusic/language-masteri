@@ -42,6 +42,8 @@ export default function ColorsLesson() {
   const [gameCompleted, setGameCompleted] = useState(false); // track if game was completed
   const [sentences, setSentences] = useState(null);
   const [loadingSentences, setLoadingSentences] = useState(false);
+  const [videoWatched, setVideoWatched] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -109,7 +111,8 @@ export default function ColorsLesson() {
 
   const ratedCount = Object.keys(colorRatings).length;
   const allRated = ratedCount === colors.length;
-  const canPlayGame = allRated;
+  const canWatchVideo = allRated;
+  const canPlayGame = allRated && videoWatched;
   const canSeeSentences = gameCompleted;
 
   const generateMnemonic = async (color) => {
@@ -288,6 +291,30 @@ export default function ColorsLesson() {
         {/* Game Mode */}
         {gameMode && !gameComplete ? (
           <div className="space-y-6">
+            {/* Show Color Sentences Game button while playing */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+              <Button
+                onClick={() => {
+                  if (!canSeeSentences) {
+                    toast.error("Complete the Color Game first to unlock this!");
+                  } else {
+                    generateSentences();
+                  }
+                }}
+                disabled={loadingSentences}
+                className={`w-full py-3 ${
+                  canSeeSentences 
+                    ? "bg-gradient-to-r from-purple-500 to-pink-500" 
+                    : "bg-white/10 text-white/40"
+                }`}
+              >
+                {loadingSentences ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <>📝 Color Sentences Game {!canSeeSentences && "🔒"}</>
+                )}
+              </Button>
+            </div>
             {/* Progress */}
             <div>
               <div className="flex justify-between text-white/60 text-sm mb-2">
@@ -605,16 +632,62 @@ export default function ColorsLesson() {
               })}
             </div>
 
-            {/* Color Game Button - Unlocks after all rated */}
+            {/* Video + Games Container */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-6 bg-white/5 border border-white/10 rounded-xl p-4"
+              className="mt-6 bg-white/5 border border-white/10 rounded-xl p-4 space-y-3"
             >
+              {/* Watch Video Button */}
               <Button
                 onClick={() => {
-                  if (!canPlayGame) {
-                    toast.error("Rate all colors above first to unlock this game!");
+                  if (!canWatchVideo) {
+                    toast.error("Rate all colors above first to unlock the video!");
+                  } else {
+                    setShowVideo(true);
+                  }
+                }}
+                className={`w-full py-6 text-lg ${
+                  canWatchVideo 
+                    ? videoWatched 
+                      ? "bg-green-600" 
+                      : "bg-gradient-to-r from-red-500 to-pink-500"
+                    : "bg-white/10 text-white/40"
+                }`}
+              >
+                {videoWatched ? "✓ Video Watched" : <>📺 Watch Colors Video {!canWatchVideo && "🔒"}</>}
+              </Button>
+
+              {/* Video Player */}
+              {showVideo && (
+                <div className="relative">
+                  <div className="aspect-video rounded-xl overflow-hidden">
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      src="https://www.youtube.com/embed/ZjtnyqA2kc4?autoplay=1"
+                      title="Colors Video"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                  <Button
+                    onClick={() => { setVideoWatched(true); setShowVideo(false); }}
+                    className="w-full mt-2 bg-gradient-to-r from-green-500 to-emerald-500"
+                  >
+                    ✓ I watched the video - Continue
+                  </Button>
+                </div>
+              )}
+
+              {/* Color Game Button */}
+              <Button
+                onClick={() => {
+                  if (!canWatchVideo) {
+                    toast.error("Rate all colors above first!");
+                  } else if (!videoWatched) {
+                    toast.error("Watch the video above first to unlock the Color Game!");
                   } else {
                     startGame();
                   }
@@ -628,17 +701,19 @@ export default function ColorsLesson() {
                 🎮 Color Game {!canPlayGame && "🔒"}
               </Button>
 
-              {/* Color Sentences Game - nested, unlocks after Color Game completed */}
+              {/* Color Sentences Game */}
               <Button
                 onClick={() => {
-                  if (!canSeeSentences) {
-                    toast.error("Complete the Color Game above first to unlock this!");
+                  if (!canPlayGame) {
+                    toast.error("Complete the Color Game first to unlock this!");
+                  } else if (!canSeeSentences) {
+                    toast.error("Complete the Color Game first to unlock this!");
                   } else {
                     generateSentences();
                   }
                 }}
                 disabled={loadingSentences}
-                className={`w-full py-4 text-md mt-3 ${
+                className={`w-full py-4 text-md ${
                   canSeeSentences 
                     ? "bg-gradient-to-r from-purple-500 to-pink-500" 
                     : "bg-white/10 text-white/40"
