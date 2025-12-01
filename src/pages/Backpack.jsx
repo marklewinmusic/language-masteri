@@ -20,8 +20,7 @@ export default function Backpack() {
   const [loadingSentences, setLoadingSentences] = useState(false);
   const [newWords, setNewWords] = useState([]);
   const [activeNewWord, setActiveNewWord] = useState(null);
-  const [newWordMnemonics, setNewWordMnemonics] = useState(null);
-  const [loadingMnemonics, setLoadingMnemonics] = useState(false);
+
   const [newWordImage, setNewWordImage] = useState(null);
   const [generatingImage, setGeneratingImage] = useState(false);
   const [newWordCustomMnemonic, setNewWordCustomMnemonic] = useState("");
