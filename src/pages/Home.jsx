@@ -61,8 +61,6 @@ const levels = [
   { id: 5, name: "Level 5", subtitle: "Master", icon: Star, gradient: "from-purple-500 to-violet-500", activities: [] },
 ];
 
-const MASTER_EMAILS = ["master@example.com", "admin@base44.com"]; // Add master user emails here
-
 export default function Home() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -73,20 +71,21 @@ export default function Home() {
   const [timer, setTimer] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerSpeed, setTimerSpeed] = useState(1);
-  const [currentUserEmail, setCurrentUserEmail] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
 
-  // Get current user email
+  // Get current user
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const user = await base44.auth.me();
-        setCurrentUserEmail(user?.email);
+        setCurrentUser(user);
       } catch (e) {}
     };
     fetchUser();
   }, []);
 
-  const isMasterUser = MASTER_EMAILS.includes(currentUserEmail);
+  // Master user = admin role OR specific emails
+  const isMasterUser = currentUser?.role === 'admin';
 
   const { data: userProfile, isLoading: profileLoading } = useQuery({
     queryKey: ['userProfile'],
