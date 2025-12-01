@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,6 +9,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import GameHeader from "../components/game/GameHeader";
 import QuickAddWordWidget from "../components/QuickAddWordWidget";
+import { Input } from "@/components/ui/input";
 
 const colors = [
   { hebrew: "אָדוֹם", transliteration: "adom", meaning: "red", color: "#EF4444" },
@@ -34,6 +35,10 @@ export default function ColorsLesson() {
   const [colorScores, setColorScores] = useState({}); // tracks correct answers per color
   const [showResult, setShowResult] = useState(null);
   const [gameComplete, setGameComplete] = useState(false);
+  const [mnemonicOpen, setMnemonicOpen] = useState(null); // which color has mnemonic input open
+  const [mnemonicText, setMnemonicText] = useState("");
+  const [mnemonicImages, setMnemonicImages] = useState({}); // store generated images per color
+  const [generatingImage, setGeneratingImage] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -100,6 +105,25 @@ export default function ColorsLesson() {
   };
 
   const ratedCount = Object.keys(colorRatings).length;
+
+  const generateMnemonic = async (color) => {
+    if (!mnemonicText.trim()) return;
+    setGeneratingImage(true);
+    try {
+      const result = await base44.integrations.Core.GenerateImage({
+        prompt: `A colorful, memorable mnemonic illustration: ${mnemonicText}. 
+        For learning the Hebrew word for "${color.meaning}" (${color.transliteration}).
+        Cartoon style, vibrant colors, educational, fun and memorable.`
+      });
+      setMnemonicImages(prev => ({ ...prev, [color.meaning]: result.url }));
+      toast.success("Mnemonic image created!");
+      setMnemonicOpen(null);
+      setMnemonicText("");
+    } catch (e) {
+      toast.error("Failed to generate image");
+    }
+    setGeneratingImage(false);
+  };
 
   // Generate 5 questions per color (60 total), shuffled
   const startGame = () => {
@@ -396,11 +420,13 @@ export default function ColorsLesson() {
                 const isRated = colorRatings[color.meaning] !== undefined;
                 const rating = colorRatings[color.meaning];
                 const isDark = !['white', 'yellow', 'gold'].includes(color.meaning);
+                const hasMnemonic = mnemonicImages[color.meaning];
+                const isMnemonicOpen = mnemonicOpen === color.meaning;
                 
                 return (
                   <div
                     key={color.meaning}
-                    onClick={() => setSelectedColor(isExpanded ? null : color)}
+                    onClick={() => { if (!isMnemonicOpen) setSelectedColor(isExpanded ? null : color); }}
                     className={`relative rounded-2xl p-3 border-2 cursor-pointer min-h-[140px] flex flex-col justify-between ${
                       isRated 
                         ? "border-green-500/50" 
@@ -410,9 +436,72 @@ export default function ColorsLesson() {
                     }`}
                     style={{ backgroundColor: color.color }}
                   >
+                    {/* Mnemonic button - top right */}
+                    <button
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        setMnemonicOpen(isMnemonicOpen ? null : color.meaning);
+                        setMnemonicText("");
+                      }}
+                      className={`absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-sm transition-all ${
+                        hasMnemonic 
+                          ? "bg-purple-500 shadow-lg" 
+                          : isDark 
+                            ? "bg-white/20 hover:bg-white/30" 
+                            : "bg-black/20 hover:bg-black/30"
+                      }`}
+                      title="Add mnemonic"
+                    >
+                      🖼️
+                    </button>
+
                     <p className={`text-center font-bold capitalize text-lg ${isDark ? 'text-white' : 'text-gray-800'}`}>
                       {color.meaning}
                     </p>
+                    
+                    {/* Mnemonic input */}
+                    {isMnemonicOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute inset-0 bg-slate-900/95 rounded-2xl p-3 flex flex-col z-10"
+                      >
+                        <p className="text-white text-xs mb-2">Describe your mnemonic:</p>
+                        <Input
+                          value={mnemonicText}
+                          onChange={(e) => setMnemonicText(e.target.value)}
+                          placeholder="e.g. A red apple..."
+                          className="bg-white/10 border-white/20 text-white text-xs h-8 mb-2"
+                          autoFocus
+                        />
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            onClick={() => generateMnemonic(color)}
+                            disabled={!mnemonicText.trim() || generatingImage}
+                            className="flex-1 bg-purple-500 hover:bg-purple-600 h-7 text-xs"
+                          >
+                            {generatingImage ? <Loader2 className="w-3 h-3 animate-spin" /> : "Generate"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setMnemonicOpen(null)}
+                            className="border-white/20 text-white h-7 text-xs"
+                          >
+                            ✕
+                          </Button>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Show mnemonic image if exists */}
+                    {hasMnemonic && !isMnemonicOpen && (
+                      <div className="absolute top-8 right-1 w-10 h-10 rounded-lg overflow-hidden border border-white/30 shadow-lg">
+                        <img src={hasMnemonic} alt="mnemonic" className="w-full h-full object-cover" />
+                      </div>
+                    )}
                     
                     {/* Always reserve space, show content when expanded */}
                     <div className="flex-1 flex flex-col justify-center">
@@ -452,7 +541,7 @@ export default function ColorsLesson() {
                     </div>
                     
                     {isRated && (
-                      <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white text-xs font-bold">
+                      <div className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white text-xs font-bold">
                         {rating}
                       </div>
                     )}
