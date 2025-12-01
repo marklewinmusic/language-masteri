@@ -113,7 +113,8 @@ export default function ColorsLesson() {
       const result = await base44.integrations.Core.GenerateImage({
         prompt: `A colorful, memorable mnemonic illustration: ${mnemonicText}. 
         For learning the Hebrew word for "${color.meaning}" (${color.transliteration}).
-        Cartoon style, vibrant colors, educational, fun and memorable.`
+        Cartoon style, vibrant colors, fun and memorable.
+        IMPORTANT: Do NOT include any text, words, letters, or writing in the image. Pure illustration only.`
       });
       setMnemonicImages(prev => ({ ...prev, [color.meaning]: result.url }));
       toast.success("Mnemonic image created!");
