@@ -873,10 +873,12 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                 </div>
 
                 {/* Expanded Content - Only show when clicked */}
+                <AnimatePresence>
                 {selectedVideo?.id === video.id && (
                   <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
                     className="border-t border-white/10"
                   >
                     {/* Video Player */}
@@ -894,37 +896,39 @@ Create about 15-20 conversational lines that naturally introduce and use these v
 
                     <div className="p-4 space-y-4">
                       {/* Full Transcript Button & Content */}
-                      {!fullTranscripts[video.id] ? (
-                        <Button
-                          onClick={(e) => { e.stopPropagation(); generateFullTranscript(video); }}
-                          disabled={loadingTranscript === video.id}
-                          className="w-full bg-gradient-to-r from-purple-500 to-pink-500"
-                        >
-                          {loadingTranscript === video.id ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Generating transcript...
-                            </>
-                          ) : (
-                            <>
-                              <FileText className="w-4 h-4 mr-2" />
-                              📝 Show Full Transcript
-                            </>
-                          )}
-                        </Button>
-                      ) : (
-                        <div className="space-y-2">
-                          <p className="text-white/50 text-xs font-medium">📝 Full Transcript:</p>
-                          <div className="space-y-1 max-h-64 overflow-y-auto">
-                            {fullTranscripts[video.id].map((line, idx) => (
-                              <div key={idx} className="bg-white/5 rounded-lg p-2">
-                                <p className="text-cyan-400 font-bold" dir="rtl">{line.hebrew}</p>
-                                <p className="text-white/60 text-xs">{line.transliteration} — {line.english}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                      <div className="space-y-2">
+                        {!fullTranscripts[video.id] ? (
+                          <Button
+                            onClick={(e) => { e.stopPropagation(); generateFullTranscript(video); }}
+                            disabled={loadingTranscript === video.id}
+                            className="w-full bg-gradient-to-r from-purple-500 to-pink-500"
+                          >
+                            {loadingTranscript === video.id ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Generating transcript...
+                              </>
+                            ) : (
+                              <>
+                                <FileText className="w-4 h-4 mr-2" />
+                                📝 Generate Full Transcript
+                              </>
+                            )}
+                          </Button>
+                        ) : (
+                          <>
+                            <p className="text-white/50 text-xs font-medium">📝 Full Transcript:</p>
+                            <div className="space-y-1">
+                              {fullTranscripts[video.id].map((line, idx) => (
+                                <div key={idx} className="bg-white/5 rounded-lg p-2">
+                                  <p className="text-cyan-400 font-bold" dir="rtl">{line.hebrew}</p>
+                                  <p className="text-white/60 text-xs">{line.transliteration} — {line.english}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
                       
                       {/* Vocabulary Words */}
                       <div className="pt-3 border-t border-white/10">
@@ -953,6 +957,7 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                     </div>
                   </motion.div>
                 )}
+                </AnimatePresence>
               </motion.div>
             ))}
           </div>
