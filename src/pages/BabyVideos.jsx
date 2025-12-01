@@ -824,11 +824,11 @@ export default function BabyVideos() {
                   </div>
                 </div>
 
-                {/* Transcript Preview */}
+                {/* Full Transcript */}
                 <div className="border-t border-white/10 p-4">
-                  <p className="text-white/50 text-xs mb-2">📝 Tap words to add to backpack:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {video.transcript.slice(0, 8).map((item, idx) => {
+                  <p className="text-white/50 text-xs mb-2">📝 Tap words to add to backpack ({video.transcript.length} words):</p>
+                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
+                    {video.transcript.map((item, idx) => {
                       const inBackpack = wordRatings.find(w => w.word === item.hebrew);
                       return (
                         <button
@@ -847,9 +847,6 @@ export default function BabyVideos() {
                         </button>
                       );
                     })}
-                    {video.transcript.length > 8 && (
-                      <span className="text-white/40 text-xs self-center">+{video.transcript.length - 8} more</span>
-                    )}
                   </div>
                 </div>
               </motion.div>
