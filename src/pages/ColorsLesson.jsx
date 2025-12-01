@@ -45,8 +45,22 @@ export default function ColorsLesson() {
   const [loadingSentences, setLoadingSentences] = useState(false);
   const [videoWatched, setVideoWatched] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  // Get current user for master check
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await base44.auth.me();
+        setCurrentUser(user);
+      } catch (e) {}
+    };
+    fetchUser();
+  }, []);
+
+  const isMasterUser = currentUser?.role === 'admin';
 
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile'],
@@ -112,9 +126,9 @@ export default function ColorsLesson() {
 
   const ratedCount = Object.keys(colorRatings).length;
   const allRated = ratedCount === colors.length;
-  const canWatchVideo = allRated;
-  const canPlayGame = allRated && videoWatched;
-  const canSeeSentences = gameCompleted;
+  const canWatchVideo = isMasterUser || allRated;
+  const canPlayGame = isMasterUser || (allRated && videoWatched);
+  const canSeeSentences = isMasterUser || gameCompleted;
 
   const generateMnemonic = async (color) => {
     if (!mnemonicText.trim()) return;
