@@ -155,7 +155,7 @@ export default function ColorsLesson() {
                 </p>
                 
                 {/* Always reserve space, show content when expanded */}
-                <div className="flex-1 flex flex-col justify-center" onClick={(e) => e.stopPropagation()}>
+                <div className="flex-1 flex flex-col justify-center">
                   {isExpanded ? (
                     <>
                       <p className={`text-xl font-bold text-center ${isDark ? 'text-cyan-300' : 'text-purple-700'}`} dir="rtl">
