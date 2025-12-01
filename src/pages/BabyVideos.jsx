@@ -325,71 +325,228 @@ export default function BabyVideos() {
             </div>
 
             <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-white font-bold text-lg">📝 Rate the words you know</h3>
-                <p className="text-white/60 text-sm">5 = Fluent ⭐</p>
-              </div>
-              
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {selectedVideo.transcript.map((item, idx) => {
-                  const currentRating = getWordRating(item.hebrew);
-                  return (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                      className={`border rounded-xl p-4 flex items-center justify-between ${
-                        currentRating >= 5 
-                          ? "bg-green-500/10 border-green-500/30" 
-                          : "bg-white/5 border-white/10"
-                      }`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <span className="text-white/40 text-xs w-12">{item.time}</span>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <ClickableWord
-                              word={item.hebrew}
-                              transliteration={item.transliteration}
-                              translation={item.meaning}
-                              variant="hebrew"
-                              className="text-2xl text-cyan-400 font-bold"
-                            />
-                            {currentRating >= 5 && <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />}
+              {!showExercises ? (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-white font-bold text-lg">📝 Vocabulary - Tap + to add to backpack</h3>
+                    <p className="text-white/60 text-sm">5 = Fluent ⭐</p>
+                  </div>
+                  
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {selectedVideo.transcript.map((item, idx) => {
+                      const currentRating = getWordRating(item.hebrew);
+                      const inBackpack = wordRatings.find(w => w.word === item.hebrew);
+                      return (
+                        <motion.div
+                          key={idx}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: idx * 0.05 }}
+                          className={`border rounded-xl p-4 ${
+                            currentRating >= 5 
+                              ? "bg-green-500/10 border-green-500/30" 
+                              : "bg-white/5 border-white/10"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <span className="text-white/40 text-xs w-12">{item.time}</span>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-2xl text-cyan-400 font-bold" dir="rtl">{item.hebrew}</span>
+                                  {currentRating >= 5 && <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />}
+                                </div>
+                                <p className="text-white/60 text-sm">{item.transliteration} = {item.meaning}</p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              {!inBackpack && (
+                                <button
+                                  onClick={() => addToBackpack(item)}
+                                  className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 flex items-center justify-center transition-all"
+                                  title="Add to backpack"
+                                >
+                                  <Plus className="w-4 h-4" />
+                                </button>
+                              )}
+                              <div className="flex gap-1">
+                                {[1, 2, 3, 4, 5].map(num => (
+                                  <button
+                                    key={num}
+                                    onClick={() => handleRate(item, num)}
+                                    className={`w-8 h-8 rounded-lg text-sm font-bold transition-all hover:scale-110 ${
+                                      currentRating >= num 
+                                        ? num === 5 
+                                          ? "bg-green-500 text-white" 
+                                          : "bg-cyan-500 text-white"
+                                        : "bg-white/10 text-white/50 hover:bg-white/20"
+                                    }`}
+                                  >
+                                    {num}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
                           </div>
-                          <p className="text-white/60 text-sm">{item.transliteration} = {item.meaning}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map(num => (
-                          <button
-                            key={num}
-                            onClick={() => handleRate(item, num)}
-                            className={`w-8 h-8 rounded-lg text-sm font-bold transition-all hover:scale-110 ${
-                              currentRating >= num 
-                                ? num === 5 
-                                  ? "bg-green-500 text-white" 
-                                  : "bg-cyan-500 text-white"
-                                : "bg-white/10 text-white/50 hover:bg-white/20"
-                            }`}
-                          >
-                            {num}
-                          </button>
-                        ))}
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
 
-              <Button
-                onClick={finishVideo}
-                className="w-full mt-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold py-6 text-lg"
-              >
-                Done Watching (+{selectedVideo.coins} coins) ✓
-              </Button>
+                  <div className="flex gap-3 mt-6">
+                    {selectedVideo.exercises && selectedVideo.exercises.length > 0 && (
+                      <Button
+                        onClick={() => setShowExercises(true)}
+                        className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-6 text-lg"
+                      >
+                        <BookOpen className="w-5 h-5 mr-2" />
+                        Take Quiz ({selectedVideo.exercises.length} questions)
+                      </Button>
+                    )}
+                    <Button
+                      onClick={finishVideo}
+                      className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold py-6 text-lg"
+                    >
+                      Done (+{selectedVideo.coins} coins) ✓
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div>
+                  {!exerciseResults ? (
+                    <>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-white font-bold text-lg">📝 Exercise {currentExercise + 1}/{selectedVideo.exercises.length}</h3>
+                        <button onClick={() => setShowExercises(false)} className="text-white/60 hover:text-white">
+                          ✕
+                        </button>
+                      </div>
+
+                      {(() => {
+                        const exercise = selectedVideo.exercises[currentExercise];
+                        const answered = exerciseAnswers[currentExercise];
+                        
+                        return (
+                          <motion.div
+                            key={currentExercise}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="space-y-4"
+                          >
+                            <p className="text-white text-lg">{exercise.question}</p>
+                            
+                            {exercise.type === "multiple_choice" && (
+                              <div className="grid gap-2">
+                                {exercise.options.map((option, optIdx) => (
+                                  <button
+                                    key={optIdx}
+                                    onClick={() => !answered && checkExercise(currentExercise, optIdx)}
+                                    disabled={!!answered}
+                                    className={`w-full text-left p-4 rounded-xl border transition-all ${
+                                      answered
+                                        ? optIdx === exercise.correct
+                                          ? "bg-green-500/20 border-green-500 text-green-400"
+                                          : answered.answer === optIdx
+                                            ? "bg-red-500/20 border-red-500 text-red-400"
+                                            : "bg-white/5 border-white/10 text-white/40"
+                                        : "bg-white/5 border-white/20 text-white hover:bg-white/10 hover:border-cyan-400/50"
+                                    }`}
+                                  >
+                                    {option}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+
+                            {exercise.type === "fill_blank" && (
+                              <div className="space-y-3">
+                                <p className="text-cyan-400" dir="rtl">{exercise.hebrew}</p>
+                                <div className="flex gap-2">
+                                  <Input
+                                    value={fillBlankAnswer}
+                                    onChange={(e) => setFillBlankAnswer(e.target.value)}
+                                    placeholder="Your answer..."
+                                    disabled={!!answered}
+                                    className="bg-white/5 border-white/20 text-white"
+                                  />
+                                  {!answered && (
+                                    <Button onClick={() => checkExercise(currentExercise, fillBlankAnswer)}>
+                                      Check
+                                    </Button>
+                                  )}
+                                </div>
+                                {answered && (
+                                  <p className={answered.isCorrect ? "text-green-400" : "text-red-400"}>
+                                    {answered.isCorrect ? "Correct! ✓" : `Answer: ${exercise.answer}`}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+
+                            {exercise.type === "translate" && (
+                              <div className="space-y-3">
+                                <div className="flex gap-2">
+                                  <Input
+                                    value={translateAnswer}
+                                    onChange={(e) => setTranslateAnswer(e.target.value)}
+                                    placeholder="Type translation..."
+                                    disabled={!!answered}
+                                    className="bg-white/5 border-white/20 text-white"
+                                  />
+                                  {!answered && (
+                                    <Button onClick={() => checkExercise(currentExercise, translateAnswer)}>
+                                      Check
+                                    </Button>
+                                  )}
+                                </div>
+                                {answered && (
+                                  <p className={answered.isCorrect ? "text-green-400" : "text-yellow-400"}>
+                                    {answered.isCorrect ? "Correct! ✓" : `Expected: ${exercise.answer}`}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+
+                            <div className="flex gap-3 mt-6">
+                              {currentExercise > 0 && (
+                                <Button variant="outline" onClick={() => setCurrentExercise(prev => prev - 1)} className="border-white/20 text-white">
+                                  ← Back
+                                </Button>
+                              )}
+                              <div className="flex-1" />
+                              {currentExercise < selectedVideo.exercises.length - 1 ? (
+                                <Button onClick={() => { setCurrentExercise(prev => prev + 1); setFillBlankAnswer(""); setTranslateAnswer(""); }}>
+                                  Next <ChevronRight className="w-4 h-4 ml-1" />
+                                </Button>
+                              ) : (
+                                <Button onClick={finishExercises} className="bg-gradient-to-r from-green-500 to-emerald-500">
+                                  Finish Quiz
+                                </Button>
+                              )}
+                            </div>
+                          </motion.div>
+                        );
+                      })()}
+                    </>
+                  ) : (
+                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-8">
+                      <div className="text-6xl mb-4">{exerciseResults.correct === exerciseResults.total ? "🎉" : "👍"}</div>
+                      <h3 className="text-2xl font-bold text-white mb-2">
+                        {exerciseResults.correct}/{exerciseResults.total} Correct!
+                      </h3>
+                      <p className="text-white/60 mb-6">
+                        {exerciseResults.correct === exerciseResults.total 
+                          ? "Perfect score! You earned 25 bonus coins!" 
+                          : `You earned ${exerciseResults.correct * 5} coins`}
+                      </p>
+                      <Button onClick={finishVideo} className="bg-gradient-to-r from-green-500 to-emerald-500">
+                        Continue
+                      </Button>
+                    </motion.div>
+                  )}
+                </div>
+              )}
             </div>
           </motion.div>
         ) : (
