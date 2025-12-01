@@ -887,10 +887,6 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                   type="text"
                   value={customVideoUrl}
                   onChange={(e) => setCustomVideoUrl(e.target.value)}
-                  onPaste={(e) => {
-                    const pastedText = e.clipboardData.getData('text');
-                    setCustomVideoUrl(pastedText);
-                  }}
                   placeholder="Paste YouTube URL..."
                   className="flex-1 px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 outline-none focus:border-cyan-400"
                 />
