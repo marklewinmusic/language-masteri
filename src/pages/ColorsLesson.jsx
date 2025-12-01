@@ -605,42 +605,40 @@ export default function ColorsLesson() {
               })}
             </div>
 
-            {/* Start Game Button - Unlocks after all rated */}
+            {/* Color Game Button - Unlocks after all rated */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-6"
-            >
-              <Button
-                onClick={startGame}
-                disabled={!canPlayGame}
-                className={`w-full py-6 text-lg ${
-                  canPlayGame 
-                    ? "bg-gradient-to-r from-green-500 to-emerald-500" 
-                    : "bg-white/10 text-white/40 cursor-not-allowed"
-                }`}
-              >
-                {canPlayGame ? "🎮 Play Game to Test Knowledge" : "🔒 Rate all colors to unlock game"}
-              </Button>
-            </motion.div>
-
-            {/* Color Sentences Game Button - Unlocks after game completed */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="mt-3"
+              className="mt-6 bg-white/5 border border-white/10 rounded-xl p-4"
             >
               <Button
                 onClick={() => {
-                  if (canSeeSentences) {
-                    generateSentences();
+                  if (!canPlayGame) {
+                    toast.error("Rate all colors above first to unlock this game!");
                   } else {
+                    startGame();
+                  }
+                }}
+                className={`w-full py-6 text-lg ${
+                  canPlayGame 
+                    ? "bg-gradient-to-r from-green-500 to-emerald-500" 
+                    : "bg-white/10 text-white/40"
+                }`}
+              >
+                🎮 Color Game {!canPlayGame && "🔒"}
+              </Button>
+
+              {/* Color Sentences Game - nested, unlocks after Color Game completed */}
+              <Button
+                onClick={() => {
+                  if (!canSeeSentences) {
                     toast.error("Complete the Color Game above first to unlock this!");
+                  } else {
+                    generateSentences();
                   }
                 }}
                 disabled={loadingSentences}
-                className={`w-full py-6 text-lg ${
+                className={`w-full py-4 text-md mt-3 ${
                   canSeeSentences 
                     ? "bg-gradient-to-r from-purple-500 to-pink-500" 
                     : "bg-white/10 text-white/40"
