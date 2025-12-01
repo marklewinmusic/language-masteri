@@ -111,7 +111,7 @@ export default function Backpack() {
     setLoadingSentences(false);
   };
 
-  const addToNewWords = (word, meaning) => {
+  const addToNewWords = (word, meaning, hebrew) => {
     const exists = wordRatings.find(w => w.phonetic?.toLowerCase() === word.toLowerCase());
     if (exists) {
       toast.info("Already in backpack!");
@@ -122,7 +122,7 @@ export default function Backpack() {
       toast.info("Already added!");
       return;
     }
-    setNewWords(prev => [...prev, { word, meaning }]);
+    setNewWords(prev => [...prev, { word, meaning, hebrew }]);
     toast.success(`"${word}" added to New Words! 📝`);
   };
 
