@@ -198,27 +198,27 @@ export default function Backpack() {
         {/* Quick Actions - Top */}
         <div className="grid grid-cols-4 gap-2 mb-6">
           <Link to={createPageUrl("Home")}>
-            <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10 h-auto py-2 flex-col">
-              <Gamepad2 className="w-4 h-4 mb-1" />
-              <span className="text-xs">Home</span>
+            <Button variant="outline" className="w-full bg-white border-gray-200 text-black hover:bg-gray-100 h-auto py-2 flex-col">
+              <Gamepad2 className="w-4 h-4 mb-1 text-black" />
+              <span className="text-xs text-black">Home</span>
             </Button>
           </Link>
           <Link to={createPageUrl("BabyVideos")}>
-            <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10 h-auto py-2 flex-col">
+            <Button variant="outline" className="w-full bg-white border-gray-200 text-black hover:bg-gray-100 h-auto py-2 flex-col">
               <span className="text-sm mb-1">📺</span>
-              <span className="text-xs">Videos</span>
+              <span className="text-xs text-black">Videos</span>
             </Button>
           </Link>
           <Link to={createPageUrl("Practice")}>
-            <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10 h-auto py-2 flex-col">
+            <Button variant="outline" className="w-full bg-white border-gray-200 text-black hover:bg-gray-100 h-auto py-2 flex-col">
               <span className="text-sm mb-1">📚</span>
-              <span className="text-xs">Practice</span>
+              <span className="text-xs text-black">Practice</span>
             </Button>
           </Link>
           <Link to={createPageUrl("Library")}>
-            <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10 h-auto py-2 flex-col">
+            <Button variant="outline" className="w-full bg-white border-gray-200 text-black hover:bg-gray-100 h-auto py-2 flex-col">
               <span className="text-sm mb-1">📖</span>
-              <span className="text-xs">Library</span>
+              <span className="text-xs text-black">Library</span>
             </Button>
           </Link>
         </div>
