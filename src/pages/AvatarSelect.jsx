@@ -19,7 +19,7 @@ const avatars = [
 export default function AvatarSelect() {
   const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [avatarName, setAvatarName] = useState("");
-  const [difficultyLevel, setDifficultyLevel] = useState(null);
+  const [selectedLevel, setSelectedLevel] = useState(null);
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -37,7 +37,7 @@ export default function AvatarSelect() {
       setStep(2);
     } else if (step === 2 && avatarName.trim()) {
       setStep(3);
-    } else if (step === 3 && difficultyLevel) {
+    } else if (step === 3 && selectedLevel) {
       createProfileMutation.mutate({
         avatar_id: selectedAvatar.id,
         avatar_name: avatarName,
@@ -46,7 +46,7 @@ export default function AvatarSelect() {
         daily_streak: 0,
         badges: [],
         interests: selectedAvatar.traits,
-        difficulty_level: difficultyLevel,
+        difficulty_level: selectedLevel,
         total_words_learned: 0,
       });
     }
@@ -154,68 +154,33 @@ export default function AvatarSelect() {
             >
               <h2 className="text-2xl font-bold text-white text-center mb-6">Choose Your Level</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -5 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setDifficultyLevel("beginner")}
-                  className={`relative p-6 rounded-2xl border-2 transition-all ${
-                    difficultyLevel === "beginner"
-                      ? 'border-green-400 bg-white/20 shadow-lg shadow-green-500/30'
-                      : 'border-white/20 bg-white/5 hover:bg-white/10'
-                  }`}
-                >
-                  {difficultyLevel === "beginner" && (
-                    <motion.div
-                      layoutId="difficulty"
-                      className="absolute inset-0 rounded-2xl border-2 border-green-400"
-                    />
-                  )}
-                  <div className="text-5xl mb-3">🌱</div>
-                  <h3 className="text-white font-bold text-lg mb-2">Beginner</h3>
-                  <p className="text-white/60 text-sm">Start from scratch with simple words and phrases</p>
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -5 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setDifficultyLevel("intermediate")}
-                  className={`relative p-6 rounded-2xl border-2 transition-all ${
-                    difficultyLevel === "intermediate"
-                      ? 'border-yellow-400 bg-white/20 shadow-lg shadow-yellow-500/30'
-                      : 'border-white/20 bg-white/5 hover:bg-white/10'
-                  }`}
-                >
-                  {difficultyLevel === "intermediate" && (
-                    <motion.div
-                      layoutId="difficulty"
-                      className="absolute inset-0 rounded-2xl border-2 border-yellow-400"
-                    />
-                  )}
-                  <div className="text-5xl mb-3">🌿</div>
-                  <h3 className="text-white font-bold text-lg mb-2">Intermediate</h3>
-                  <p className="text-white/60 text-sm">Build on basics with conversations and grammar</p>
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -5 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setDifficultyLevel("advanced")}
-                  className={`relative p-6 rounded-2xl border-2 transition-all ${
-                    difficultyLevel === "advanced"
-                      ? 'border-purple-400 bg-white/20 shadow-lg shadow-purple-500/30'
-                      : 'border-white/20 bg-white/5 hover:bg-white/10'
-                  }`}
-                >
-                  {difficultyLevel === "advanced" && (
-                    <motion.div
-                      layoutId="difficulty"
-                      className="absolute inset-0 rounded-2xl border-2 border-purple-400"
-                    />
-                  )}
-                  <div className="text-5xl mb-3">🌳</div>
-                  <h3 className="text-white font-bold text-lg mb-2">Advanced</h3>
-                  <p className="text-white/60 text-sm">Master fluency with complex topics and nuances</p>
-                </motion.button>
+                {[
+                  { id: "beginner", name: "Beginner", icon: "🌱", desc: "Just starting out", color: "from-green-500 to-emerald-500" },
+                  { id: "intermediate", name: "Intermediate", icon: "🌿", desc: "Some knowledge", color: "from-blue-500 to-cyan-500" },
+                  { id: "advanced", name: "Advanced", icon: "🌳", desc: "Strong foundation", color: "from-purple-500 to-pink-500" },
+                ].map((level) => (
+                  <motion.button
+                    key={level.id}
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setSelectedLevel(level.id)}
+                    className={`relative p-6 rounded-2xl border-2 transition-all ${
+                      selectedLevel === level.id
+                        ? 'border-cyan-400 bg-white/20 shadow-lg shadow-cyan-500/30'
+                        : 'border-white/20 bg-white/5 hover:bg-white/10'
+                    }`}
+                  >
+                    {selectedLevel === level.id && (
+                      <motion.div
+                        layoutId="selected"
+                        className="absolute inset-0 rounded-2xl border-2 border-cyan-400"
+                      />
+                    )}
+                    <div className="text-6xl mb-3">{level.icon}</div>
+                    <h3 className="text-white font-bold text-xl mb-1">{level.name}</h3>
+                    <p className="text-white/60 text-sm">{level.desc}</p>
+                  </motion.button>
+                ))}
               </div>
             </motion.div>
           )}
@@ -237,11 +202,7 @@ export default function AvatarSelect() {
           )}
           <Button
             onClick={handleContinue}
-            disabled={
-              (step === 1 && !selectedAvatar) || 
-              (step === 2 && !avatarName.trim()) || 
-              (step === 3 && !difficultyLevel)
-            }
+            disabled={step === 1 ? !selectedAvatar : step === 2 ? !avatarName.trim() : !selectedLevel}
             className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white px-8 py-6 text-lg font-bold rounded-xl shadow-lg shadow-purple-500/30"
           >
             {step === 3 ? "Start Journey" : "Continue"}
