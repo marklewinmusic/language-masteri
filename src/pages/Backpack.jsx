@@ -22,7 +22,7 @@ export default function Backpack() {
   const [activeNewWord, setActiveNewWord] = useState(null);
   const [showAllEnglish, setShowAllEnglish] = useState(false);
   const [flippedCards, setFlippedCards] = useState({});
-  const [mnemonicWord, setMnemonicWord] = useState(null);
+  const [pictureWordId, setPictureWordId] = useState(null);
   const [mnemonicDescription, setMnemonicDescription] = useState("");
   const [generatingMnemonic, setGeneratingMnemonic] = useState(false);
 
@@ -87,22 +87,22 @@ export default function Backpack() {
     });
   };
 
-  const generateMnemonicForWord = async () => {
-    if (!mnemonicWord || !mnemonicDescription.trim()) return;
+  const generateMnemonicForWord = async (word) => {
+    if (!mnemonicDescription.trim()) return;
     setGeneratingMnemonic(true);
     try {
       const result = await base44.integrations.Core.GenerateImage({
         prompt: `A colorful, memorable mnemonic illustration: ${mnemonicDescription}. 
-        For learning Hebrew word "${mnemonicWord.phonetic}" meaning "${mnemonicWord.translation}".
+        For learning Hebrew word "${word.phonetic}" meaning "${word.translation}".
         Cartoon style, vibrant colors, educational, fun and memorable.
         NO TEXT OR WORDS in the image - purely visual.`
       });
       await updateWordMutation.mutateAsync({
-        id: mnemonicWord.id,
+        id: word.id,
         data: { image_url: result.url }
       });
       toast.success("Picture saved!");
-      setMnemonicWord(null);
+      setPictureWordId(null);
       setMnemonicDescription("");
     } catch (e) {
       toast.error("Failed to generate picture");
@@ -117,11 +117,11 @@ export default function Backpack() {
   const level5Words = wordRatings.filter(w => w.times_practiced >= 5);
 
   const tabs = [
-    { id: "level5", label: "Level 5", color: "green" },
-    { id: "level4", label: "Level 4", color: "blue" },
-    { id: "level3", label: "Level 3", color: "purple" },
-    { id: "level2", label: "Level 2", color: "yellow" },
     { id: "level1", label: "Level 1", color: "orange" },
+    { id: "level2", label: "Level 2", color: "yellow" },
+    { id: "level3", label: "Level 3", color: "purple" },
+    { id: "level4", label: "Level 4", color: "blue" },
+    { id: "level5", label: "Level 5", color: "green" },
     { id: "pictures", label: "🖼️ Pictures", color: "pink" },
     { id: "new", label: "📝 New", color: "amber" },
   ];
@@ -396,27 +396,61 @@ export default function Backpack() {
                     animate={{ opacity: 1, scale: 1 }}
                     className="bg-white/5 border border-white/10 rounded-lg overflow-hidden"
                   >
-                    <div
-                      onClick={() => setFlippedCards(prev => ({ ...prev, [word.id]: !prev[word.id] }))}
-                      className="p-3 cursor-pointer hover:bg-white/5 transition-all h-28 flex flex-col justify-center items-center text-center relative"
-                    >
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setMnemonicWord(word); }}
-                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-purple-500/20 hover:bg-purple-500/40 flex items-center justify-center text-xs transition-all"
-                        title="Create picture"
+                    <div className="relative">
+                      <div
+                        onClick={() => setFlippedCards(prev => ({ ...prev, [word.id]: !prev[word.id] }))}
+                        className="p-3 cursor-pointer hover:bg-white/5 transition-all h-28 flex flex-col justify-center items-center text-center"
                       >
-                        🎨
-                      </button>
-                      <p className="text-cyan-400 font-bold text-lg mb-0.5" dir="rtl">{word.word}</p>
-                      <p className="text-white/60 text-xs mb-1">{word.phonetic}</p>
-                      {isFlipped && (
-                        <motion.p
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="text-green-400 font-medium text-sm"
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setPictureWordId(pictureWordId === word.id ? null : word.id); }}
+                          className="absolute top-1 right-1 w-6 h-6 rounded-full bg-purple-500/20 hover:bg-purple-500/40 flex items-center justify-center text-xs transition-all z-10"
+                          title="Create picture"
                         >
-                          = {word.translation}
-                        </motion.p>
+                          🎨
+                        </button>
+                        <p className="text-cyan-400 font-bold text-lg mb-0.5" dir="rtl">{word.word}</p>
+                        <p className="text-white/60 text-xs mb-1">{word.phonetic}</p>
+                        {isFlipped && (
+                          <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-green-400 font-medium text-sm"
+                          >
+                            = {word.translation}
+                          </motion.p>
+                        )}
+                      </div>
+                      
+                      {/* Inline picture generation */}
+                      {pictureWordId === word.id && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          className="px-3 pb-3"
+                        >
+                          {word.image_url && (
+                            <img src={word.image_url} alt="" className="w-full h-24 object-cover rounded-lg mb-2" />
+                          )}
+                          <Textarea
+                            value={mnemonicDescription}
+                            onChange={(e) => setMnemonicDescription(e.target.value)}
+                            placeholder="Describe a picture..."
+                            className="bg-white/5 border-white/20 text-white text-xs mb-2 resize-none h-12"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <Button
+                            onClick={(e) => { e.stopPropagation(); generateMnemonicForWord(word); }}
+                            disabled={!mnemonicDescription.trim() || generatingMnemonic}
+                            size="sm"
+                            className="w-full bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 h-7 text-xs"
+                          >
+                            {generatingMnemonic ? (
+                              <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Generating...</>
+                            ) : (
+                              <><Wand2 className="w-3 h-3 mr-1" /> Generate</>
+                            )}
+                          </Button>
+                        </motion.div>
                       )}
                     </div>
                     {/* Rating buttons always visible */}
@@ -512,42 +546,7 @@ export default function Backpack() {
         </DialogContent>
       </Dialog>
 
-      {/* Mnemonic Creation Dialog */}
-      <Dialog open={!!mnemonicWord} onOpenChange={() => { setMnemonicWord(null); setMnemonicDescription(""); }}>
-        <DialogContent className="bg-slate-900 border-white/20 text-white max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              <span className="text-cyan-400 text-xl">{mnemonicWord?.phonetic}</span>
-              <span className="text-white/60 ml-2">= {mnemonicWord?.translation}</span>
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-white/60 text-sm mb-2">Describe a picture to help you remember this word:</p>
-          <Textarea
-            value={mnemonicDescription}
-            onChange={(e) => setMnemonicDescription(e.target.value)}
-            placeholder="e.g., A dog jumping over a rainbow..."
-            className="bg-white/5 border-white/20 text-white mb-3"
-            rows={4}
-          />
-          {mnemonicWord?.image_url && (
-            <div className="mb-3">
-              <p className="text-xs text-white/60 mb-1">Current picture:</p>
-              <img src={mnemonicWord.image_url} alt="" className="w-full rounded-lg" />
-            </div>
-          )}
-          <Button
-            onClick={generateMnemonicForWord}
-            disabled={!mnemonicDescription.trim() || generatingMnemonic}
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500"
-          >
-            {generatingMnemonic ? (
-              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating...</>
-            ) : (
-              <><Wand2 className="w-4 h-4 mr-2" /> Generate Picture</>
-            )}
-          </Button>
-        </DialogContent>
-      </Dialog>
+
 
       {/* New Word Rating Dialog */}
       <Dialog open={!!activeNewWord} onOpenChange={() => setActiveNewWord(null)}>
