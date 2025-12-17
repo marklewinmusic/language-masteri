@@ -4,7 +4,7 @@ import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingCart, Dumbbell, Church, UtensilsCrossed, Heart, ShoppingBag, BookOpen, Users, Play, Trophy, Sparkles, ArrowRight, Flame, Briefcase, School, Baby, Star, Clock, ChevronRight, X, Home as HomeIcon, Video, Dumbbell as PracticeIcon, Library } from "lucide-react";
+import { ShoppingCart, Dumbbell, Church, UtensilsCrossed, Heart, ShoppingBag, BookOpen, Users, Play, Trophy, Sparkles, ArrowRight, Flame, Briefcase, School, Baby, Star, Clock, ChevronRight, X, Home as HomeIcon, Video, Library, Book } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -276,28 +276,36 @@ export default function Home() {
       <div className="max-w-4xl mx-auto px-4 pt-4">
         <div className="grid grid-cols-4 gap-2">
           <Link to={createPageUrl("Home")}>
-            <Button variant="outline" className="w-full bg-white border-gray-200 text-black hover:bg-gray-100 h-auto py-2 flex-col">
-              <HomeIcon className="w-4 h-4 mb-1 text-black" />
-              <span className="text-xs text-black">Home</span>
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button variant="outline" className="w-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-500/50 text-white hover:from-purple-500/30 hover:to-pink-500/30 h-auto py-3 flex-col backdrop-blur-sm">
+                <HomeIcon className="w-5 h-5 mb-1" />
+                <span className="text-xs font-medium">Home</span>
+              </Button>
+            </motion.div>
           </Link>
           <Link to={createPageUrl("BabyVideos")}>
-            <Button variant="outline" className="w-full bg-white border-gray-200 text-black hover:bg-gray-100 h-auto py-2 flex-col">
-              <span className="text-sm mb-1">📺</span>
-              <span className="text-xs text-black">Videos</span>
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button variant="outline" className="w-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-500/50 text-white hover:from-blue-500/30 hover:to-cyan-500/30 h-auto py-3 flex-col backdrop-blur-sm">
+                <Video className="w-5 h-5 mb-1" />
+                <span className="text-xs font-medium">Videos</span>
+              </Button>
+            </motion.div>
           </Link>
           <Link to={createPageUrl("Practice")}>
-            <Button variant="outline" className="w-full bg-white border-gray-200 text-black hover:bg-gray-100 h-auto py-2 flex-col">
-              <span className="text-sm mb-1">📚</span>
-              <span className="text-xs text-black">Practice</span>
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button variant="outline" className="w-full bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-500/50 text-white hover:from-green-500/30 hover:to-emerald-500/30 h-auto py-3 flex-col backdrop-blur-sm">
+                <BookOpen className="w-5 h-5 mb-1" />
+                <span className="text-xs font-medium">Practice</span>
+              </Button>
+            </motion.div>
           </Link>
           <Link to={createPageUrl("Library")}>
-            <Button variant="outline" className="w-full bg-white border-gray-200 text-black hover:bg-gray-100 h-auto py-2 flex-col">
-              <span className="text-sm mb-1">📖</span>
-              <span className="text-xs text-black">Library</span>
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button variant="outline" className="w-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 border-amber-500/50 text-white hover:from-amber-500/30 hover:to-orange-500/30 h-auto py-3 flex-col backdrop-blur-sm">
+                <Library className="w-5 h-5 mb-1" />
+                <span className="text-xs font-medium">Library</span>
+              </Button>
+            </motion.div>
           </Link>
         </div>
       </div>
