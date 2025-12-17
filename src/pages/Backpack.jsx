@@ -431,16 +431,18 @@ export default function Backpack() {
                           {word.image_url && (
                             <img src={word.image_url} alt="" className="w-full h-24 object-cover rounded-lg mb-2" />
                           )}
-                          <Textarea
-                            value={mnemonicDescription}
-                            onChange={(e) => setMnemonicDescription(e.target.value)}
-                            placeholder="Describe a picture..."
-                            className="bg-white/5 border-white/20 text-white text-xs mb-2 resize-none h-12"
-                            onClick={(e) => e.stopPropagation()}
-                          />
+                          {!word.image_url && (
+                            <Textarea
+                              value={mnemonicDescription}
+                              onChange={(e) => setMnemonicDescription(e.target.value)}
+                              placeholder="Describe a picture..."
+                              className="bg-white/5 border-white/20 text-white text-xs mb-2 resize-none h-12"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          )}
                           <Button
                             onClick={(e) => { e.stopPropagation(); generateMnemonicForWord(word); }}
-                            disabled={!mnemonicDescription.trim() || generatingMnemonic}
+                            disabled={(!mnemonicDescription.trim() && !word.image_url) || generatingMnemonic}
                             size="sm"
                             className="w-full bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 h-7 text-xs"
                           >
