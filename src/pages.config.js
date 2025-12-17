@@ -17,6 +17,7 @@ import AvatarSelect from './pages/AvatarSelect';
 import BabyVideos from './pages/BabyVideos';
 import Backpack from './pages/Backpack';
 import Level1World from './pages/Level1World';
+import StoryLearning from './pages/StoryLearning';
 import __Layout from './Layout.jsx';
 
 
@@ -40,6 +41,7 @@ export const PAGES = {
     "BabyVideos": BabyVideos,
     "Backpack": Backpack,
     "Level1World": Level1World,
+    "StoryLearning": StoryLearning,
 }
 
 export const pagesConfig = {
