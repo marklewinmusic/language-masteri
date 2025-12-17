@@ -458,14 +458,14 @@ export default function Backpack() {
                                                     const hebrew = wordInfo?.hebrew || "";
                                                     addToNewWords(cleanWord, meaning, hebrew);
                                                   }}
-                                                  className={`flex flex-col items-center px-1 rounded ${
+                                                  className={`flex flex-col items-center px-1 rounded leading-none ${
                                                     isQueued 
                                                       ? "text-green-400 bg-green-500/20" 
                                                       : "hover:bg-cyan-500/20 cursor-pointer"
                                                   }`}
                                                 >
-                                                  <span className="text-white/70 text-sm" dir="rtl">{wordInfo?.hebrew || ""}</span>
-                                                  <span className={`text-cyan-400 ${isQueued ? "" : "underline decoration-dotted"}`}>{word}</span>
+                                                  <span className="text-white/70 text-sm leading-tight" dir="rtl">{wordInfo?.hebrew || ""}</span>
+                                                  <span className={`text-cyan-400 leading-tight ${isQueued ? "" : "underline decoration-dotted"}`}>{word}</span>
                                                 </button>
                                               );
                                             })}
