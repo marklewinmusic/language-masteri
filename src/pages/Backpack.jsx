@@ -444,7 +444,7 @@ export default function Backpack() {
               <p className="text-white/60 text-sm">Tap words to add to New Words:</p>
               {sentences.map((sentence, idx) => (
                 <div key={idx} className="bg-white/5 border border-white/10 rounded-xl p-3">
-                  <div className="flex flex-wrap gap-2 mb-1">
+                  <div className="flex flex-wrap gap-x-1 gap-y-2 mb-2">
                                             {sentence.transliterated.split(' ').map((word, widx) => {
                                               const wordInfo = sentence.words?.find(w => 
                                                 w.word.toLowerCase() === word.toLowerCase().replace(/[.,!?]/g, '')
@@ -459,19 +459,19 @@ export default function Backpack() {
                                                     const hebrew = wordInfo?.hebrew || "";
                                                     addToNewWords(cleanWord, meaning, hebrew);
                                                   }}
-                                                  className={`flex flex-col items-end px-1 rounded leading-none ${
+                                                  className={`inline-flex flex-col items-start px-0.5 rounded ${
                                                     isQueued 
                                                       ? "text-green-400 bg-green-500/20" 
                                                       : "hover:bg-cyan-500/20 cursor-pointer"
                                                   }`}
                                                 >
-                                                  <span className="text-white/70 text-sm leading-none mb-0.5" dir="rtl">{wordInfo?.hebrew || ""}</span>
-                                                  <span className={`text-cyan-400 leading-none ${isQueued ? "" : "underline decoration-dotted"}`}>{word}</span>
+                                                  <span className="text-white/70 text-[13px] h-[15px] leading-[15px]" dir="rtl">{wordInfo?.hebrew || ""}</span>
+                                                  <span className={`text-cyan-400 text-[13px] h-[15px] leading-[15px] ${isQueued ? "" : "underline decoration-dotted"}`}>{word}</span>
                                                 </button>
                                               );
                                             })}
                                           </div>
-                  <p className="text-white/50 text-sm">{sentence.english}</p>
+                  <p className="text-white/50 text-sm mt-1">{sentence.english}</p>
                 </div>
               ))}
               
