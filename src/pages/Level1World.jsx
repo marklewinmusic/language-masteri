@@ -50,8 +50,6 @@ const zones = [
 export default function Level1World() {
   const queryClient = useQueryClient();
   const [selectedZone, setSelectedZone] = useState(null);
-  const [sessionStartTime, setSessionStartTime] = useState(null);
-  const [sessionDuration, setSessionDuration] = useState(0);
   const [sessionEnding, setSessionEnding] = useState(false);
 
   const { data: userProfile } = useQuery({
@@ -78,56 +76,19 @@ export default function Level1World() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['userProfile'] }),
   });
 
-  // Session timer
-  useEffect(() => {
-    if (sessionStartTime && !sessionEnding) {
-      const interval = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
-        setSessionDuration(elapsed);
 
-        // Auto-end session after 3 minutes
-        if (elapsed >= 180) {
-          handleEndSession();
-        }
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [sessionStartTime, sessionEnding]);
 
-  useEffect(() => {
-    if (!sessionStartTime) {
-      setSessionStartTime(Date.now());
-    }
-  }, []);
-
-  const handleEndSession = async () => {
-    if (sessionEnding) return;
-    setSessionEnding(true);
-
+  const handleZoneComplete = async (xpEarned = 5) => {
     // Save progress silently
     const currentXp = userProfile?.xp || 0;
-    const sessionXp = Math.floor(sessionDuration / 30); // 1 XP per 30 seconds
     await updateProfileMutation.mutateAsync({ 
-      xp: currentXp + sessionXp,
+      xp: currentXp + xpEarned,
       last_active_date: new Date().toISOString().split('T')[0]
     });
-
-    // Show friendly exit message
-    toast.success("You did great today. See you tomorrow 🧡", { 
-      duration: 5000,
-      description: `+${sessionXp} XP earned!`
+    
+    toast.success("Nice! 🎉", { 
+      description: `+${xpEarned} XP`
     });
-
-    // Return to home after 2 seconds
-    setTimeout(() => {
-      window.location.href = createPageUrl("Home");
-    }, 2000);
-  };
-
-  const formatSessionTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const handleZoneSelect = (zone) => {
@@ -135,26 +96,16 @@ export default function Level1World() {
     toast.success(`Welcome to ${zone.name}! 🎉`);
   };
 
-  const handleZoneExit = () => {
+  const handleZoneExit = async () => {
     setSelectedZone(null);
+    await handleZoneComplete(5);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <GameHeader profile={userProfile} coins={userCoins?.coins} onBuyCoins={() => {}} />
 
-      {/* Session Timer */}
-      <div className="max-w-4xl mx-auto px-4 py-2">
-        <div className="flex items-center justify-between bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 px-4 py-2">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-white/60 text-sm">Session time: {formatSessionTime(sessionDuration)}</span>
-          </div>
-          {sessionDuration >= 150 && sessionDuration < 180 && (
-            <span className="text-amber-400 text-xs animate-pulse">30 seconds left! 💛</span>
-          )}
-        </div>
-      </div>
+
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         <AnimatePresence mode="wait">
