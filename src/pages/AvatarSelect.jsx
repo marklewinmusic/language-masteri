@@ -153,9 +153,8 @@ export default function AvatarSelect() {
         >
           {step === 2 && (
             <Button
-              variant="outline"
               onClick={() => setStep(1)}
-              className="border-white/30 text-white hover:bg-white/10"
+              className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white px-8 py-6 text-lg font-bold rounded-xl shadow-lg shadow-purple-500/30"
             >
               ← Back
             </Button>
