@@ -27,10 +27,12 @@ export default function Practice() {
   const [buyCoinsDialog, setBuyCoinsDialog] = useState(false);
   
   // AI Features
-  const [aiDialog, setAiDialog] = useState(null); // 'mnemonic' | 'sentence' | 'image'
+  const [aiDialog, setAiDialog] = useState(null); // 'mnemonic' | 'image'
   const [selectedWord, setSelectedWord] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [generatedContent, setGeneratedContent] = useState(null);
+  const [wordWithSentences, setWordWithSentences] = useState(null);
+  const [loadingSentences, setLoadingSentences] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -103,36 +105,38 @@ export default function Practice() {
   };
 
   const generateSentence = async (word) => {
-    setSelectedWord(word);
-    setAiDialog('sentence');
-    setAiLoading(true);
-    setGeneratedContent(null);
+    setLoadingSentences(true);
+    setWordWithSentences(word);
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Create 3 example sentences using the Hebrew word "${word.word}" (${word.phonetic}) which means "${word.translation}".
-        Include both Hebrew and English translations with phonetic pronunciation.`,
+        prompt: `Create 1 simple, natural example sentence using the Hebrew word "${word.word}" (${word.phonetic}) which means "${word.translation}".
+        Include both Hebrew text, phonetic pronunciation, and English translation.`,
         response_json_schema: {
           type: "object",
           properties: {
-            sentences: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  hebrew: { type: "string" },
-                  phonetic: { type: "string" },
-                  english: { type: "string" }
-                }
-              }
-            }
+            hebrew: { type: "string" },
+            phonetic: { type: "string" },
+            english: { type: "string" }
           }
         }
       });
-      setGeneratedContent(result);
+      setWordWithSentences({ ...word, sentence: result });
     } catch (e) {
-      toast.error("Failed to generate sentences");
+      toast.error("Failed to generate sentence");
     }
-    setAiLoading(false);
+    setLoadingSentences(false);
+  };
+
+  const saveToBackpack = async (word, sentence) => {
+    await base44.entities.Word.create({
+      word: sentence.hebrew,
+      translation: sentence.english,
+      phonetic: sentence.phonetic,
+      category: "sentences",
+      difficulty: "beginner",
+    });
+    toast.success("Sentence saved to backpack!");
+    queryClient.invalidateQueries({ queryKey: ['words'] });
   };
 
   const generateImage = async (word) => {
@@ -377,42 +381,80 @@ export default function Practice() {
                             variant="hebrew"
                             className="text-cyan-400"
                           />
-                          <div className="flex items-center gap-1 ml-2">
-                            <button
-                              onClick={(e) => { e.stopPropagation(); generateMnemonic(word); }}
-                              className="w-6 h-6 rounded bg-purple-500/30 hover:bg-purple-500/50 flex items-center justify-center text-purple-300"
-                              title="Generate Mnemonic"
-                            >
-                              <Brain className="w-3 h-3" />
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); generateSentence(word); }}
-                              className="w-6 h-6 rounded bg-blue-500/30 hover:bg-blue-500/50 flex items-center justify-center text-blue-300"
-                              title="Generate Sentences"
-                            >
-                              <MessageSquare className="w-3 h-3" />
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); generateImage(word); }}
-                              className="w-6 h-6 rounded bg-green-500/30 hover:bg-green-500/50 flex items-center justify-center text-green-300"
-                              title="Generate Image"
-                            >
-                              <Image className="w-3 h-3" />
-                            </button>
-                            <div className="w-px h-4 bg-white/20 mx-1" />
-                            {[1, 2, 3, 4, 5].map(num => (
+                          <div className="flex-1">
+                            <div className="flex items-center gap-1 ml-2">
                               <button
-                                key={num}
-                                onClick={() => handleRate(word.id, num)}
-                                className={`w-5 h-5 rounded-full text-xs font-bold ${
-                                  (word.times_practiced || 0) >= num 
-                                    ? "bg-cyan-500 text-white" 
-                                    : "bg-white/20 text-white/50"
-                                }`}
+                                onClick={(e) => { e.stopPropagation(); generateMnemonic(word); }}
+                                className="w-6 h-6 rounded bg-purple-500/30 hover:bg-purple-500/50 flex items-center justify-center text-purple-300"
+                                title="Generate Mnemonic"
                               >
-                                {num}
+                                <Brain className="w-3 h-3" />
                               </button>
-                            ))}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); generateSentence(word); }}
+                                className="w-6 h-6 rounded bg-blue-500/30 hover:bg-blue-500/50 flex items-center justify-center text-blue-300"
+                                title="Generate Sentence"
+                              >
+                                <MessageSquare className="w-3 h-3" />
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); generateImage(word); }}
+                                className="w-6 h-6 rounded bg-green-500/30 hover:bg-green-500/50 flex items-center justify-center text-green-300"
+                                title="Generate Image"
+                              >
+                                <Image className="w-3 h-3" />
+                              </button>
+                              <div className="w-px h-4 bg-white/20 mx-1" />
+                              {[1, 2, 3, 4, 5].map(num => (
+                                <button
+                                  key={num}
+                                  onClick={() => handleRate(word.id, num)}
+                                  className={`w-5 h-5 rounded-full text-xs font-bold ${
+                                    (word.times_practiced || 0) >= num 
+                                      ? "bg-cyan-500 text-white" 
+                                      : "bg-white/20 text-white/50"
+                                  }`}
+                                >
+                                  {num}
+                                </button>
+                              ))}
+                            </div>
+                            
+                            {/* Inline sentence display */}
+                            {wordWithSentences?.id === word.id && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                className="mt-2 bg-blue-500/10 border border-blue-500/30 rounded-lg p-2"
+                              >
+                                {loadingSentences ? (
+                                  <div className="flex items-center gap-2 text-blue-300 text-sm">
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                    Generating...
+                                  </div>
+                                ) : wordWithSentences.sentence ? (
+                                  <>
+                                    <p className="text-cyan-400 text-sm mb-1" dir="rtl">{wordWithSentences.sentence.hebrew}</p>
+                                    <p className="text-white/60 text-xs mb-1">{wordWithSentences.sentence.phonetic}</p>
+                                    <p className="text-white/80 text-xs mb-2">{wordWithSentences.sentence.english}</p>
+                                    <div className="flex gap-2">
+                                      <button
+                                        onClick={() => saveToBackpack(word, wordWithSentences.sentence)}
+                                        className="px-2 py-1 bg-green-500/20 hover:bg-green-500/30 text-green-400 text-xs rounded flex items-center gap-1"
+                                      >
+                                        <Check className="w-3 h-3" /> Save to Backpack
+                                      </button>
+                                      <button
+                                        onClick={() => generateSentence(word)}
+                                        className="px-2 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-xs rounded flex items-center gap-1"
+                                      >
+                                        <RotateCcw className="w-3 h-3" /> Different Sentence
+                                      </button>
+                                    </div>
+                                  </>
+                                ) : null}
+                              </motion.div>
+                            )}
                           </div>
                         </motion.div>
                       ))}
@@ -481,7 +523,6 @@ export default function Practice() {
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-cyan-400" />
               {aiDialog === 'mnemonic' && 'AI Mnemonic Generator'}
-              {aiDialog === 'sentence' && 'AI Sentence Generator'}
               {aiDialog === 'image' && 'AI Image Generator'}
             </DialogTitle>
           </DialogHeader>
@@ -520,24 +561,7 @@ export default function Practice() {
                 </>
               )}
 
-              {aiDialog === 'sentence' && generatedContent.sentences && (
-                <div className="space-y-3">
-                  {generatedContent.sentences.map((s, i) => (
-                    <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4">
-                      <p className="text-lg text-cyan-400" dir="rtl">{s.hebrew}</p>
-                      <p className="text-white/60 text-sm">{s.phonetic}</p>
-                      <p className="text-white/80 mt-1">{s.english}</p>
-                      <Button
-                        size="sm"
-                        onClick={() => saveSentenceAsWord(s)}
-                        className="mt-2 bg-green-500/20 text-green-400 hover:bg-green-500/30"
-                      >
-                        <Check className="w-3 h-3 mr-1" /> Save Sentence
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
+
 
               {aiDialog === 'image' && generatedContent.url && (
                 <div className="text-center">
