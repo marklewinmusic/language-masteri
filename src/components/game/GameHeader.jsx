@@ -63,13 +63,25 @@ export default function GameHeader({ profile, coins, onBuyCoins, onSelectLevel }
                 <div className="space-y-2">
                   {levels.map((level) => {
                     const Icon = level.icon;
+                    const activities = level.id === 1 ? [
+                      { id: "level1_world", name: "🎮 Play in Level 1 World (4 zones)", duration: "5 minutes", icon: "🌍", page: "Level1World" },
+                      { id: "baby_words", name: "Help baby learn 50 first words and learn sentences", duration: "10 minutes", icon: "👶", page: "BabyVideos" },
+                      { id: "colors", name: "Learn the colors", duration: "5 minutes", icon: "🎨", page: "ColorsLesson" },
+                      { id: "body_parts", name: "Learn body parts", duration: "5 minutes", icon: "🦵", page: "BodyPartsLesson" },
+                      { id: "days", name: "Learn days of the week", duration: "5 minutes", icon: "📅", page: "DaysLesson" },
+                      { id: "months", name: "Learn months of the year", duration: "5 minutes", icon: "🗓️", page: "MonthsLesson" },
+                      { id: "blessing", name: "Learn a Jewish blessing in Hebrew", duration: "5 minutes", icon: "✡️", page: "Progress" },
+                      { id: "youtube", name: "Watch Youtube video", duration: "1 hour", icon: "📺", page: "BabyVideos" },
+                    ] : [];
+                    const levelWithActivities = { ...level, activities };
+                    
                     return (
                       <motion.button
                         key={level.id}
                         whileHover={{ scale: 1.02 }}
                         onClick={() => {
                           setShowLevels(false);
-                          if (onSelectLevel) onSelectLevel(level);
+                          if (onSelectLevel) onSelectLevel(levelWithActivities);
                         }}
                         className={`w-full flex items-center gap-3 p-2 rounded-lg bg-gradient-to-r ${level.gradient} hover:opacity-80 transition-all`}
                       >

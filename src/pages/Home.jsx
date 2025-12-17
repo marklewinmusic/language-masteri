@@ -502,133 +502,132 @@ export default function Home() {
               <DailySongCard />
             </div>
 
+            {/* Today's Activities - Show at top when no level selected */}
+            {!selectedLevel && levels[0].activities && (
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-white mb-3">Today's Activities</h2>
+                <div className="space-y-2">
+                  {levels[0].activities.slice(0, 10).map((activity, idx) => {
+                    const isCompleted = lessonProgress.find(lp => lp.lesson_name === activity.page && lp.completed);
+                    return (
+                      <motion.button
+                        key={activity.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.05 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          const durationMatch = activity.duration.match(/(\d+)\s*(minute|hour)/i);
+                          if (durationMatch) {
+                            const amount = parseInt(durationMatch[1]);
+                            const unit = durationMatch[2].toLowerCase();
+                            const minutes = unit === 'hour' ? amount * 60 : amount;
+                            startTimer(minutes);
+                          }
+
+                          if (activity.id === "baby_words") {
+                            setSelectedActivity(activity);
+                          } else {
+                            navigate(createPageUrl(activity.page));
+                          }
+                        }}
+                        className={`w-full ${isCompleted ? 'bg-green-500/10 border-green-500/30' : 'bg-white/5 border-white/10'} hover:bg-white/10 border hover:border-cyan-400/50 rounded-xl p-3 text-left transition-all`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {isCompleted ? (
+                            <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                              <span className="text-white text-sm">✓</span>
+                            </div>
+                          ) : (
+                            <div className="w-6 h-6 rounded-full border-2 border-white/20 flex-shrink-0" />
+                          )}
+                          <span className="text-xl">{activity.icon}</span>
+                          <div className="flex-1">
+                            <p className="text-white font-medium text-sm">{activity.name}</p>
+                            <div className="flex items-center gap-2 mt-1 text-white/60 text-xs">
+                              <Clock className="w-3 h-3" />
+                              <span>{activity.duration}</span>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-white/40" />
+                        </div>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Dashboard Boxes - Only show when no level is selected */}
             {!selectedLevel && (
               <>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                  {/* Calendar Box */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-xl border border-cyan-500/20 rounded-xl p-3 hover:border-cyan-400/50 transition-all cursor-pointer"
-                    onClick={() => setSelectedLevel(levels[0])}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="w-4 h-4 text-cyan-400" />
-                      <h3 className="text-white font-bold text-sm">Today</h3>
-                    </div>
-                    <div className="space-y-1">
-                      {levels[0].activities.slice(0, 2).map((activity, idx) => {
-                        const isCompleted = lessonProgress.find(lp => lp.lesson_name === activity.page && lp.completed);
-                        return (
-                          <div key={idx} className="flex items-center gap-1 text-xs">
-                            {isCompleted ? (
-                              <div className="w-3 h-3 rounded-full bg-green-400 flex items-center justify-center">
-                                <span className="text-[8px] text-white">✓</span>
-                              </div>
-                            ) : (
-                              <div className="w-3 h-3 rounded-full border border-white/30" />
-                            )}
-                            <span className={isCompleted ? "text-green-400 text-xs line-through" : "text-white/80 text-xs truncate"}>{activity.name.substring(0, 20)}...</span>
+                <div className="grid grid-cols-3 gap-3 mb-6">
+                      {/* Videos Box */}
+                      <Link to={createPageUrl("BabyVideos")}>
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 backdrop-blur-xl border border-blue-500/20 rounded-xl p-3 hover:border-blue-400/50 transition-all cursor-pointer h-full"
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <Video className="w-4 h-4 text-blue-400" />
+                            <h3 className="text-white font-bold text-sm">Videos</h3>
                           </div>
-                        );
-                      })}
-                      <p className="text-cyan-400 text-[10px] mt-1">+{levels[0].activities.length - 2} more →</p>
-                    </div>
-                  </motion.div>
-
-                  {/* Videos Box */}
-                  <Link to={createPageUrl("BabyVideos")}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 }}
-                      className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 backdrop-blur-xl border border-blue-500/20 rounded-xl p-3 hover:border-blue-400/50 transition-all cursor-pointer h-full"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <Video className="w-4 h-4 text-blue-400" />
-                        <h3 className="text-white font-bold text-sm">Videos</h3>
-                      </div>
-                      <div className="flex gap-1 mb-2">
-                        {[1, 2].map((i) => (
-                          <div key={i} className="flex-1 h-10 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded flex items-center justify-center">
-                            <Play className="w-4 h-4 text-white/60" />
-                          </div>
-                        ))}
-                      </div>
-                      <p className="text-blue-400 text-[10px]">Watch & learn →</p>
-                    </motion.div>
-                  </Link>
-
-                  {/* Vocabulary Box */}
-                  <Link to={createPageUrl("Backpack")}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 }}
-                      className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 backdrop-blur-xl border border-amber-500/20 rounded-xl p-3 hover:border-amber-400/50 transition-all cursor-pointer"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <BookOpen className="w-4 h-4 text-amber-400" />
-                        <h3 className="text-white font-bold text-sm">Words</h3>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="text-center">
-                          <p className="text-xl font-bold text-cyan-400">{wordRatings.length}</p>
-                          <p className="text-white/60 text-[10px]">Total</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-xl font-bold text-green-400">{wordRatings.filter(w => w.times_practiced >= 5).length}</p>
-                          <p className="text-white/60 text-[10px]">Fluent</p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  </Link>
-
-                  {/* To-Do List Box */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur-xl border border-green-500/20 rounded-xl p-3"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <CheckSquare className="w-4 h-4 text-green-400" />
-                      <h3 className="text-white font-bold text-sm">To-Do</h3>
-                    </div>
-                    <div className="space-y-1 max-h-20 overflow-y-auto">
-                      {todoItems.length === 0 ? (
-                        <p className="text-white/40 text-[10px]">No tasks yet</p>
-                      ) : (
-                        todoItems.slice(0, 3).map((todo) => (
-                          <motion.button
-                            key={todo.id}
-                            onClick={() => updateTodoMutation.mutate({ id: todo.id, data: { completed: !todo.completed } })}
-                            className={`w-full flex items-center gap-1 p-1 rounded transition-all ${
-                              todo.completed 
-                                ? "bg-green-500/20" 
-                                : "bg-white/5 hover:bg-white/10"
-                            }`}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            {todo.completed ? (
-                              <div className="w-3 h-3 rounded-full bg-green-400 flex items-center justify-center flex-shrink-0">
-                                <span className="text-[8px] text-white">✓</span>
+                          <div className="flex gap-1 mb-2">
+                            {[1, 2].map((i) => (
+                              <div key={i} className="flex-1 h-10 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded flex items-center justify-center">
+                                <Play className="w-4 h-4 text-white/60" />
                               </div>
-                            ) : (
-                              <div className="w-3 h-3 rounded-full border border-white/30 flex-shrink-0" />
-                            )}
-                            <span className={`text-[10px] text-left truncate ${todo.completed ? "text-green-400 line-through" : "text-white"}`}>
-                              {todo.title}
-                            </span>
-                          </motion.button>
-                        ))
-                      )}
-                    </div>
-                  </motion.div>
-                  </div>
-                  </>
-                  )}
+                            ))}
+                          </div>
+                          <p className="text-blue-400 text-[10px]">Watch & learn →</p>
+                        </motion.div>
+                      </Link>
+
+                      {/* Vocabulary Box */}
+                      <Link to={createPageUrl("Backpack")}>
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.1 }}
+                          className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 backdrop-blur-xl border border-amber-500/20 rounded-xl p-3 hover:border-amber-400/50 transition-all cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <BookOpen className="w-4 h-4 text-amber-400" />
+                            <h3 className="text-white font-bold text-sm">Words</h3>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="text-center">
+                              <p className="text-xl font-bold text-cyan-400">{wordRatings.length}</p>
+                              <p className="text-white/60 text-[10px]">Total</p>
+                            </div>
+                            <div className="text-center">
+                              <p className="text-xl font-bold text-green-400">{wordRatings.filter(w => w.times_practiced >= 5).length}</p>
+                              <p className="text-white/60 text-[10px]">Fluent</p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </Link>
+
+                      {/* Practice Box */}
+                      <Link to={createPageUrl("Practice")}>
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2 }}
+                          className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur-xl border border-green-500/20 rounded-xl p-3 hover:border-green-400/50 transition-all cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <BookOpen className="w-4 h-4 text-green-400" />
+                            <h3 className="text-white font-bold text-sm">Practice</h3>
+                          </div>
+                          <p className="text-green-400 text-xs">Study & review →</p>
+                        </motion.div>
+                      </Link>
+                      </div>
+                </>
+              )}
           </>
         )}
       </div>
