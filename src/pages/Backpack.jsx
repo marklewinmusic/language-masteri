@@ -135,14 +135,17 @@ export default function Backpack() {
   ];
 
   const getDisplayWords = () => {
-    if (activeTab === "level5") return level5Words;
-    if (activeTab === "level4") return level4Words;
-    if (activeTab === "level3") return level3Words;
-    if (activeTab === "level2") return level2Words;
-    if (activeTab === "level1") return level1Words;
-    if (activeTab === "pictures") return wordRatings.filter(w => w.image_url);
-    if (activeTab === "new") return newWords;
-    return [];
+    let words = [];
+    if (activeTab === "level5") words = level5Words;
+    else if (activeTab === "level4") words = level4Words;
+    else if (activeTab === "level3") words = level3Words;
+    else if (activeTab === "level2") words = level2Words;
+    else if (activeTab === "level1") words = level1Words;
+    else if (activeTab === "pictures") words = wordRatings.filter(w => w.image_url);
+    else if (activeTab === "new") return newWords;
+    else return [];
+    
+    return [...words].sort((a, b) => (a.phonetic || a.word).localeCompare(b.phonetic || b.word));
   };
 
   const handleWordClick = async (word) => {
