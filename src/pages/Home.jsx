@@ -16,6 +16,7 @@ import TimelineBar from "../components/game/TimelineBar";
 import BabyGame from "../components/game/BabyGame";
 import AvatarMenu from "../components/game/AvatarMenu";
 import HebrewChatWidget from "../components/home/HebrewChatWidget";
+import DailySongCard from "../components/home/DailySongCard";
 
 
 const activities = [
@@ -493,6 +494,11 @@ export default function Home() {
                   toast.success("+50 coins! 🎉");
                 }}
               />
+            </div>
+
+            {/* Daily Song Card */}
+            <div className="mb-6">
+              <DailySongCard />
             </div>
 
             {/* Dashboard Boxes */}
