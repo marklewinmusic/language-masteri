@@ -73,7 +73,8 @@ export default function Backpack() {
       const result = await base44.integrations.Core.GenerateImage({
         prompt: `A colorful, memorable mnemonic illustration: ${mnemonicDescription}. 
         For learning Hebrew word "${mnemonicWord.phonetic}" meaning "${mnemonicWord.translation}".
-        Cartoon style, vibrant colors, educational, fun and memorable.`
+        Cartoon style, vibrant colors, educational, fun and memorable.
+        NO TEXT OR WORDS in the image - purely visual.`
       });
       await updateWordMutation.mutateAsync({
         id: mnemonicWord.id,
