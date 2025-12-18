@@ -161,7 +161,7 @@ export default function Home() {
                 >
                   {/* Video Header */}
                   <div className="flex gap-4 p-4">
-                    <div className="relative w-48 h-28 flex-shrink-0 rounded-xl overflow-hidden bg-black">
+                    <div className="relative w-48 h-28 flex-shrink-0 rounded-xl overflow-hidden bg-black group">
                       {ytId && (
                         <img
                           src={`https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`}
@@ -177,6 +177,18 @@ export default function Home() {
                           <Play className="w-5 h-5 text-white fill-white" />
                         </div>
                       </div>
+                      {/* Delete button on hover */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm("Delete this video?")) {
+                            deleteVideoMutation.mutate(video.id);
+                          }
+                        }}
+                        className="absolute top-2 right-2 w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                      >
+                        <Trash2 className="w-4 h-4 text-white" />
+                      </button>
                     </div>
                     <div className="flex-1">
                       <h3 className="text-white font-bold text-lg mb-2">
@@ -196,18 +208,6 @@ export default function Home() {
                         >
                           {isExpanded ? <ChevronUp className="w-4 h-4 mr-2" /> : <ChevronDown className="w-4 h-4 mr-2" />}
                           {isExpanded ? "Hide" : "Show"} Video & Transcript
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            if (confirm("Remove this video?")) {
-                              deleteVideoMutation.mutate(video.id);
-                            }
-                          }}
-                          variant="outline"
-                          size="sm"
-                          className="border-red-500/50 text-red-400 hover:bg-red-500/20"
-                        >
-                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
