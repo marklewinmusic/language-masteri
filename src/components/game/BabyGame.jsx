@@ -686,7 +686,12 @@ const [imageApproved, setImageApproved] = useState(false);
                 className="text-white/40 text-sm mt-2"
               >
                 {showTranslation ? (
-                  <span className="text-green-400">= {currentWord.meaning}</span>
+                  <span className="text-green-400">= <EditableWord
+                    text={currentWord.meaning}
+                    editable={false}
+                    onSave={() => {}}
+                    className="text-green-400"
+                  /></span>
                 ) : "(tap for meaning)"}
               </button>
             </div>
@@ -755,7 +760,14 @@ const [imageApproved, setImageApproved] = useState(false);
                         );
                       })}
                     </div>
-                    <p className="text-white/50 text-sm">{sentence.english}</p>
+                    <p className="text-white/50 text-sm">
+                      <EditableWord
+                        text={sentence.english}
+                        editable={false}
+                        onSave={() => {}}
+                        className="text-white/50 text-sm"
+                      />
+                    </p>
                   </div>
                 </div>
               </div>
@@ -916,7 +928,14 @@ const [imageApproved, setImageApproved] = useState(false);
                       );
                     })}
                   </div>
-                  <p className="text-white/50 text-sm">{sentence.english}</p>
+                  <p className="text-white/50 text-sm">
+                     <EditableWord
+                       text={sentence.english}
+                       editable={false}
+                       onSave={() => {}}
+                       className="text-white/50 text-sm"
+                     />
+                   </p>
                 </div>
               ))}
             </div>
@@ -948,7 +967,12 @@ const [imageApproved, setImageApproved] = useState(false);
               <h4 className="text-purple-400 font-semibold">Rate: {activeNewWord.word}</h4>
               <button onClick={() => setActiveNewWord(null)} className="text-white/40 hover:text-white">✕</button>
             </div>
-            <p className="text-white/60 text-sm mb-3">= {activeNewWord.meaning}</p>
+            <p className="text-white/60 text-sm mb-3">= <EditableWord
+              text={activeNewWord.meaning}
+              editable={false}
+              onSave={() => {}}
+              className="text-white/60 text-sm"
+            /></p>
             
             {/* Rating */}
             <div className="flex gap-2 mb-4">
