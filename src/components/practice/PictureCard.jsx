@@ -3,8 +3,21 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ClickableWord from "../learning/ClickableWord";
+import EditableWord from "../learning/EditableWord";
+import DeletablePictureBox from "../learning/DeletablePictureBox";
 
-export default function PictureCard({ card, onNext, onPrev, currentIndex, total, onRate, currentRating }) {
+export default function PictureCard({ 
+  card, 
+  onNext, 
+  onPrev, 
+  currentIndex, 
+  total, 
+  onRate, 
+  currentRating,
+  onDelete,
+  onUpdateWord,
+  canEdit = true 
+}) {
   const [showAnswer, setShowAnswer] = useState(false);
 
   const handleNext = () => {
@@ -18,40 +31,66 @@ export default function PictureCard({ card, onNext, onPrev, currentIndex, total,
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
+    <DeletablePictureBox
+      onDelete={onDelete}
+      canDelete={canEdit && !!onDelete}
       className="bg-white/90 backdrop-blur-sm rounded-2xl border border-violet-100 shadow-xl overflow-hidden max-w-lg mx-auto"
     >
-      <div className="relative">
-        <img 
-          src={card.image} 
-          alt="Mnemonic illustration" 
-          className="w-full h-64 object-cover"
-        />
-        <div className="absolute top-3 right-3 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-          {currentIndex + 1}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+      >
+        <div className="relative">
+          <img 
+            src={card.image} 
+            alt="Mnemonic illustration" 
+            className="w-full h-64 object-cover"
+          />
+          <div className="absolute top-3 right-3 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+            {currentIndex + 1}
+          </div>
         </div>
-      </div>
 
       <div className="p-6">
         <div className="text-center mb-4">
-          <p className="text-lg text-gray-700 mb-2" dangerouslySetInnerHTML={{ __html: card.hint }} />
+          <p className="text-lg text-gray-700 mb-2">
+            {card.hint.split(' ').map((w, i) => (
+              <React.Fragment key={i}>
+                <EditableWord
+                  text={w}
+                  editable={canEdit}
+                  onSave={(newWord) => {
+                    const words = card.hint.split(' ');
+                    words[i] = newWord;
+                    onUpdateWord?.({ ...card, hint: words.join(' ') });
+                  }}
+                  className="text-gray-700"
+                />
+                {i < card.hint.split(' ').length - 1 && ' '}
+              </React.Fragment>
+            ))}
+          </p>
           <div className="flex items-center justify-center gap-3">
             {showAnswer && (
               <>
-                <ClickableWord
-                  word={card.hebrewWord}
-                  transliteration={card.transliteration}
-                  translation={card.meaning}
-                  variant="transliteration"
+                <EditableWord
+                  text={card.transliteration}
+                  editable={canEdit}
+                  onSave={(newWord) => onUpdateWord?.({ ...card, transliteration: newWord })}
                   className="text-3xl font-bold text-violet-600"
                 />
                 <span className="text-2xl text-gray-400">=</span>
               </>
             )}
             <span className="text-2xl font-bold text-violet-600">
-              {showAnswer ? card.meaning : "_____"}
+              {showAnswer ? (
+                <EditableWord
+                  text={card.meaning}
+                  editable={canEdit}
+                  onSave={(newMeaning) => onUpdateWord?.({ ...card, meaning: newMeaning })}
+                  className="text-2xl font-bold text-violet-600"
+                />
+              ) : "_____"}
             </span>
           </div>
         </div>
@@ -84,10 +123,29 @@ export default function PictureCard({ card, onNext, onPrev, currentIndex, total,
             className="bg-gradient-to-r from-violet-50 to-blue-50 rounded-xl p-4 text-center"
           >
             <p className="text-xl text-gray-600 mb-1">
-              {card.transliteration}
+              <EditableWord
+                text={card.transliteration}
+                editable={canEdit}
+                onSave={(newWord) => onUpdateWord?.({ ...card, transliteration: newWord })}
+                className="text-xl text-gray-600"
+              />
             </p>
             <p className="text-sm text-gray-500 italic">
-              🧠 {card.mnemonic}
+              🧠 {card.mnemonic.split(' ').map((w, i) => (
+                <React.Fragment key={i}>
+                  <EditableWord
+                    text={w}
+                    editable={canEdit}
+                    onSave={(newWord) => {
+                      const words = card.mnemonic.split(' ');
+                      words[i] = newWord;
+                      onUpdateWord?.({ ...card, mnemonic: words.join(' ') });
+                    }}
+                    className="text-gray-500"
+                  />
+                  {i < card.mnemonic.split(' ').length - 1 && ' '}
+                </React.Fragment>
+              ))}
             </p>
           </motion.div>
         )}
@@ -110,6 +168,7 @@ export default function PictureCard({ card, onNext, onPrev, currentIndex, total,
           </Button>
         </div>
       </div>
-    </motion.div>
+      </motion.div>
+    </DeletablePictureBox>
   );
 }
