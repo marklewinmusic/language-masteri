@@ -405,6 +405,11 @@ export default function BabyVideos() {
     queryFn: () => base44.entities.Word.filter({ category: "wordbank" }),
   });
 
+  const { data: customVideos = [] } = useQuery({
+    queryKey: ['customVideos'],
+    queryFn: () => base44.entities.Video.list(),
+  });
+
   const updateCoinsMutation = useMutation({
     mutationFn: (data) => base44.entities.UserCoins.update(userCoins?.id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['userCoins'] }),
@@ -418,6 +423,15 @@ export default function BabyVideos() {
   const updateWordMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Word.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wordRatings'] }),
+  });
+
+  const createVideoMutation = useMutation({
+    mutationFn: (video) => base44.entities.Video.create(video),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customVideos'] });
+      setCustomVideoUrl("");
+      toast.success("Video added!");
+    },
   });
 
   const deleteWordMutation = useMutation({
@@ -879,8 +893,11 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                   onClick={() => {
                     const ytId = extractYouTubeId(customVideoUrl);
                     if (ytId) {
-                      toast.success("Video added! Feature coming soon.");
-                      setCustomVideoUrl("");
+                      createVideoMutation.mutate({
+                        video_url: customVideoUrl,
+                        title: "Custom Video",
+                        transcript_status: null
+                      });
                     } else {
                       toast.error("Invalid YouTube URL");
                     }
@@ -891,6 +908,65 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                 </button>
               </div>
             </div>
+
+            {/* Custom Videos First */}
+            {customVideos.map((video) => {
+              const ytId = extractYouTubeId(video.video_url);
+              if (!ytId) return null;
+              
+              const isExpanded = expandedVideoId === `custom-${video.id}`;
+              
+              return (
+                <div
+                  key={`custom-${video.id}`}
+                  className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden"
+                >
+                  <div 
+                    onClick={() => setExpandedVideoId(isExpanded ? null : `custom-${video.id}`)}
+                    className="flex gap-4 p-4 cursor-pointer hover:bg-white/5 transition-all"
+                  >
+                    <div className="relative w-40 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-black">
+                      <img 
+                        src={`https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`}
+                        alt={video.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.src = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                          <Play className="w-5 h-5 text-white fill-white" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <span className="bg-blue-500/80 px-2 py-0.5 rounded-full text-xs text-white font-medium">
+                        Custom Video
+                      </span>
+                      <h3 className="text-white font-bold mt-1">{video.title}</h3>
+                    </div>
+                    <ChevronRight className={`w-5 h-5 text-white/40 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                  </div>
+
+                  {isExpanded && (
+                    <div className="p-4 bg-slate-800/50 border-t border-white/20 space-y-4">
+                      <div className="aspect-video bg-black rounded-xl overflow-hidden">
+                        <iframe
+                          width="100%"
+                          height="100%"
+                          src={`https://www.youtube.com/embed/${ytId}`}
+                          title={video.title}
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
 
             {level1Videos.map((video) => {
               const isExpanded = expandedVideoId === video.id;
