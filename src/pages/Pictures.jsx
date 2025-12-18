@@ -3,10 +3,9 @@ import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { toast } from "sonner";
 import PictureCard from "../components/practice/PictureCard";
 import GameHeader from "../components/game/GameHeader";
 
@@ -73,7 +72,6 @@ const pictureCards = [
 export default function Pictures() {
   const [pictureCardIndex, setPictureCardIndex] = useState(0);
   const [selectedLevel, setSelectedLevel] = useState("all");
-  const [deletedCards, setDeletedCards] = useState([]);
   const queryClient = useQueryClient();
 
   const { data: userProfile } = useQuery({
@@ -140,22 +138,9 @@ export default function Pictures() {
     return rating?.confidence || 0;
   };
 
-  const handleDeleteCard = (card) => {
-    if (confirm(`Delete "${card.meaning}" (${card.transliteration})?`)) {
-      setDeletedCards(prev => [...prev, card.hebrewWord]);
-      toast.success("Picture deleted");
-      // Move to next card if available
-      if (filteredCards.length > 1) {
-        setPictureCardIndex(prev => prev % (filteredCards.length - 1));
-      }
-    }
-  };
-
-  const availableCards = pictureCards.filter(card => !deletedCards.includes(card.hebrewWord));
-
   const filteredCards = selectedLevel === "all" 
-    ? availableCards 
-    : availableCards.filter(card => {
+    ? pictureCards 
+    : pictureCards.filter(card => {
         const rating = getRating(card.hebrewWord);
         return rating === parseInt(selectedLevel) || (selectedLevel === "0" && rating === 0);
       });
@@ -200,13 +185,13 @@ export default function Pictures() {
                 <SelectValue placeholder="Filter by level" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Cards ({availableCards.length})</SelectItem>
-                <SelectItem value="0">Not rated ({availableCards.filter(c => getRating(c.hebrewWord) === 0).length})</SelectItem>
-                <SelectItem value="1">Level 1 ({availableCards.filter(c => getRating(c.hebrewWord) === 1).length})</SelectItem>
-                <SelectItem value="2">Level 2 ({availableCards.filter(c => getRating(c.hebrewWord) === 2).length})</SelectItem>
-                <SelectItem value="3">Level 3 ({availableCards.filter(c => getRating(c.hebrewWord) === 3).length})</SelectItem>
-                <SelectItem value="4">Level 4 ({availableCards.filter(c => getRating(c.hebrewWord) === 4).length})</SelectItem>
-                <SelectItem value="5">Level 5 - Mastered ({availableCards.filter(c => getRating(c.hebrewWord) === 5).length})</SelectItem>
+                <SelectItem value="all">All Cards ({pictureCards.length})</SelectItem>
+                <SelectItem value="0">Not rated ({pictureCards.filter(c => getRating(c.hebrewWord) === 0).length})</SelectItem>
+                <SelectItem value="1">Level 1 ({pictureCards.filter(c => getRating(c.hebrewWord) === 1).length})</SelectItem>
+                <SelectItem value="2">Level 2 ({pictureCards.filter(c => getRating(c.hebrewWord) === 2).length})</SelectItem>
+                <SelectItem value="3">Level 3 ({pictureCards.filter(c => getRating(c.hebrewWord) === 3).length})</SelectItem>
+                <SelectItem value="4">Level 4 ({pictureCards.filter(c => getRating(c.hebrewWord) === 4).length})</SelectItem>
+                <SelectItem value="5">Level 5 - Mastered ({pictureCards.filter(c => getRating(c.hebrewWord) === 5).length})</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -217,24 +202,15 @@ export default function Pictures() {
             <p className="text-white/60">No cards in this category yet!</p>
           </div>
         ) : (
-          <div className="relative">
-            <button
-              onClick={() => handleDeleteCard(currentCard)}
-              className="absolute -top-16 right-0 z-10 flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-lg text-red-400 transition-all"
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete Picture
-            </button>
-            <PictureCard
-              card={currentCard}
-              currentIndex={pictureCardIndex}
-              total={filteredCards.length}
-              onNext={handleNext}
-              onPrev={handlePrev}
-              onRate={(wordId, confidence) => rateMutation.mutate({ wordId, confidence, card: currentCard })}
-              currentRating={getRating(currentCard?.hebrewWord)}
-            />
-          </div>
+          <PictureCard
+            card={currentCard}
+            currentIndex={pictureCardIndex}
+            total={filteredCards.length}
+            onNext={handleNext}
+            onPrev={handlePrev}
+            onRate={(wordId, confidence) => rateMutation.mutate({ wordId, confidence, card: currentCard })}
+            currentRating={getRating(currentCard?.hebrewWord)}
+          />
         )}
       </div>
     </div>
