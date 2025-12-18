@@ -6,7 +6,8 @@ export default function EditableWord({
   onSave, 
   language = "en",
   className = "",
-  editable = true 
+  editable = true,
+  onClick 
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(text);
@@ -41,7 +42,7 @@ export default function EditableWord({
   };
 
   if (!editable) {
-    return <span className={className}>{text}</span>;
+    return <span className={className} onClick={onClick}>{text}</span>;
   }
 
   if (isEditing) {
@@ -63,7 +64,13 @@ export default function EditableWord({
   return (
     <motion.span
       whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-      onClick={() => setIsEditing(true)}
+      onClick={(e) => {
+        if (onClick) {
+          onClick(e);
+        } else {
+          setIsEditing(true);
+        }
+      }}
       className={`inline-block cursor-pointer px-1 rounded hover:underline ${className}`}
       dir={language === "he" ? "rtl" : "ltr"}
     >
