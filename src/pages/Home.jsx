@@ -4,7 +4,8 @@ import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingCart, Dumbbell, Church, UtensilsCrossed, Heart, ShoppingBag, BookOpen, Users, Play, Trophy, Sparkles, ArrowRight, Flame, Briefcase, School, Baby, Star, Clock, ChevronRight, X, Home as HomeIcon, Video, Library, Book, Calendar, CheckSquare, Square } from "lucide-react";
+import { ShoppingCart, Dumbbell, Church, UtensilsCrossed, Heart, ShoppingBag, BookOpen, Users, Play, Trophy, Sparkles, ArrowRight, Flame, Briefcase, School, Baby, Star, Clock, ChevronRight, X, Home as HomeIcon, Video, Library, Book, Calendar, CheckSquare, Square, GripVertical } from "lucide-react";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -75,6 +76,7 @@ export default function Home() {
   const [timerSpeed, setTimerSpeed] = useState(1);
   const [currentUser, setCurrentUser] = useState(null);
   const [showExtras, setShowExtras] = useState(false);
+  const [expandedLevels, setExpandedLevels] = useState({ 1: true });
 
   // Get current user
   useEffect(() => {
@@ -96,9 +98,8 @@ export default function Home() {
       const profiles = await base44.entities.UserProfile.list();
       return profiles[0] || null;
     },
-    staleTime: 30 * 60 * 1000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
   });
 
   const { data: userCoins } = useQuery({
@@ -110,25 +111,36 @@ export default function Home() {
       }
       return coins[0];
     },
-    staleTime: 30 * 60 * 1000,
+    staleTime: 2 * 60 * 1000, // 2 minutes
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
+  });
+
+  const { data: activityProgress = [] } = useQuery({
+    queryKey: ['activityProgress'],
+    queryFn: () => base44.entities.ActivityProgress.list(),
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const { data: lessonProgress = [] } = useQuery({
     queryKey: ['lessonProgress'],
     queryFn: () => base44.entities.LessonProgress.list(),
-    staleTime: 30 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
   });
 
   const { data: todoItems = [] } = useQuery({
     queryKey: ['todoItems'],
     queryFn: () => base44.entities.TodoItem.list(),
-    staleTime: 30 * 60 * 1000,
+    staleTime: 3 * 60 * 1000,
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
+  });
+
+  const { data: wordRatings = [] } = useQuery({
+    queryKey: ['wordRatings'],
+    queryFn: () => base44.entities.Word.filter({ category: "wordbank" }),
+    staleTime: 3 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const updateCoinsMutation = useMutation({
@@ -258,6 +270,14 @@ export default function Home() {
 
   const handleChangeAvatar = () => {
     deleteProfileMutation.mutate();
+  };
+
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+    const sourceIndex = result.source.index;
+    const destIndex = result.destination.index;
+    if (sourceIndex === destIndex) return;
+    toast.success("Drag reorder works! (Not persisted - hardcoded list)");
   };
 
   const currentAge = userProfile?.age_level || 3;
@@ -494,7 +514,106 @@ export default function Home() {
           </motion.div>
         ) : (
           <>
+            {/* Level Cards with Dropdown */}
+            <div className="space-y-4 mb-6">
+              {levels.map((level) => {
+                const Icon = level.icon;
+                const isExpanded = expandedLevels[level.id];
+                
+                return (
+                  <div key={level.id} className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden">
+                    <button
+                      onClick={() => setExpandedLevels(prev => ({ ...prev, [level.id]: !prev[level.id] }))}
+                      className="w-full flex items-center gap-4 p-4 hover:bg-white/5 transition-all"
+                    >
+                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${level.gradient} flex items-center justify-center flex-shrink-0`}>
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <h3 className="text-white font-bold">{level.name}</h3>
+                        <p className="text-white/60 text-sm">{level.subtitle}</p>
+                      </div>
+                      <ChevronRight className={`w-5 h-5 text-white/40 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                    </button>
 
+                    <AnimatePresence>
+                      {isExpanded && level.activities?.length > 0 && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="border-t border-white/10"
+                        >
+                          <DragDropContext onDragEnd={handleDragEnd}>
+                            <Droppable droppableId={`level-${level.id}`}>
+                              {(provided) => (
+                                <div ref={provided.innerRef} {...provided.droppableProps} className="p-3 space-y-2">
+                                  {level.activities.map((activity, index) => {
+                                    const isCompleted = lessonProgress.find(lp => lp.lesson_name === activity.page && lp.completed);
+                                    
+                                    return (
+                                      <Draggable key={`${level.id}-${activity.id}`} draggableId={`${level.id}-${activity.id}`} index={index}>
+                                        {(provided, snapshot) => (
+                                          <div
+                                            ref={provided.innerRef}
+                                            {...provided.draggableProps}
+                                            className={`${isCompleted ? 'bg-green-500/10 border-green-500/30' : 'bg-white/5 border-white/10'} border rounded-lg transition-all ${snapshot.isDragging ? 'shadow-lg scale-105' : ''}`}
+                                          >
+                                            <div className="flex items-center gap-2 p-3">
+                                              <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing">
+                                                <GripVertical className="w-4 h-4 text-white/40 hover:text-white/60" />
+                                              </div>
+                                              <button
+                                                onClick={() => {
+                                                  const durationMatch = activity.duration.match(/(\d+)\s*(minute|hour)/i);
+                                                  if (durationMatch) {
+                                                    const amount = parseInt(durationMatch[1]);
+                                                    const unit = durationMatch[2].toLowerCase();
+                                                    const minutes = unit === 'hour' ? amount * 60 : amount;
+                                                    startTimer(minutes);
+                                                  }
+                                                  if (activity.id === "baby_words") {
+                                                    setSelectedActivity(activity);
+                                                  } else {
+                                                    navigate(createPageUrl(activity.page));
+                                                  }
+                                                }}
+                                                className="flex items-center gap-2 flex-1 text-left"
+                                              >
+                                                {isCompleted ? (
+                                                  <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                                                    <span className="text-white text-xs">✓</span>
+                                                  </div>
+                                                ) : (
+                                                  <div className="w-5 h-5 rounded-full border-2 border-white/20 flex-shrink-0" />
+                                                )}
+                                                <span className="text-xl">{activity.icon}</span>
+                                                <div className="flex-1">
+                                                  <p className="text-white font-medium text-sm">{activity.name}</p>
+                                                  <div className="flex items-center gap-2 mt-0.5 text-white/60 text-xs">
+                                                    <Clock className="w-3 h-3" />
+                                                    <span>{activity.duration}</span>
+                                                  </div>
+                                                </div>
+                                              </button>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </Draggable>
+                                    );
+                                  })}
+                                  {provided.placeholder}
+                                </div>
+                              )}
+                            </Droppable>
+                          </DragDropContext>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </div>
 
             {/* Extras Button */}
             {!selectedLevel && (
