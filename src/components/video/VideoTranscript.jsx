@@ -236,8 +236,43 @@ export default function VideoTranscript({ videoId, videoUrl }) {
                 <span className="text-white/40 text-xs uppercase">{video.language}</span>
               )}
             </div>
-            <div className="text-white/90 leading-relaxed whitespace-pre-wrap" dir={video.language === "he" || video.language === "iw" ? "rtl" : "ltr"}>
-              {video.transcript_text}
+            <div 
+              className="space-y-4" 
+              style={{ direction: 'ltr', textAlign: 'left' }}
+            >
+              {video.transcript_text.split('\n').filter(line => line.trim()).map((line, idx) => {
+                // Try to parse if it's structured JSON-like data
+                try {
+                  const parsed = JSON.parse(line);
+                  return (
+                    <div key={idx} className="space-y-0.5">
+                      <div className="text-sm text-white/60">{parsed.transliteration || parsed.translit}</div>
+                      <div className="text-base text-white">{parsed.english}</div>
+                      <div 
+                        className="text-lg text-cyan-400 font-semibold"
+                        style={{ direction: 'rtl', textAlign: 'left', unicodeBidi: 'plaintext' }}
+                      >
+                        {parsed.hebrew}
+                      </div>
+                    </div>
+                  );
+                } catch {
+                  // Plain text - display as is
+                  return (
+                    <div 
+                      key={idx} 
+                      className="text-white/90"
+                      style={{ 
+                        direction: video.language === "he" || video.language === "iw" ? 'rtl' : 'ltr',
+                        textAlign: 'left',
+                        unicodeBidi: 'plaintext'
+                      }}
+                    >
+                      {line}
+                    </div>
+                  );
+                }
+              })}
             </div>
           </motion.div>
         )}
