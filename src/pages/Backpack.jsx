@@ -61,11 +61,16 @@ export default function Backpack() {
       const profiles = await base44.entities.UserProfile.list();
       return profiles[0] || null;
     },
+    staleTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const { data: wordRatings = [] } = useQuery({
     queryKey: ['wordRatings'],
     queryFn: () => base44.entities.Word.filter({ category: "wordbank" }),
+    staleTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const createWordMutation = useMutation({

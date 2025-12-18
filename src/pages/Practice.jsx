@@ -43,6 +43,9 @@ export default function Practice() {
       const profiles = await base44.entities.UserProfile.list();
       return profiles[0] || null;
     },
+    staleTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const { data: userCoins } = useQuery({
@@ -54,6 +57,9 @@ export default function Practice() {
       }
       return coins[0];
     },
+    staleTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const updateCoinsMutation = useMutation({
@@ -69,6 +75,8 @@ export default function Practice() {
       }
       return base44.entities.Word.filter({ category: selectedCategory }, "-created_date");
     },
+    staleTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const updateWordMutation = useMutation({
