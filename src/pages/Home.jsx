@@ -15,7 +15,7 @@ import ActivityCard from "../components/game/ActivityCard";
 import TimelineBar from "../components/game/TimelineBar";
 import BabyGame from "../components/game/BabyGame";
 import AvatarMenu from "../components/game/AvatarMenu";
-import HebrewChatWidget from "../components/home/HebrewChatWidget";
+
 import HomeTodoList from "../components/home/HomeTodoList";
 
 
@@ -492,15 +492,7 @@ export default function Home() {
           </motion.div>
         ) : (
           <>
-            {/* Hebrew Chat Widget */}
-            <div className="mb-6">
-              <HebrewChatWidget 
-                onComplete={() => {
-                  updateCoinsMutation.mutate({ coins: coins + 50 });
-                  toast.success("+50 coins! 🎉");
-                }}
-              />
-            </div>
+
 
             {/* Extras Button */}
             {!selectedLevel && (
@@ -576,75 +568,7 @@ export default function Home() {
               </div>
             )}
 
-            {/* Dashboard Boxes - Only show when no level is selected */}
-            {!selectedLevel && (
-              <>
-                <div className="grid grid-cols-3 gap-3 mb-6">
-                      {/* Videos Box */}
-                      <Link to={createPageUrl("BabyVideos")}>
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 backdrop-blur-xl border border-blue-500/20 rounded-xl p-3 hover:border-blue-400/50 transition-all cursor-pointer h-full"
-                        >
-                          <div className="flex items-center gap-2 mb-2">
-                            <Video className="w-4 h-4 text-blue-400" />
-                            <h3 className="text-white font-bold text-sm">Videos</h3>
-                          </div>
-                          <div className="flex gap-1 mb-2">
-                            {[1, 2].map((i) => (
-                              <div key={i} className="flex-1 h-10 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded flex items-center justify-center">
-                                <Play className="w-4 h-4 text-white/60" />
-                              </div>
-                            ))}
-                          </div>
-                          <p className="text-blue-400 text-[10px]">Watch & learn →</p>
-                        </motion.div>
-                      </Link>
 
-                      {/* Vocabulary Box */}
-                      <Link to={createPageUrl("Backpack")}>
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.1 }}
-                          className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 backdrop-blur-xl border border-amber-500/20 rounded-xl p-3 hover:border-amber-400/50 transition-all cursor-pointer"
-                        >
-                          <div className="flex items-center gap-2 mb-2">
-                            <BookOpen className="w-4 h-4 text-amber-400" />
-                            <h3 className="text-white font-bold text-sm">Words</h3>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <div className="text-center">
-                              <p className="text-xl font-bold text-cyan-400">{wordRatings.length}</p>
-                              <p className="text-white/60 text-[10px]">Total</p>
-                            </div>
-                            <div className="text-center">
-                              <p className="text-xl font-bold text-green-400">{wordRatings.filter(w => w.times_practiced >= 5).length}</p>
-                              <p className="text-white/60 text-[10px]">Fluent</p>
-                            </div>
-                          </div>
-                        </motion.div>
-                      </Link>
-
-                      {/* Practice Box */}
-                      <Link to={createPageUrl("Practice")}>
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.2 }}
-                          className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur-xl border border-green-500/20 rounded-xl p-3 hover:border-green-400/50 transition-all cursor-pointer"
-                        >
-                          <div className="flex items-center gap-2 mb-2">
-                            <BookOpen className="w-4 h-4 text-green-400" />
-                            <h3 className="text-white font-bold text-sm">Practice</h3>
-                          </div>
-                          <p className="text-green-400 text-xs">Study & review →</p>
-                        </motion.div>
-                      </Link>
-                      </div>
-                </>
-              )}
           </>
         )}
       </div>
