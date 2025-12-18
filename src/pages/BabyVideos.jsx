@@ -411,8 +411,24 @@ export default function BabyVideos() {
 
   const { data: customVideos = [] } = useQuery({
     queryKey: ['customVideos'],
-    queryFn: () => base44.entities.Video.list(),
+    queryFn: async () => {
+      const videos = await base44.entities.Video.list();
+      // Filter out deleted videos for non-admin users
+      return videos.filter(v => !v.deleted_at || currentUser?.role === 'admin');
+    },
   });
+
+  // Check if current user is admin
+  const [currentUser, setCurrentUser] = useState(null);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await base44.auth.me();
+        setCurrentUser(user);
+      } catch (e) {}
+    };
+    fetchUser();
+  }, []);
 
   const updateCoinsMutation = useMutation({
     mutationFn: (data) => base44.entities.UserCoins.update(userCoins?.id, data),
@@ -454,6 +470,24 @@ export default function BabyVideos() {
   const deleteWordMutation = useMutation({
     mutationFn: (id) => base44.entities.Word.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wordRatings'] }),
+  });
+
+  const deleteVideoMutation = useMutation({
+    mutationFn: async ({ videoId, deleteData }) => {
+      // Soft delete the video
+      await base44.entities.Video.update(videoId, deleteData);
+      
+      // Find and disable any To-Do items pointing to this video
+      const todos = await base44.entities.TodoItem.filter({ target_video_id: videoId.toString() });
+      for (const todo of todos) {
+        await base44.entities.TodoItem.update(todo.id, { is_active: false });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customVideos'] });
+      queryClient.invalidateQueries({ queryKey: ['todoItems'] });
+      toast.success("Video deleted and To-Do items disabled");
+    },
   });
 
   const updateVideoMutation = useMutation({
