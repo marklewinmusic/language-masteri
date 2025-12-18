@@ -427,9 +427,10 @@ export default function BabyVideos() {
 
   const createVideoMutation = useMutation({
     mutationFn: (video) => base44.entities.Video.create(video),
-    onSuccess: () => {
+    onSuccess: (newVideo) => {
       queryClient.invalidateQueries({ queryKey: ['customVideos'] });
       setCustomVideoUrl("");
+      setExpandedVideoId(`custom-${newVideo.id}`);
       toast.success("Video added!");
     },
   });
@@ -910,64 +911,74 @@ Create about 15-20 conversational lines that naturally introduce and use these v
             </div>
 
             {/* Custom Videos First */}
-            {customVideos.map((video) => {
-              const ytId = extractYouTubeId(video.video_url);
-              if (!ytId) return null;
-              
-              const isExpanded = expandedVideoId === `custom-${video.id}`;
-              
-              return (
-                <div
-                  key={`custom-${video.id}`}
-                  className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden"
-                >
-                  <div 
-                    onClick={() => setExpandedVideoId(isExpanded ? null : `custom-${video.id}`)}
-                    className="flex gap-4 p-4 cursor-pointer hover:bg-white/5 transition-all"
-                  >
-                    <div className="relative w-40 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-black">
-                      <img 
-                        src={`https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`}
-                        alt={video.title}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.src = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                        <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                          <Play className="w-5 h-5 text-white fill-white" />
+            {customVideos.length > 0 && (
+              <div className="mb-4">
+                <h2 className="text-white/60 text-sm font-medium mb-3">Your Videos</h2>
+                {customVideos.map((video) => {
+                  const ytId = extractYouTubeId(video.video_url);
+                  if (!ytId) return null;
+                  
+                  const isExpanded = expandedVideoId === `custom-${video.id}`;
+                  
+                  return (
+                    <div
+                      key={`custom-${video.id}`}
+                      className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl rounded-2xl border border-blue-500/30 overflow-hidden mb-3"
+                    >
+                      <div 
+                        onClick={() => setExpandedVideoId(isExpanded ? null : `custom-${video.id}`)}
+                        className="flex gap-4 p-4 cursor-pointer hover:bg-white/5 transition-all"
+                      >
+                        <div className="relative w-40 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-black">
+                          <img 
+                            src={`https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`}
+                            alt={video.title}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.src = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                              <Play className="w-5 h-5 text-white fill-white" />
+                            </div>
+                          </div>
                         </div>
+                        <div className="flex-1">
+                          <span className="bg-blue-500 px-2 py-0.5 rounded-full text-xs text-white font-medium">
+                            My Video
+                          </span>
+                          <h3 className="text-white font-bold mt-1">{video.title}</h3>
+                        </div>
+                        <ChevronRight className={`w-5 h-5 text-white/40 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                       </div>
-                    </div>
-                    <div className="flex-1">
-                      <span className="bg-blue-500/80 px-2 py-0.5 rounded-full text-xs text-white font-medium">
-                        Custom Video
-                      </span>
-                      <h3 className="text-white font-bold mt-1">{video.title}</h3>
-                    </div>
-                    <ChevronRight className={`w-5 h-5 text-white/40 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-                  </div>
 
-                  {isExpanded && (
-                    <div className="p-4 bg-slate-800/50 border-t border-white/20 space-y-4">
-                      <div className="aspect-video bg-black rounded-xl overflow-hidden">
-                        <iframe
-                          width="100%"
-                          height="100%"
-                          src={`https://www.youtube.com/embed/${ytId}`}
-                          title={video.title}
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      </div>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          className="p-4 bg-slate-800/50 border-t border-white/20"
+                        >
+                          <div className="aspect-video bg-black rounded-xl overflow-hidden">
+                            <iframe
+                              width="100%"
+                              height="100%"
+                              src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
+                              title={video.title}
+                              frameBorder="0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            />
+                          </div>
+                        </motion.div>
+                      )}
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            )}
 
+            <h2 className="text-white/60 text-sm font-medium mb-3">Recommended Videos</h2>
             {level1Videos.map((video) => {
               const isExpanded = expandedVideoId === video.id;
               const hasTranscript = fullTranscripts[video.id];
