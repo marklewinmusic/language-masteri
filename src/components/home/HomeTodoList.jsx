@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
@@ -35,7 +36,10 @@ export default function HomeTodoList({ isAdmin = false }) {
 
   const { data: videos = [] } = useQuery({
     queryKey: ['videos'],
-    queryFn: () => base44.entities.Video.list(),
+    queryFn: async () => {
+      const vids = await base44.entities.Video.list();
+      return vids.filter(v => !v.deleted_at || isAdmin); // Show deleted to admin only
+    },
   });
 
   const updateOrderMutation = useMutation({
