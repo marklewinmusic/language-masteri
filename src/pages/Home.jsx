@@ -16,6 +16,7 @@ import TimelineBar from "../components/game/TimelineBar";
 import BabyGame from "../components/game/BabyGame";
 import AvatarMenu from "../components/game/AvatarMenu";
 import HebrewChatWidget from "../components/home/HebrewChatWidget";
+import HomeTodoList from "../components/home/HomeTodoList";
 
 
 const activities = [
@@ -369,6 +370,11 @@ export default function Home() {
       )}
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 py-8">
+        {/* To-Do List */}
+        <div className="mb-8">
+          <HomeTodoList isAdmin={isMasterUser} />
+        </div>
+
         {/* Show activity content OR levels */}
         {selectedActivity ? (
           <motion.div
