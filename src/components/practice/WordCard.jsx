@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Volume2, Check, X, Play } from "lucide-react";
+import { Volume2, Check, X, Play, Image } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import YouTubePlayer from "./YouTubePlayer";
 import ExerciseCard from "./ExerciseCard";
 
-export default function WordCard({ word, onCorrect, onSkip, onRate, currentRating }) {
-  const [showTranslation, setShowTranslation] = useState(false);
+export default function WordCard({ word, onCorrect, onSkip, onRate, currentRating, onGenerateImage }) {
+  const [showTranslation, setShowTranslation] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [currentExercise, setCurrentExercise] = useState(0);
@@ -52,14 +52,26 @@ export default function WordCard({ word, onCorrect, onSkip, onRate, currentRatin
               </motion.div>
             )}
 
-            <motion.h2 
-              className="text-5xl md:text-7xl font-bold bg-gradient-to-br from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent"
-              style={{ direction: "rtl" }}
-              animate={{ scale: [1, 1.02, 1] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            >
-              {word.word}
-            </motion.h2>
+            <div className="relative inline-block">
+              <motion.h2 
+                className="text-5xl md:text-7xl font-bold bg-gradient-to-br from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent cursor-pointer"
+                style={{ direction: "rtl" }}
+                onClick={() => setShowTranslation(!showTranslation)}
+                animate={{ scale: [1, 1.02, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                {word.word}
+              </motion.h2>
+              {onGenerateImage && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onGenerateImage(word); }}
+                  className="absolute -top-2 -right-2 w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 flex items-center justify-center shadow-lg transition-all"
+                  title="Generate mnemonic image"
+                >
+                  <span className="text-xl">🎨</span>
+                </button>
+              )}
+            </div>
 
             {word.phonetic && (
               <p className="text-xl text-gray-500 font-light tracking-wide">
@@ -175,14 +187,6 @@ export default function WordCard({ word, onCorrect, onSkip, onRate, currentRatin
             </div>
 
             <div className="flex gap-4 pt-4">
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => setShowTranslation(!showTranslation)}
-                className="flex-1 border-2 border-violet-200 hover:border-violet-300 hover:bg-violet-50 rounded-xl text-violet-600"
-              >
-                {showTranslation ? "Hide" : "Show"} Meaning
-              </Button>
               <Button
                 size="lg"
                 onClick={onSkip}
