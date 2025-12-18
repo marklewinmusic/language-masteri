@@ -9,6 +9,7 @@ import { createPageUrl } from "@/utils";
 import { toast } from "sonner";
 import GameHeader from "../components/game/GameHeader";
 import ClickableWord from "../components/learning/ClickableWord";
+import TranslatorWidget from "../components/TranslatorWidget";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import VideoTranscript from "../components/video/VideoTranscript";
@@ -1348,6 +1349,9 @@ Create about 15-20 conversational lines that naturally introduce and use these v
           </div>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
+
+      {/* Translator Widget */}
+      <TranslatorWidget />
+      </div>
+      );
+      }

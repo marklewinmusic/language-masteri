@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import EditableWord from "../components/learning/EditableWord";
 import DeletablePictureBox from "../components/learning/DeletablePictureBox";
+import TranslatorWidget from "../components/TranslatorWidget";
 
 export default function Backpack() {
   const queryClient = useQueryClient();
@@ -724,6 +725,9 @@ export default function Backpack() {
           </Button>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
+
+      {/* Translator Widget */}
+      <TranslatorWidget />
+      </div>
+      );
+      }
