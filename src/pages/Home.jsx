@@ -6,6 +6,7 @@ import { Play, Plus, Trash2, ChevronDown, ChevronUp, Video as VideoIcon, Backpac
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { createPageUrl } from "@/utils";
 import VideoTranscript from "../components/video/VideoTranscript";
 
 
