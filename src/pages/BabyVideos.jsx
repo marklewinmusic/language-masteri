@@ -1010,10 +1010,25 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                       key={`custom-${video.id}`}
                       className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl rounded-2xl border border-blue-500/30 overflow-hidden mb-3"
                     >
-                      <div 
-                        onClick={() => setExpandedVideoId(isExpanded ? null : `custom-${video.id}`)}
-                        className="flex gap-4 p-4 cursor-pointer hover:bg-white/5 transition-all"
-                      >
+                      <div className="p-4 space-y-3">
+                        {/* Admin Controls */}
+                        {currentUser?.role === 'admin' && (
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-xs text-white/40">Admin Controls</span>
+                            <VideoAdminControls
+                              video={video}
+                              onUpdate={(data) => updateVideoMutation.mutate({ id: video.id, data })}
+                              onDelete={(data) => deleteVideoMutation.mutate({ videoId: video.id, deleteData: data })}
+                              onReplaceUrl={(data) => updateVideoMutation.mutate({ id: video.id, data })}
+                            />
+                          </div>
+                        )}
+
+                        {/* Video Header */}
+                        <div 
+                          onClick={() => setExpandedVideoId(isExpanded ? null : `custom-${video.id}`)}
+                          className="flex gap-4 cursor-pointer hover:bg-white/5 transition-all rounded-lg p-2"
+                        >
                         <div className="relative w-40 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-black">
                           <img 
                             src={`https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`}
@@ -1042,6 +1057,7 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                           </h3>
                         </div>
                         <ChevronRight className={`w-5 h-5 text-white/40 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                        </div>
                       </div>
 
                       {isExpanded && (
