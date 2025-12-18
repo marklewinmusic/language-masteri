@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { motion, Reorder } from "framer-motion";
+import { motion } from "framer-motion";
 import { Check, GripVertical, Edit, Trash2, Plus, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 export default function HomeTodoList({ isAdmin = false }) {
   const navigate = useNavigate();
@@ -112,8 +113,19 @@ export default function HomeTodoList({ isAdmin = false }) {
     }
   };
 
-  const handleReorder = (newOrder) => {
-    updateOrderMutation.mutate(newOrder);
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+    
+    const sourceIndex = result.source.index;
+    const destIndex = result.destination.index;
+    
+    if (sourceIndex === destIndex) return;
+    
+    const reordered = Array.from(todoItems);
+    const [removed] = reordered.splice(sourceIndex, 1);
+    reordered.splice(destIndex, 0, removed);
+    
+    updateOrderMutation.mutate(reordered);
   };
 
   if (isLoading) {
@@ -136,53 +148,74 @@ export default function HomeTodoList({ isAdmin = false }) {
       </div>
 
       {isAdmin ? (
-        <Reorder.Group axis="y" values={todoItems} onReorder={handleReorder} className="space-y-2">
-          {todoItems.map((item) => (
-            <Reorder.Item key={item.id} value={item}>
-              <motion.div
-                className="bg-white/10 border border-white/20 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:bg-white/15"
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="todo-list">
+            {(provided, snapshot) => (
+              <div 
+                ref={provided.innerRef} 
+                {...provided.droppableProps} 
+                className={`space-y-2 min-h-[100px] rounded-xl transition-all ${
+                  snapshot.isDraggingOver ? 'bg-cyan-500/10 border-2 border-cyan-500/50 p-2' : ''
+                }`}
               >
-                <GripVertical className="w-5 h-5 text-white/40" />
-                <button
-                  onClick={() => toggleCompleteMutation.mutate(item.id)}
-                  className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
-                    isCompleted(item.id)
-                      ? "bg-green-500 border-green-500"
-                      : "border-white/40 hover:border-white/60"
-                  }`}
-                >
-                  {isCompleted(item.id) && <Check className="w-4 h-4 text-white" />}
-                </button>
-                <div className="flex-1" onClick={() => handleItemClick(item)}>
-                  <p className={`text-white font-medium ${isCompleted(item.id) ? "line-through opacity-60" : ""}`}>
-                    {item.label}
-                  </p>
-                  {item.type === "video" && (
-                    <p className="text-xs text-white/40">Video: {videos.find(v => v.id === item.target_video_id)?.title || "Unknown"}</p>
-                  )}
-                  {item.type === 'video' && item.target_video_id && !videos.find(v => v.id === item.target_video_id) && (
-                    <div className="flex items-center gap-1 text-amber-400 text-xs mt-1">
-                      <AlertTriangle className="w-3 h-3" />
-                      <span>Video missing or deleted - needs reassignment</span>
-                    </div>
-                  )}
-                </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setEditingItem(item); }}
-                  className="w-8 h-8 rounded bg-blue-500/20 hover:bg-blue-500/30 flex items-center justify-center"
-                >
-                  <Edit className="w-4 h-4 text-blue-400" />
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); deleteItemMutation.mutate(item.id); }}
-                  className="w-8 h-8 rounded bg-red-500/20 hover:bg-red-500/30 flex items-center justify-center"
-                >
-                  <Trash2 className="w-4 h-4 text-red-400" />
-                </button>
-              </motion.div>
-            </Reorder.Item>
-          ))}
-        </Reorder.Group>
+                {todoItems.map((item, index) => (
+                  <Draggable key={item.id} draggableId={item.id} index={index}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className={`bg-white/10 border border-white/20 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:bg-white/15 transition-all ${
+                          snapshot.isDragging ? 'shadow-lg scale-105' : ''
+                        }`}
+                      >
+                        <div {...provided.dragHandleProps}>
+                          <GripVertical className="w-5 h-5 text-white/40 hover:text-white/60" />
+                        </div>
+                        <button
+                          onClick={() => toggleCompleteMutation.mutate(item.id)}
+                          className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                            isCompleted(item.id)
+                              ? "bg-green-500 border-green-500"
+                              : "border-white/40 hover:border-white/60"
+                          }`}
+                        >
+                          {isCompleted(item.id) && <Check className="w-4 h-4 text-white" />}
+                        </button>
+                        <div className="flex-1" onClick={() => handleItemClick(item)}>
+                          <p className={`text-white font-medium ${isCompleted(item.id) ? "line-through opacity-60" : ""}`}>
+                            {item.label}
+                          </p>
+                          {item.type === "video" && (
+                            <p className="text-xs text-white/40">Video: {videos.find(v => v.id === item.target_video_id)?.title || "Unknown"}</p>
+                          )}
+                          {item.type === 'video' && item.target_video_id && !videos.find(v => v.id === item.target_video_id) && (
+                            <div className="flex items-center gap-1 text-amber-400 text-xs mt-1">
+                              <AlertTriangle className="w-3 h-3" />
+                              <span>Video missing or deleted - needs reassignment</span>
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setEditingItem(item); }}
+                          className="w-8 h-8 rounded bg-blue-500/20 hover:bg-blue-500/30 flex items-center justify-center"
+                        >
+                          <Edit className="w-4 h-4 text-blue-400" />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); deleteItemMutation.mutate(item.id); }}
+                          className="w-8 h-8 rounded bg-red-500/20 hover:bg-red-500/30 flex items-center justify-center"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-400" />
+                        </button>
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
       ) : (
         <div className="space-y-2">
           {todoItems.map((item) => (
