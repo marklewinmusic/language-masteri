@@ -15,6 +15,7 @@ export default function Library() {
   const [searchQuery, setSearchQuery] = useState("");
   const [newWord, setNewWord] = useState("");
   const [newTranslation, setNewTranslation] = useState("");
+  const [newYoutubeUrl, setNewYoutubeUrl] = useState("");
 
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile'],
@@ -43,6 +44,7 @@ export default function Library() {
       queryClient.invalidateQueries({ queryKey: ['words'] });
       setNewWord("");
       setNewTranslation("");
+      setNewYoutubeUrl("");
       toast.success("Word added!");
     },
   });
@@ -74,6 +76,7 @@ export default function Library() {
       category: "basics",
       difficulty: "beginner",
       times_practiced: 0,
+      youtube_url: newYoutubeUrl || undefined,
     });
   };
 
@@ -100,22 +103,32 @@ export default function Library() {
 
         {/* Add word */}
         <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-4 mb-6">
-          <div className="flex gap-2">
-            <Input
-              value={newWord}
-              onChange={(e) => setNewWord(e.target.value)}
-              placeholder="Hebrew word..."
-              className="bg-white/10 border-white/20 text-white"
-            />
-            <Input
-              value={newTranslation}
-              onChange={(e) => setNewTranslation(e.target.value)}
-              placeholder="Translation (optional)"
-              className="bg-white/10 border-white/20 text-white"
-            />
-            <Button onClick={addWord} className="bg-cyan-500 hover:bg-cyan-600">
-              <Plus className="w-4 h-4" />
-            </Button>
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              <Input
+                value={newWord}
+                onChange={(e) => setNewWord(e.target.value)}
+                placeholder="Hebrew word..."
+                className="bg-white/10 border-white/20 text-white"
+              />
+              <Input
+                value={newTranslation}
+                onChange={(e) => setNewTranslation(e.target.value)}
+                placeholder="Translation (optional)"
+                className="bg-white/10 border-white/20 text-white"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Input
+                value={newYoutubeUrl}
+                onChange={(e) => setNewYoutubeUrl(e.target.value)}
+                placeholder="YouTube URL (optional)"
+                className="bg-white/10 border-white/20 text-white flex-1"
+              />
+              <Button onClick={addWord} className="bg-cyan-500 hover:bg-cyan-600">
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
 
