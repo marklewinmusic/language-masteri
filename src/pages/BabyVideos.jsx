@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, ArrowLeft, Coins, Check, Backpack, Volume2, Star, BookOpen, Plus, ChevronRight, Loader2, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { toast } from "sonner";
 import GameHeader from "../components/game/GameHeader";
@@ -12,6 +12,7 @@ import ClickableWord from "../components/learning/ClickableWord";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import VideoTranscript from "../components/video/VideoTranscript";
+import EditableWord from "../components/learning/EditableWord";
 
 // Videos with transcripts - Piece of Hebrew channel
 const level1Videos = [
@@ -369,6 +370,7 @@ const level1Videos = [
 export default function BabyVideos() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
   const [expandedVideoId, setExpandedVideoId] = useState(null);
   const [showVocabForVideo, setShowVocabForVideo] = useState(null);
   const [selectedVideo, setSelectedVideo] = useState(null);
@@ -452,6 +454,22 @@ export default function BabyVideos() {
     mutationFn: (id) => base44.entities.Word.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wordRatings'] }),
   });
+
+  const updateVideoMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Video.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customVideos'] });
+      toast.success("Updated!");
+    },
+  });
+
+  // Auto-expand video from URL parameter
+  useEffect(() => {
+    const videoId = searchParams.get('videoId');
+    if (videoId) {
+      setExpandedVideoId(videoId);
+    }
+  }, [searchParams]);
 
   const removeFromBackpack = async (word) => {
     const existingWord = wordRatings.find(w => w.word === word.hebrew || w.word === word);
@@ -965,7 +983,13 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                           <span className="bg-blue-500 px-2 py-0.5 rounded-full text-xs text-white font-medium">
                             My Video
                           </span>
-                          <h3 className="text-white font-bold mt-1">{video.title}</h3>
+                          <h3 className="text-white font-bold mt-1">
+                            <EditableWord
+                              text={video.title}
+                              onSave={(newTitle) => updateVideoMutation.mutate({ id: video.id, data: { title: newTitle } })}
+                              className="text-white font-bold"
+                            />
+                          </h3>
                         </div>
                         <ChevronRight className={`w-5 h-5 text-white/40 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                       </div>
