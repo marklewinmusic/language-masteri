@@ -361,20 +361,27 @@ export default function Backpack() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     onClick={() => setExpandedId(expandedId === word.id ? null : word.id)}
-                    className="bg-white/5 border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-cyan-400/50 transition-all h-48 flex flex-col"
+                    className="bg-white/5 border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-cyan-400/50 transition-all flex flex-col"
                   >
-                    <div className="flex-1 overflow-hidden relative">
+                    <div className="h-32 overflow-hidden">
                       <img src={word.image_url} alt={word.phonetic} className="w-full h-full object-cover" />
-                      <div className="absolute bottom-2 right-2 flex gap-1">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setPictureWordId(pictureWordId === word.id ? null : word.id);
-                          }}
-                          className="w-7 h-7 rounded-lg bg-black/40 hover:bg-black/60 flex items-center justify-center backdrop-blur-md transition-all"
-                        >
-                          <span className="text-base">🎨</span>
-                        </button>
+                    </div>
+                    <div className="p-2 text-center flex flex-col gap-1">
+                      <p className="text-cyan-400 font-medium text-sm truncate">
+                        <EditableWord
+                          text={word.phonetic || word.word}
+                          onSave={(newText) => updateWordMutation.mutate({ id: word.id, data: { phonetic: newText } })}
+                          className="text-cyan-400 font-medium text-sm"
+                        />
+                      </p>
+                      <p className="text-green-400 font-medium text-xs truncate">
+                        = <EditableWord
+                          text={word.translation}
+                          onSave={(newTranslation) => updateWordMutation.mutate({ id: word.id, data: { translation: newTranslation } })}
+                          className="text-green-400 font-medium text-xs"
+                        />
+                      </p>
+                      <div className="flex items-center justify-center gap-1 mt-1">
                         {[1, 2, 3, 4, 5].map((num) => (
                           <button
                             key={num}
@@ -382,33 +389,31 @@ export default function Backpack() {
                             className={`w-5 h-5 rounded text-[10px] font-bold transition-all ${
                               word.times_practiced === num
                                 ? num === 5 ? "bg-green-500 text-white" : "bg-cyan-500 text-white"
-                                : "bg-black/30 text-white/70 hover:bg-black/50"
+                                : "bg-white/10 text-white/50 hover:bg-white/20"
                             }`}
                           >
                             {num}
                           </button>
                         ))}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPictureWordId(pictureWordId === word.id ? null : word.id);
+                          }}
+                          className="w-5 h-5 rounded flex items-center justify-center bg-white/10 hover:bg-purple-500/20 transition-all"
+                        >
+                          <span className="text-xs">🎨</span>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteWordMutation.mutate(word.id);
+                          }}
+                          className="w-5 h-5 rounded flex items-center justify-center bg-white/10 hover:bg-red-500/20 transition-all"
+                        >
+                          <span className="text-xs">🗑️</span>
+                        </button>
                       </div>
-                    </div>
-                    <div className="p-2 text-center h-auto flex flex-col justify-center">
-                      <p className="text-cyan-400 font-medium truncate">
-                        <EditableWord
-                          text={word.phonetic || word.word}
-                          onSave={(newText) => updateWordMutation.mutate({ id: word.id, data: { phonetic: newText } })}
-                          className="text-cyan-400 font-medium"
-                        />
-                      </p>
-                      <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-green-400 font-medium text-sm truncate"
-                      >
-                        = <EditableWord
-                          text={word.translation}
-                          onSave={(newTranslation) => updateWordMutation.mutate({ id: word.id, data: { translation: newTranslation } })}
-                          className="text-green-400 font-medium text-sm"
-                        />
-                      </motion.p>
                       {pictureWordId === word.id && (
                         <motion.div
                           initial={{ opacity: 0, height: 0 }}
