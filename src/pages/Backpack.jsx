@@ -118,6 +118,7 @@ export default function Backpack() {
     setGeneratingMnemonic(false);
   };
 
+  const level0Words = wordRatings.filter(w => (w.times_practiced || 0) === 0);
   const level1Words = wordRatings.filter(w => w.times_practiced === 1);
   const level2Words = wordRatings.filter(w => w.times_practiced === 2);
   const level3Words = wordRatings.filter(w => w.times_practiced === 3);
@@ -125,13 +126,13 @@ export default function Backpack() {
   const level5Words = wordRatings.filter(w => w.times_practiced >= 5);
 
   const tabs = [
-    { id: "level1", label: "Level 1", color: "orange" },
-    { id: "level2", label: "Level 2", color: "yellow" },
-    { id: "level3", label: "Level 3", color: "purple" },
-    { id: "level4", label: "Level 4", color: "blue" },
     { id: "level5", label: "Level 5", color: "green" },
+    { id: "level4", label: "Level 4", color: "blue" },
+    { id: "level3", label: "Level 3", color: "purple" },
+    { id: "level2", label: "Level 2", color: "yellow" },
+    { id: "level1", label: "Level 1", color: "orange" },
+    { id: "level0", label: "Level 0", color: "gray" },
     { id: "pictures", label: "🖼️ Pictures", color: "pink" },
-    { id: "new", label: "📝 New", color: "amber" },
   ];
 
   const getDisplayWords = () => {
@@ -141,8 +142,8 @@ export default function Backpack() {
     else if (activeTab === "level3") words = level3Words;
     else if (activeTab === "level2") words = level2Words;
     else if (activeTab === "level1") words = level1Words;
+    else if (activeTab === "level0") words = level0Words;
     else if (activeTab === "pictures") words = wordRatings.filter(w => w.image_url);
-    else if (activeTab === "new") return newWords;
     else return [];
     
     return [...words].sort((a, b) => (a.phonetic || a.word).localeCompare(b.phonetic || b.word));
@@ -296,10 +297,10 @@ export default function Backpack() {
               <span className="text-xs text-black">Practice</span>
             </Button>
           </Link>
-          <Link to={createPageUrl("Library")}>
+          <Link to={createPageUrl("Backpack")}>
             <Button variant="outline" className="w-full bg-white border-gray-200 text-black hover:bg-gray-100 h-auto py-2 flex-col">
-              <span className="text-sm mb-1">📖</span>
-              <span className="text-xs text-black">Library</span>
+              <span className="text-sm mb-1">🎒</span>
+              <span className="text-xs text-black">Backpack</span>
             </Button>
           </Link>
         </div>
@@ -322,7 +323,7 @@ export default function Backpack() {
         </div>
 
         {/* Show All English Toggle */}
-        {!["pictures", "new"].includes(activeTab) && (
+        {activeTab !== "pictures" && (
           <div className="mb-4 flex justify-end">
             <button
               onClick={() => setShowAllEnglish(!showAllEnglish)}
@@ -344,7 +345,6 @@ export default function Backpack() {
               <p className="text-white/40 text-lg">
                 {activeTab.startsWith("level") && "No words at this level yet!"}
                 {activeTab === "pictures" && "No mnemonic pictures yet. Generate some while learning!"}
-                {activeTab === "new" && "No new words yet. Click on words in sentences to add them!"}
               </p>
             </div>
           ) : activeTab === "pictures" ? (
@@ -375,27 +375,6 @@ export default function Backpack() {
                 </motion.div>
               ))}
             </div>
-          ) : activeTab === "new" ? (
-            newWords.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-white/40 text-lg">No new words yet. Click on words in sentences to add them!</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {newWords.map((w, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    onClick={() => setActiveNewWord(w)}
-                    className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 cursor-pointer hover:border-amber-400 transition-all"
-                  >
-                    <p className="text-cyan-400 font-bold">{w.word}</p>
-                    <p className="text-white/60 text-sm">{w.meaning}</p>
-                  </motion.div>
-                ))}
-              </div>
-            )
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {getDisplayWords().map((word) => {
