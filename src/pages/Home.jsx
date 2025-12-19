@@ -4,9 +4,9 @@ import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingCart, Dumbbell, Church, UtensilsCrossed, Heart, ShoppingBag, BookOpen, Users, Play, Trophy, Sparkles, ArrowRight, Flame, Briefcase, School, Baby, Star, ChevronRight, X, Home as HomeIcon, Video, Library, Book, Calendar, CheckSquare, Square, GripVertical } from "lucide-react";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { ShoppingCart, Dumbbell, Church, UtensilsCrossed, Heart, ShoppingBag, BookOpen, Users, Play, Trophy, Sparkles, ArrowRight, Flame, Briefcase, School, Baby, Star, ChevronRight, X, Home as HomeIcon, Video, Library, Book, Calendar, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import GameHeader from "../components/game/GameHeader";
@@ -17,7 +17,7 @@ import TimelineBar from "../components/game/TimelineBar";
 import BabyGame from "../components/game/BabyGame";
 import AvatarMenu from "../components/game/AvatarMenu";
 
-import HomeTodoList from "../components/home/HomeTodoList";
+
 
 
 const activities = [
@@ -41,35 +41,7 @@ const storeItems = [
   { id: "crown", name: "Golden Crown", emoji: "👑", price: 300 },
 ];
 
-const levels = [
-  { 
-    id: 1, 
-    name: "Level 1", 
-    subtitle: "Baby Steps",
-    icon: Baby, 
-    gradient: "from-pink-500 to-rose-500",
-    activities: [
-      { id: "youtube", name: "Watch Youtube video", duration: "1 hour", icon: "📺", page: "BabyVideos" },
-      { id: "baby_words", name: "Help baby learn 50 first words and learn sentences", duration: "10 minutes", icon: "👶", page: "BabyVideos" },
-      { id: "colors", name: "Learn the colors", duration: "5 minutes", icon: "🎨", page: "ColorsLesson" },
-      { id: "body_parts", name: "Learn body parts", duration: "5 minutes", icon: "🦵", page: "BodyPartsLesson" },
-      { id: "days", name: "Learn days of the week", duration: "5 minutes", icon: "📅", page: "DaysLesson" },
-      { id: "months", name: "Learn months of the year", duration: "5 minutes", icon: "🗓️", page: "MonthsLesson" },
-      { id: "blessing", name: "Learn a Jewish blessing in Hebrew", duration: "5 minutes", icon: "✡️", page: "Progress" },
-      { id: "song_level1", name: "Learn a song", duration: "10 minutes", icon: "🎵", page: "Songs", level: 1 },
-    ]
-  },
-  { id: 2, name: "Level 2", subtitle: "Growing Up", icon: Star, gradient: "from-amber-500 to-orange-500", activities: [
-      { id: "song_level2", name: "Learn a song", duration: "10 minutes", icon: "🎵", page: "Songs", level: 2 },
-    ] 
-  },
-  { id: 3, name: "Level 3", subtitle: "Explorer", icon: Sparkles, gradient: "from-green-500 to-emerald-500", activities: [
-      { id: "song_level3", name: "Learn a song", duration: "10 minutes", icon: "🎵", page: "Songs", level: 3 },
-    ] 
-  },
-  { id: 4, name: "Level 4", subtitle: "Adventurer", icon: Trophy, gradient: "from-blue-500 to-indigo-500", activities: [] },
-  { id: 5, name: "Level 5", subtitle: "Master", icon: Star, gradient: "from-purple-500 to-violet-500", activities: [] },
-];
+
 
 export default function Home() {
   const navigate = useNavigate();
@@ -82,6 +54,35 @@ export default function Home() {
   const [timerSpeed, setTimerSpeed] = useState(1);
   const [currentUser, setCurrentUser] = useState(null);
   const [showExtras, setShowExtras] = useState(false);
+  const [levels, setLevels] = useState([
+    { 
+      id: 1, 
+      name: "Level 1", 
+      subtitle: "Baby Steps",
+      icon: Baby, 
+      gradient: "from-pink-500 to-rose-500",
+      activities: [
+        { id: "youtube", name: "Watch Youtube video", duration: "1 hour", icon: "📺", page: "BabyVideos" },
+        { id: "baby_words", name: "Help baby learn 50 first words and learn sentences", duration: "10 minutes", icon: "👶", page: "BabyVideos" },
+        { id: "colors", name: "Learn the colors", duration: "5 minutes", icon: "🎨", page: "ColorsLesson" },
+        { id: "body_parts", name: "Learn body parts", duration: "5 minutes", icon: "🦵", page: "BodyPartsLesson" },
+        { id: "days", name: "Learn days of the week", duration: "5 minutes", icon: "📅", page: "DaysLesson" },
+        { id: "months", name: "Learn months of the year", duration: "5 minutes", icon: "🗓️", page: "MonthsLesson" },
+        { id: "blessing", name: "Learn a Jewish blessing in Hebrew", duration: "5 minutes", icon: "✡️", page: "Progress" },
+        { id: "song_level1", name: "Learn a song", duration: "10 minutes", icon: "🎵", page: "Songs", level: 1 },
+      ]
+    },
+    { id: 2, name: "Level 2", subtitle: "Growing Up", icon: Star, gradient: "from-amber-500 to-orange-500", activities: [
+        { id: "song_level2", name: "Learn a song", duration: "10 minutes", icon: "🎵", page: "Songs", level: 2 },
+      ] 
+    },
+    { id: 3, name: "Level 3", subtitle: "Explorer", icon: Sparkles, gradient: "from-green-500 to-emerald-500", activities: [
+        { id: "song_level3", name: "Learn a song", duration: "10 minutes", icon: "🎵", page: "Songs", level: 3 },
+      ] 
+    },
+    { id: 4, name: "Level 4", subtitle: "Adventurer", icon: Trophy, gradient: "from-blue-500 to-indigo-500", activities: [] },
+    { id: 5, name: "Level 5", subtitle: "Master", icon: Star, gradient: "from-purple-500 to-violet-500", activities: [] },
+  ]);
 
   // Get current user
   useEffect(() => {
@@ -146,9 +147,9 @@ export default function Home() {
     refetchOnMount: false,
   });
 
-  const { data: todoItems = [] } = useQuery({
-    queryKey: ['todoItems'],
-    queryFn: () => base44.entities.TodoItem.list(),
+  const { data: todoProgress = [] } = useQuery({
+    queryKey: ['todoProgress'],
+    queryFn: () => base44.entities.TodoProgress.list(),
     staleTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -164,9 +165,16 @@ export default function Home() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['userProfile'] }),
   });
 
-  const updateTodoMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.TodoItem.update(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todoItems'] }),
+  const toggleActivityMutation = useMutation({
+    mutationFn: async ({ activityId }) => {
+      const existing = todoProgress.find(p => p.todo_item_id === activityId);
+      if (existing) {
+        await base44.entities.TodoProgress.update(existing.id, { completed: !existing.completed });
+      } else {
+        await base44.entities.TodoProgress.create({ todo_item_id: activityId, completed: true });
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todoProgress'] }),
   });
 
   const deleteProfileMutation = useMutation({
@@ -283,34 +291,15 @@ export default function Home() {
     deleteProfileMutation.mutate();
   };
 
-  const createTodoItemMutation = useMutation({
-    mutationFn: (data) => base44.entities.TodoItem.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['todoItems'] });
-      toast.success("Added to To-Do List!");
-    },
-  });
 
-  const handleDragEnd = (result) => {
-    if (!result.destination) return;
-    
-    const { source, destination } = result;
-    
-    // Dragging from level to todo-list
-    if (source.droppableId.startsWith('level-') && destination.droppableId === 'todo-list') {
-      const levelId = parseInt(source.droppableId.replace('level-', ''));
-      const activity = levels[levelId - 1]?.activities[source.index];
-      
-      if (!activity) return;
-      
-      createTodoItemMutation.mutate({
-        label: activity.name,
-        type: 'lesson',
-        order: todoItems.length,
-        is_active: true,
-      });
-      return;
-    }
+
+  const [editingLevel, setEditingLevel] = useState(null);
+  const [editingActivity, setEditingActivity] = useState(null);
+  const [newActivity, setNewActivity] = useState({ name: "", duration: "", icon: "", page: "" });
+  const [newLevel, setNewLevel] = useState({ name: "", subtitle: "", gradient: "" });
+
+  const isActivityCompleted = (activityId) => {
+    return todoProgress.some(p => p.todo_item_id === activityId && p.completed);
   };
 
   const currentAge = userProfile?.age_level || 3;
@@ -451,25 +440,27 @@ export default function Home() {
             />
           </motion.div>
         ) : (
-          <>
-            {/* To-Do List */}
-            <div className="mb-8">
-              <HomeTodoList isAdmin={isMasterUser} />
+          <div className="space-y-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-white">Learning Activities</h2>
+              {isMasterUser && (
+                <Button onClick={() => setNewLevel({ name: "", subtitle: "", gradient: "from-blue-500 to-indigo-500" })} className="bg-green-500 hover:bg-green-600">
+                  + Add Level
+                </Button>
+              )}
             </div>
 
-            {/* Levels Section */}
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-white mb-4">Learning Activities</h2>
-              {levels.map((level) => {
-                const LevelIcon = level.icon;
-                return (
-                  <motion.div
-                    key={level.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 overflow-hidden"
-                  >
-                    <div className={`bg-gradient-to-r ${level.gradient} p-4`}>
+            {levels.map((level, levelIdx) => {
+              const LevelIcon = level.icon;
+              return (
+                <motion.div
+                  key={level.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 overflow-hidden"
+                >
+                  <div className={`bg-gradient-to-r ${level.gradient} p-4`}>
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <LevelIcon className="w-8 h-8 text-white" />
                         <div>
@@ -477,29 +468,102 @@ export default function Home() {
                           <p className="text-white/80 text-sm">{level.subtitle}</p>
                         </div>
                       </div>
+                      {isMasterUser && (
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" className="border-white/30 text-white hover:bg-white/10" onClick={() => setNewActivity({ ...newActivity, levelId: level.id })}>
+                            + Activity
+                          </Button>
+                        </div>
+                      )}
                     </div>
-                    <div className="p-4 space-y-2">
-                      {level.activities.map((activity) => (
-                        <motion.button
+                  </div>
+                  <div className="p-4 space-y-2">
+                    {level.activities.map((activity, actIdx) => {
+                      const completed = isActivityCompleted(activity.id);
+                      return (
+                        <motion.div
                           key={activity.id}
-                          onClick={() => navigate(createPageUrl(activity.page))}
-                          whileHover={{ scale: 1.02 }}
-                          className="w-full bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 flex items-center gap-3 hover:from-white/10 hover:to-white/15 transition-all"
+                          whileHover={{ scale: 1.01 }}
+                          className={`bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 flex items-center gap-3 transition-all ${
+                            completed ? 'from-green-500/10 to-green-600/10 border-green-500/30' : ''
+                          }`}
                         >
-                          <span className="text-2xl">{activity.icon}</span>
-                          <div className="flex-1 text-left">
-                            <p className="text-white font-medium text-lg">{activity.name}</p>
-                            <p className="text-white/60 text-sm">{activity.duration}</p>
-                          </div>
-                          <ChevronRight className="w-5 h-5 text-white/40" />
-                        </motion.button>
-                      ))}
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </>
+                          <button
+                            onClick={() => toggleActivityMutation.mutate({ activityId: activity.id })}
+                            className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all ${
+                              completed ? 'bg-green-500 border-green-500 shadow-lg' : 'border-white/40 hover:border-cyan-400 hover:bg-cyan-500/10'
+                            }`}
+                          >
+                            {completed && <Check className="w-5 h-5 text-white" />}
+                          </button>
+                          <button
+                            onClick={() => navigate(createPageUrl(activity.page))}
+                            className="flex-1 flex items-center gap-3 text-left"
+                          >
+                            <span className="text-2xl">{activity.icon}</span>
+                            <div className="flex-1">
+                              <p className={`text-white font-medium text-lg ${completed ? 'line-through opacity-60' : ''}`}>{activity.name}</p>
+                              <p className="text-white/60 text-sm">{activity.duration}</p>
+                            </div>
+                            <ChevronRight className="w-5 h-5 text-white/40" />
+                          </button>
+                          {isMasterUser && (
+                            <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300 hover:bg-red-500/10" onClick={() => {
+                              levels[levelIdx].activities.splice(actIdx, 1);
+                              setLevels([...levels]);
+                            }}>
+                              ✕
+                            </Button>
+                          )}
+                        </motion.div>
+                      );
+                    })}
+                    {newActivity.levelId === level.id && (
+                      <div className="bg-white/10 rounded-xl p-4 space-y-2">
+                        <Input placeholder="Activity name" value={newActivity.name} onChange={(e) => setNewActivity({...newActivity, name: e.target.value})} className="bg-white/5 border-white/20 text-white" />
+                        <Input placeholder="Duration (e.g., 10 minutes)" value={newActivity.duration} onChange={(e) => setNewActivity({...newActivity, duration: e.target.value})} className="bg-white/5 border-white/20 text-white" />
+                        <Input placeholder="Emoji icon" value={newActivity.icon} onChange={(e) => setNewActivity({...newActivity, icon: e.target.value})} className="bg-white/5 border-white/20 text-white" />
+                        <Input placeholder="Page name (e.g., BabyVideos)" value={newActivity.page} onChange={(e) => setNewActivity({...newActivity, page: e.target.value})} className="bg-white/5 border-white/20 text-white" />
+                        <div className="flex gap-2">
+                          <Button onClick={() => {
+                            levels[levelIdx].activities.push({ id: Date.now().toString(), ...newActivity, levelId: undefined });
+                            setLevels([...levels]);
+                            setNewActivity({ name: "", duration: "", icon: "", page: "" });
+                            toast.success("Activity added!");
+                          }} className="flex-1 bg-green-500 hover:bg-green-600">
+                            Save
+                          </Button>
+                          <Button onClick={() => setNewActivity({ name: "", duration: "", icon: "", page: "" })} variant="outline" className="border-white/20 text-white">
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+
+            {newLevel.name !== undefined && (
+              <div className="bg-white/10 rounded-xl p-4 space-y-2">
+                <Input placeholder="Level name (e.g., Level 4)" value={newLevel.name} onChange={(e) => setNewLevel({...newLevel, name: e.target.value})} className="bg-white/5 border-white/20 text-white" />
+                <Input placeholder="Subtitle (e.g., Master)" value={newLevel.subtitle} onChange={(e) => setNewLevel({...newLevel, subtitle: e.target.value})} className="bg-white/5 border-white/20 text-white" />
+                <Input placeholder="Gradient (e.g., from-blue-500 to-indigo-500)" value={newLevel.gradient} onChange={(e) => setNewLevel({...newLevel, gradient: e.target.value})} className="bg-white/5 border-white/20 text-white" />
+                <div className="flex gap-2">
+                  <Button onClick={() => {
+                    setLevels([...levels, { id: levels.length + 1, name: newLevel.name, subtitle: newLevel.subtitle, icon: Star, gradient: newLevel.gradient, activities: [] }]);
+                    setNewLevel({ name: "", subtitle: "", gradient: "" });
+                    toast.success("Level added!");
+                  }} className="flex-1 bg-green-500 hover:bg-green-600">
+                    Save Level
+                  </Button>
+                  <Button onClick={() => setNewLevel({ name: "", subtitle: "", gradient: "" })} variant="outline" className="border-white/20 text-white">
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
