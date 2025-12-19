@@ -645,7 +645,7 @@ export default function BabyVideos() {
     }
     await createWordMutation.mutateAsync({
       word: item.hebrew,
-      translation: item.meaning,
+      translation: item.english || item.meaning,
       phonetic: item.transliteration,
       category: "wordbank",
       times_practiced: 1,
