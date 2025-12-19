@@ -360,9 +360,9 @@ Format as array of objects with: transliteration, english, hebrew`,
                 return blocks.map((block, blockIdx) => {
                   const lines = block.trim().split('\n').filter(l => l.trim());
                   
-                  // If we have exactly 3 lines, treat as Hebrew/Translit/English
+                  // If we have exactly 3 lines, treat as Translit/English/Hebrew
                   if (lines.length >= 3) {
-                    const [hebrew, transliteration, english] = lines;
+                    const [transliteration, english, hebrew] = lines;
                     return (
                       <div key={blockIdx} className="group relative space-y-1 p-2 rounded-lg hover:bg-white/5 transition-all flex gap-2">
                         {onSeekVideo && (
