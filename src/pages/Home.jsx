@@ -424,13 +424,8 @@ export default function Home() {
       )}
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 py-8">
-          {/* To-Do List */}
-          <div className="mb-8">
-            <HomeTodoList isAdmin={isMasterUser} />
-          </div>
-
-          {/* Show activity content */}
-          {selectedActivity ? (
+        {/* Show activity content */}
+        {selectedActivity ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -455,7 +450,57 @@ export default function Home() {
               onWatchTV={() => navigate(createPageUrl("BabyVideos"))}
             />
           </motion.div>
-        ) : null}
+        ) : (
+          <>
+            {/* To-Do List */}
+            <div className="mb-8">
+              <HomeTodoList isAdmin={isMasterUser} />
+            </div>
+
+            {/* Levels Section */}
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-white mb-4">Learning Activities</h2>
+              {levels.map((level) => {
+                const LevelIcon = level.icon;
+                return (
+                  <motion.div
+                    key={level.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 overflow-hidden"
+                  >
+                    <div className={`bg-gradient-to-r ${level.gradient} p-4`}>
+                      <div className="flex items-center gap-3">
+                        <LevelIcon className="w-8 h-8 text-white" />
+                        <div>
+                          <h3 className="text-white font-bold text-xl">{level.name}</h3>
+                          <p className="text-white/80 text-sm">{level.subtitle}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-4 space-y-2">
+                      {level.activities.map((activity) => (
+                        <motion.button
+                          key={activity.id}
+                          onClick={() => navigate(createPageUrl(activity.page))}
+                          whileHover={{ scale: 1.02 }}
+                          className="w-full bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 flex items-center gap-3 hover:from-white/10 hover:to-white/15 transition-all"
+                        >
+                          <span className="text-2xl">{activity.icon}</span>
+                          <div className="flex-1 text-left">
+                            <p className="text-white font-medium text-lg">{activity.name}</p>
+                            <p className="text-white/60 text-sm">{activity.duration}</p>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-white/40" />
+                        </motion.button>
+                      ))}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Buy Coins Dialog */}

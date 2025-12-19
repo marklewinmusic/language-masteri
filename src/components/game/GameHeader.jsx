@@ -55,7 +55,18 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
               className="flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/50 rounded-xl px-4 py-2"
             >
               <span className="text-lg">🎒</span>
-              <span className="font-bold text-amber-400">My Backpack</span>
+              <span className="font-bold text-amber-400 hidden md:inline">My Backpack</span>
+            </motion.div>
+          </Link>
+
+          {/* Songs */}
+          <Link to={createPageUrl("Songs")}>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="flex items-center gap-2 bg-gradient-to-r from-pink-500/20 to-rose-500/20 border border-pink-500/50 rounded-xl px-4 py-2"
+            >
+              <span className="text-lg">🎵</span>
+              <span className="font-bold text-pink-400 hidden md:inline">Songs</span>
             </motion.div>
           </Link>
 
