@@ -13,9 +13,13 @@ export default function ClickableWord({
   translation, // English meaning
   className = "",
   variant = "hebrew", // "hebrew" | "transliteration" | "both"
-  onBeforeOpen // callback to pause video
+  onBeforeOpen, // callback to pause video
+  editable = false, // if true, show edit on click
+  onEdit // callback when editing
 }) {
   const [open, setOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(word);
   const [activeTab, setActiveTab] = useState("sentences"); // "sentences" | "mnemonic"
   const [loading, setLoading] = useState(false);
   const [sentences, setSentences] = useState(null);
