@@ -82,7 +82,6 @@ export default function Home() {
   const [timerSpeed, setTimerSpeed] = useState(1);
   const [currentUser, setCurrentUser] = useState(null);
   const [showExtras, setShowExtras] = useState(false);
-  const [expandedLevels, setExpandedLevels] = useState({ 1: true });
 
   // Get current user
   useEffect(() => {
@@ -498,5 +497,8 @@ export default function Home() {
         avatarName={userProfile?.avatar_name || 'Avatar'}
       />
 
-      );
-      }
+      {/* Translator Widget */}
+      <TranslatorWidget />
+    </div>
+  );
+}

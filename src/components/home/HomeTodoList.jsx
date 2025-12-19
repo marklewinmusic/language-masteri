@@ -156,7 +156,7 @@ export default function HomeTodoList({ isAdmin = false }) {
               <div 
                 ref={provided.innerRef} 
                 {...provided.droppableProps} 
-                className={`space-y-2 min-h-[100px] rounded-xl transition-all ${
+                className={`space-y-3 min-h-[100px] rounded-xl transition-all ${
                   snapshot.isDraggingOver ? 'bg-cyan-500/10 border-2 border-cyan-500/50 p-2' : ''
                 }`}
               >
@@ -166,25 +166,25 @@ export default function HomeTodoList({ isAdmin = false }) {
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className={`bg-white/10 border border-white/20 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:bg-white/15 transition-all ${
-                          snapshot.isDragging ? 'shadow-lg scale-105' : ''
-                        }`}
+                        className={`bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 flex items-center gap-3 cursor-pointer hover:from-white/10 hover:to-white/15 transition-all ${
+                          snapshot.isDragging ? 'shadow-2xl scale-105 border-cyan-400/50' : ''
+                        } ${isCompleted(item.id) ? 'bg-gradient-to-br from-green-500/10 to-green-600/10 border-green-500/30' : ''}`}
                       >
                         <div {...provided.dragHandleProps}>
                           <GripVertical className="w-5 h-5 text-white/40 hover:text-white/60" />
                         </div>
                         <button
                           onClick={() => toggleCompleteMutation.mutate(item.id)}
-                          className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                          className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all ${
                             isCompleted(item.id)
-                              ? "bg-green-500 border-green-500"
-                              : "border-white/40 hover:border-white/60"
+                              ? "bg-green-500 border-green-500 shadow-lg"
+                              : "border-white/40 hover:border-cyan-400 hover:bg-cyan-500/10"
                           }`}
                         >
-                          {isCompleted(item.id) && <Check className="w-4 h-4 text-white" />}
+                          {isCompleted(item.id) && <Check className="w-5 h-5 text-white" />}
                         </button>
                         <div className="flex-1" onClick={() => handleItemClick(item)}>
-                          <p className={`text-white font-medium ${isCompleted(item.id) ? "line-through opacity-60" : ""}`}>
+                          <p className={`text-white font-medium text-lg ${isCompleted(item.id) ? "line-through opacity-60" : ""}`}>
                             {item.label}
                           </p>
                           {item.type === "video" && (
@@ -219,26 +219,28 @@ export default function HomeTodoList({ isAdmin = false }) {
           </Droppable>
         </DragDropContext>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {todoItems.map((item) => (
             <motion.div
               key={item.id}
               whileHover={{ scale: 1.02 }}
-              className="bg-white/10 border border-white/20 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:bg-white/15"
+              className={`bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 flex items-center gap-3 cursor-pointer hover:from-white/10 hover:to-white/15 transition-all ${
+                isCompleted(item.id) ? 'bg-gradient-to-br from-green-500/10 to-green-600/10 border-green-500/30' : ''
+              }`}
               onClick={() => handleItemClick(item)}
             >
               <button
                 onClick={(e) => { e.stopPropagation(); toggleCompleteMutation.mutate(item.id); }}
-                className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all ${
                   isCompleted(item.id)
-                    ? "bg-green-500 border-green-500"
-                    : "border-white/40 hover:border-white/60"
+                    ? "bg-green-500 border-green-500 shadow-lg"
+                    : "border-white/40 hover:border-cyan-400 hover:bg-cyan-500/10"
                 }`}
               >
-                {isCompleted(item.id) && <Check className="w-4 h-4 text-white" />}
+                {isCompleted(item.id) && <Check className="w-5 h-5 text-white" />}
               </button>
               <div className="flex-1">
-                <p className={`text-white font-medium ${isCompleted(item.id) ? "line-through opacity-60" : ""}`}>
+                <p className={`text-white font-medium text-lg ${isCompleted(item.id) ? "line-through opacity-60" : ""}`}>
                   {item.label}
                 </p>
                 {item.type === 'video' && item.target_video_id && !videos.find(v => v.id === item.target_video_id) && (
