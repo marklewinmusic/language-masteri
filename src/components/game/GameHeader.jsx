@@ -1,16 +1,13 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Flame, Star, Baby, Sparkles, Trophy, BookOpen } from "lucide-react";
+import { Flame, BookOpen } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
-const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins, onSelectLevel }) {
+const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }) {
   const navigate = useNavigate();
-  const [showLevels, setShowLevels] = useState(false);
   const xpToNextLevel = 1000;
   const xpProgress = ((profile?.xp || 0) % xpToNextLevel) / xpToNextLevel * 100;
-
-  const levels = [
     { 
       id: 1, 
       name: "Level 1", 
@@ -55,21 +52,17 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins, 
   return (
     <div className="bg-gradient-to-r from-slate-900/95 via-purple-900/95 to-slate-900/95 backdrop-blur-xl border-b border-white/10 px-4 py-3">
       <div className="flex items-center justify-between max-w-7xl mx-auto">
-        {/* Avatar & Level */}
-        <div className="relative flex items-center gap-3">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            onClick={() => setShowLevels(!showLevels)}
-            className="relative"
-          >
-            <div className={`w-12 h-12 flex items-center justify-center text-3xl ${profile?.avatar_id === 'jordan' ? 'hue-rotate-[320deg]' : ''}`}>
-              {['alex', 'jordan', 'sam'].includes(profile?.avatar_id) ? '🧍‍♂️' : '🧍‍♀️'}
-              {!profile?.avatar_id && '👤'}
-            </div>
-            <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full px-2 py-0.5 text-xs font-bold text-black">
-              {profile?.age_level || 5}
-            </div>
-          </motion.button>
+        {/* Avatar */}
+                <div className="relative flex items-center gap-3">
+                  <div className="relative">
+                    <div className={`w-12 h-12 flex items-center justify-center text-3xl ${profile?.avatar_id === 'jordan' ? 'hue-rotate-[320deg]' : ''}`}>
+                      {['alex', 'jordan', 'sam'].includes(profile?.avatar_id) ? '🧍‍♂️' : '🧍‍♀️'}
+                      {!profile?.avatar_id && '👤'}
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full px-2 py-0.5 text-xs font-bold text-black">
+                      {profile?.age_level || 5}
+                    </div>
+                  </div>
           <div className="hidden md:block">
             <p className="text-white font-bold">{profile?.avatar_name || 'Player'}</p>
             <div className="flex items-center gap-2">
@@ -82,45 +75,8 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins, 
               </div>
               <span className="text-xs text-white/60">{profile?.xp || 0} XP</span>
             </div>
-          </div>
-
-          {/* Levels Dropdown */}
-          <AnimatePresence>
-            {showLevels && (
-              <motion.div
-                initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                className="absolute top-full left-0 mt-2 bg-slate-900/95 backdrop-blur-xl border border-white/20 rounded-xl p-3 shadow-2xl z-50 min-w-[200px]"
-              >
-                <p className="text-white/60 text-xs mb-2">Choose Your Level</p>
-                <div className="space-y-2">
-                  {levels.map((level) => {
-                    const Icon = level.icon;
-                    
-                    return (
-                      <motion.button
-                        key={level.id}
-                        whileHover={{ scale: 1.02 }}
-                        onClick={() => {
-                          setShowLevels(false);
-                          if (onSelectLevel) onSelectLevel(level);
-                        }}
-                        className={`w-full flex items-center gap-3 p-2 rounded-lg bg-gradient-to-r ${level.gradient} hover:opacity-80 transition-all`}
-                      >
-                        <Icon className="w-5 h-5 text-white" />
-                        <div className="text-left">
-                          <p className="text-white font-bold text-sm">{level.name}</p>
-                          <p className="text-white/80 text-xs">{level.subtitle}</p>
-                        </div>
-                      </motion.button>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+            </div>
+            </div>
 
         {/* Stats */}
         <div className="flex items-center gap-4">

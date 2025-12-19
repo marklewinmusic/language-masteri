@@ -76,7 +76,6 @@ export default function Home() {
   const queryClient = useQueryClient();
   const [buyCoinsDialog, setBuyCoinsDialog] = useState(false);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
-  const [selectedLevel, setSelectedLevel] = useState(null);
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [timer, setTimer] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
@@ -342,8 +341,7 @@ export default function Home() {
       <GameHeader 
         profile={userProfile} 
         coins={coins} 
-        onBuyCoins={() => setBuyCoinsDialog(true)} 
-        onSelectLevel={setSelectedLevel}
+        onBuyCoins={() => setBuyCoinsDialog(true)}
       />
       
       <TimelineBar currentAge={currentAge} />
@@ -427,13 +425,12 @@ export default function Home() {
       )}
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 py-8">
-        <DragDropContext onDragEnd={handleDragEnd}>
           {/* To-Do List */}
           <div className="mb-8">
             <HomeTodoList isAdmin={isMasterUser} />
           </div>
 
-          {/* Show activity content OR levels */}
+          {/* Show activity content */}
           {selectedActivity ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -458,212 +455,9 @@ export default function Home() {
               onCorrect={handleToddlerNeedComplete}
               onWatchTV={() => navigate(createPageUrl("BabyVideos"))}
             />
-          </motion.div>
-        ) : selectedLevel ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <button 
-              onClick={() => setSelectedLevel(null)}
-              className="mb-6 text-white/60 hover:text-white flex items-center gap-2"
-            >
-              <ArrowRight className="w-4 h-4 rotate-180" /> Back to levels
-            </button>
-
-            <div className="flex items-center gap-4 mb-6">
-              <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${selectedLevel.gradient} flex items-center justify-center`}>
-                {selectedLevel.icon && <selectedLevel.icon className="w-7 h-7 text-white" />}
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white">{selectedLevel.name}</h2>
-                <p className="text-white/60">{selectedLevel.subtitle}</p>
-              </div>
+            </motion.div>
+            ) : null}
             </div>
-
-            {selectedLevel.activities?.length > 0 ? (
-              <div className="space-y-3">
-                {isMasterUser && (
-                  <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-xl p-3 mb-4">
-                    <p className="text-yellow-400 text-sm font-medium">👑 Master Mode: All levels unlocked</p>
-                  </div>
-                )}
-                {selectedLevel.activities
-                  .map((activity) => {
-                    let isCompleted = false;
-
-                    // Check if it's a song activity
-                    if (activity.id.startsWith('song_')) {
-                      const levelSongs = songs.filter(s => s.level === activity.level);
-                      isCompleted = levelSongs.length > 0 && levelSongs.every(song => 
-                        songProgress.find(sp => sp.song_id === song.id && sp.completed)
-                      );
-                    } else {
-                      isCompleted = lessonProgress.find(lp => lp.lesson_name === activity.page && lp.completed);
-                    }
-
-                    return { ...activity, isCompleted };
-                  })
-                  .sort((a, b) => (b.isCompleted ? 1 : 0) - (a.isCompleted ? 1 : 0))
-                  .map((activity) => {
-
-                  return (
-                    <motion.button
-                      key={activity.id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        // Parse duration to get minutes
-                        const durationMatch = activity.duration.match(/(\d+)\s*(minute|hour)/i);
-                        if (durationMatch) {
-                          const amount = parseInt(durationMatch[1]);
-                          const unit = durationMatch[2].toLowerCase();
-                          const minutes = unit === 'hour' ? amount * 60 : amount;
-                          startTimer(minutes);
-                        }
-
-                        if (activity.id === "baby_words") {
-                          setSelectedActivity(activity);
-                        } else {
-                          navigate(createPageUrl(activity.page));
-                        }
-                      }}
-                      className={`w-full ${activity.isCompleted ? 'bg-green-500/10 border-green-500/30' : 'bg-white/5 border-white/10'} hover:bg-white/10 border hover:border-cyan-400/50 rounded-xl p-4 text-left transition-all`}
-                    >
-                      <div className="flex items-start gap-3">
-                        {activity.isCompleted ? (
-                          <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                            <span className="text-white text-sm">✓</span>
-                          </div>
-                        ) : (
-                          <div className="w-6 h-6 rounded-full border-2 border-white/20 flex-shrink-0" />
-                        )}
-                        <span className="text-2xl">{activity.icon}</span>
-                        <div className="flex-1">
-                          <p className="text-white font-medium">{activity.name}</p>
-                        </div>
-                        <ChevronRight className="w-5 h-5 text-white/40" />
-                      </div>
-                    </motion.button>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-8 bg-white/5 rounded-xl border border-white/10">
-                <p className="text-white/60">Coming soon!</p>
-                <p className="text-white/40 text-sm mt-2">This level is being prepared for you.</p>
-              </div>
-            )}
-          </motion.div>
-        ) : (
-          <>
-            {/* Level Cards with Dropdown */}
-            <div className="space-y-4 mb-6">
-              {levels.map((level) => {
-                const Icon = level.icon;
-                const isExpanded = expandedLevels[level.id];
-                
-                return (
-                  <div key={level.id} className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden">
-                    <button
-                      onClick={() => setExpandedLevels(prev => ({ ...prev, [level.id]: !prev[level.id] }))}
-                      className="w-full flex items-center gap-4 p-4 hover:bg-white/5 transition-all"
-                    >
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${level.gradient} flex items-center justify-center flex-shrink-0`}>
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="flex-1 text-left">
-                        <h3 className="text-white font-bold">{level.name}</h3>
-                        <p className="text-white/60 text-sm">{level.subtitle}</p>
-                      </div>
-                      <ChevronRight className={`w-5 h-5 text-white/40 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-                    </button>
-
-                    <AnimatePresence>
-                      {isExpanded && level.activities?.length > 0 && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="border-t border-white/10"
-                        >
-                          <Droppable droppableId={`level-${level.id}`}>
-                            {(provided) => (
-                              <div ref={provided.innerRef} {...provided.droppableProps} className="p-3 space-y-2">
-                                {level.activities.map((activity, index) => {
-                                  let isCompleted = false;
-
-                                  // Check if it's a song activity
-                                  if (activity.id.startsWith('song_')) {
-                                    const levelSongs = songs.filter(s => s.level === activity.level);
-                                    isCompleted = levelSongs.length > 0 && levelSongs.every(song => 
-                                      songProgress.find(sp => sp.song_id === song.id && sp.completed)
-                                    );
-                                  } else {
-                                    isCompleted = lessonProgress.find(lp => lp.lesson_name === activity.page && lp.completed);
-                                  }
-                                  
-                                  return (
-                                    <Draggable key={`${level.id}-${activity.id}`} draggableId={`${level.id}-${activity.id}`} index={index}>
-                                      {(provided, snapshot) => (
-                                        <div
-                                          ref={provided.innerRef}
-                                          {...provided.draggableProps}
-                                          className={`${isCompleted ? 'bg-green-500/10 border-green-500/30' : 'bg-white/5 border-white/10'} border rounded-lg transition-all ${snapshot.isDragging ? 'shadow-lg scale-105 bg-cyan-500/20' : ''}`}
-                                        >
-                                          <div className="flex items-center gap-2 p-3">
-                                            <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing">
-                                              <GripVertical className="w-4 h-4 text-white/40 hover:text-white/60" />
-                                            </div>
-                                            <button
-                                              onClick={() => {
-                                                const durationMatch = activity.duration?.match(/(\d+)\s*(minute|hour)/i);
-                                                if (durationMatch) {
-                                                  const amount = parseInt(durationMatch[1]);
-                                                  const unit = durationMatch[2].toLowerCase();
-                                                  const minutes = unit === 'hour' ? amount * 60 : amount;
-                                                  startTimer(minutes);
-                                                }
-                                                if (activity.id === "baby_words") {
-                                                  setSelectedActivity(activity);
-                                                } else {
-                                                  navigate(createPageUrl(activity.page));
-                                                }
-                                              }}
-                                              className="flex items-center gap-2 flex-1 text-left"
-                                            >
-                                              {isCompleted ? (
-                                                <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                                                  <span className="text-white text-xs">✓</span>
-                                                </div>
-                                              ) : (
-                                                <div className="w-5 h-5 rounded-full border-2 border-white/20 flex-shrink-0" />
-                                              )}
-                                              <span className="text-xl">{activity.icon}</span>
-                                              <div className="flex-1">
-                                                <p className="text-white font-medium text-sm">{activity.name}</p>
-                                              </div>
-                                            </button>
-                                          </div>
-                                        </div>
-                                      )}
-                                    </Draggable>
-                                  );
-                                })}
-                                {provided.placeholder}
-                              </div>
-                            )}
-                          </Droppable>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              })}
-            </div>
-          </>
-          )}
-          </DragDropContext>
           </div>
 
       {/* Buy Coins Dialog */}
@@ -704,8 +498,5 @@ export default function Home() {
         avatarName={userProfile?.avatar_name || 'Avatar'}
       />
 
-      {/* Translator Widget */}
-      <TranslatorWidget />
-    </div>
-  );
-}
+      );
+      }
