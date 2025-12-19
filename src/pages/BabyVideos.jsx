@@ -786,6 +786,13 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                     {selectedVideo.transcript.map((item, idx) => {
                       const currentRating = getWordRating(item.hebrew);
                       const inBackpack = wordRatings.find(w => w.word === item.hebrew);
+
+                      const updateTranscriptLine = (field, newValue) => {
+                        const updatedVideo = { ...selectedVideo };
+                        updatedVideo.transcript[idx][field] = newValue;
+                        setSelectedVideo(updatedVideo);
+                      };
+
                       return (
                         <motion.div
                           key={idx}
@@ -803,29 +810,26 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                               <span className="text-white/40 text-xs w-12">{item.time}</span>
                               <div>
                                 <p className="text-white/90 text-lg leading-tight" style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'plaintext' }}>
-                                  {item.transliteration.split(/\s+/).map((word, widx) => (
-                                    <span key={widx}>
-                                      <ClickableWord word={word} transliteration={word} translation={item.english} variant="transliteration" />
-                                      {widx < item.transliteration.split(/\s+/).length - 1 ? ' ' : ''}
-                                    </span>
-                                  ))}
+                                  <EditableWord 
+                                    text={item.transliteration} 
+                                    onSave={(newValue) => updateTranscriptLine('transliteration', newValue)}
+                                    className="text-white/90 text-lg"
+                                  />
                                 </p>
                                 <p className="text-white/70 text-base leading-tight" style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'plaintext' }}>
-                                  {item.english.split(/\s+/).map((word, widx) => (
-                                    <span key={widx}>
-                                      <ClickableWord word={word} transliteration={item.transliteration} translation={item.english} variant="transliteration" />
-                                      {widx < item.english.split(/\s+/).length - 1 ? ' ' : ''}
-                                    </span>
-                                  ))}
+                                  <EditableWord 
+                                    text={item.english} 
+                                    onSave={(newValue) => updateTranscriptLine('english', newValue)}
+                                    className="text-white/70 text-base"
+                                  />
                                 </p>
                                 <div className="flex items-center gap-2">
                                   <p className="text-cyan-400 text-2xl font-bold leading-tight" style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'plaintext' }}>
-                                    {item.hebrew.split(/\s+/).map((word, widx) => (
-                                      <span key={widx}>
-                                        <ClickableWord word={word} transliteration={item.transliteration} translation={item.english} variant="hebrew" />
-                                        {widx < item.hebrew.split(/\s+/).length - 1 ? ' ' : ''}
-                                      </span>
-                                    ))}
+                                    <EditableWord 
+                                      text={item.hebrew} 
+                                      onSave={(newValue) => updateTranscriptLine('hebrew', newValue)}
+                                      className="text-cyan-400 text-2xl font-bold"
+                                    />
                                   </p>
                                   {currentRating >= 5 && <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />}
                                 </div>
