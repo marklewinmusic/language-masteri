@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import GameHeader from "../components/game/GameHeader";
+import TranslatorWidget from "../components/TranslatorWidget";
 
 export default function Journal() {
   const queryClient = useQueryClient();
@@ -18,6 +19,9 @@ export default function Journal() {
   const [generatingQuestion, setGeneratingQuestion] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [usedWords, setUsedWords] = useState([]);
+  const [synonyms, setSynonyms] = useState(null);
+  const [loadingSynonyms, setLoadingSynonyms] = useState(false);
+  const [selectedWord, setSelectedWord] = useState("");
   const today = new Date().toISOString().split('T')[0];
 
   const { data: userProfile } = useQuery({
@@ -205,6 +209,55 @@ Return just the question.`,
 
   const allWordsUsed = usedWords.length === suggestedVocab.length;
 
+  const getSynonyms = async (word) => {
+    if (!word.trim()) return;
+    
+    setLoadingSynonyms(true);
+    setSelectedWord(word);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Give me 5 Hebrew synonyms or alternative words for: "${word}"
+        
+Include both the Hebrew word and transliteration for each.
+If the input is English, give Hebrew equivalents.
+If the input is Hebrew, give other Hebrew words with similar meaning.
+
+Make them useful for a Hebrew learner writing a journal.`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            synonyms: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  hebrew: { type: "string" },
+                  transliteration: { type: "string" },
+                  meaning: { type: "string" }
+                }
+              }
+            }
+          }
+        }
+      });
+      setSynonyms(result.synonyms);
+    } catch (e) {
+      toast.error("Failed to get synonyms");
+    }
+    setLoadingSynonyms(false);
+  };
+
+  const insertSynonym = (synonym) => {
+    const textarea = document.querySelector('textarea');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const before = text.substring(0, start);
+    const after = text.substring(end);
+    setText(before + synonym + after);
+    setSynonyms(null);
+    toast.success("Word inserted!");
+  };
+
   const unusedVocab = suggestedVocab.filter(v => !usedWords.includes(v.id));
 
   return (
@@ -331,12 +384,55 @@ Return just the question.`,
             )}
           </AnimatePresence>
 
+          {/* Synonyms Panel */}
+          <AnimatePresence>
+            {synonyms && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mb-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl p-4"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-white/80 font-medium">
+                    💡 Synonyms for "{selectedWord}"
+                  </h4>
+                  <button
+                    onClick={() => setSynonyms(null)}
+                    className="text-white/40 hover:text-white/60"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {synonyms.map((syn, i) => (
+                    <button
+                      key={i}
+                      onClick={() => insertSynonym(syn.hebrew)}
+                      className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg p-3 text-left transition-all"
+                    >
+                      <div className="text-cyan-400 font-bold text-lg" dir="rtl">{syn.hebrew}</div>
+                      <div className="text-white/60 text-sm">{syn.transliteration}</div>
+                      <div className="text-white/50 text-xs">{syn.meaning}</div>
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Text Editor */}
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Write about your day... What did you do? How do you feel? Try using some of the suggested words above..."
             className="bg-white/5 border-white/20 text-white min-h-[250px] mb-4 text-lg leading-relaxed"
+            onSelect={(e) => {
+              const selected = e.target.value.substring(e.target.selectionStart, e.target.selectionEnd).trim();
+              if (selected && selected.split(/\s+/).length === 1) {
+                setSelectedWord(selected);
+              }
+            }}
           />
 
           <div className="flex gap-3">
@@ -350,6 +446,18 @@ Return just the question.`,
                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Thinking...</>
               ) : (
                 <><Sparkles className="w-4 h-4 mr-2" /> Ask me about what I wrote</>
+              )}
+            </Button>
+            <Button
+              onClick={() => getSynonyms(selectedWord)}
+              disabled={loadingSynonyms || !selectedWord}
+              variant="outline"
+              className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
+            >
+              {loadingSynonyms ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Loading...</>
+              ) : (
+                <>💡 Get Synonyms</>
               )}
             </Button>
             <Button
@@ -412,6 +520,8 @@ Return just the question.`,
           </div>
         )}
       </div>
+
+      <TranslatorWidget />
     </div>
   );
 }
