@@ -184,12 +184,30 @@ export default function ClickableWord({
 
   return (
     <>
-      <span
-        onClick={handleClick}
-        className={`cursor-pointer hover:bg-cyan-500/30 hover:text-cyan-300 px-1 rounded transition-all underline decoration-dotted underline-offset-4 ${className}`}
-      >
-        {displayText}
-      </span>
+      {isEditing ? (
+        <input
+          type="text"
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          onBlur={handleSaveEdit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSaveEdit();
+            if (e.key === "Escape") { setEditValue(word); setIsEditing(false); }
+          }}
+          autoFocus
+          className="inline-block bg-cyan-500/20 border border-cyan-400 rounded px-1 outline-none text-white"
+          style={{ width: `${Math.max(editValue.length * 10, 40)}px` }}
+          onClick={(e) => e.stopPropagation()}
+        />
+      ) : (
+        <span
+          onClick={handleClick}
+          className={`cursor-pointer hover:bg-cyan-500/30 hover:text-cyan-300 px-1 rounded transition-all underline decoration-dotted underline-offset-4 ${className}`}
+          title={editable ? "Ctrl+Click to edit" : ""}
+        >
+          {displayText}
+        </span>
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="bg-slate-900 border-white/20 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
