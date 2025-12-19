@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Flame, Star, Baby, Sparkles, Trophy } from "lucide-react";
+import { Flame, Star, Baby, Sparkles, Trophy, BookOpen } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
@@ -118,6 +118,16 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins, 
             >
               <span className="text-lg">🎒</span>
               <span className="font-bold text-amber-400">My Backpack</span>
+            </motion.div>
+          </Link>
+
+          {/* Journal */}
+          <Link to={createPageUrl("Journal")}>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="flex items-center gap-2 bg-purple-500/20 border border-purple-500/50 rounded-xl px-3 py-2"
+            >
+              <BookOpen className="w-5 h-5 text-purple-400" />
             </motion.div>
           </Link>
         </div>
