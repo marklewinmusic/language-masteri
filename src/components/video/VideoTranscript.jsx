@@ -383,7 +383,7 @@ Format as array of objects with: transliteration, english, hebrew`,
                         >
                           <Plus className="w-4 h-4 text-amber-400" />
                         </button>
-                        <div className="mb-0.5">
+                        <div className="mb-0.5" dir="rtl">
                           {transliteration.split(/(\s+)/).map((part, i) => 
                             /\S/.test(part) ? (
                               <VideoTranscriptWord
