@@ -1,28 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, BookOpen, Smile, Frown, Zap, Coffee, Heart, AlertCircle } from "lucide-react";
+import { ArrowLeft, BookOpen, Sparkles, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import GameHeader from "../components/game/GameHeader";
 
-const moodIcons = {
-  happy: { icon: Smile, color: "text-yellow-400", bg: "bg-yellow-500/20" },
-  sad: { icon: Frown, color: "text-blue-400", bg: "bg-blue-500/20" },
-  excited: { icon: Zap, color: "text-purple-400", bg: "bg-purple-500/20" },
-  tired: { icon: Coffee, color: "text-orange-400", bg: "bg-orange-500/20" },
-  grateful: { icon: Heart, color: "text-pink-400", bg: "bg-pink-500/20" },
-  stressed: { icon: AlertCircle, color: "text-red-400", bg: "bg-red-500/20" }
-};
-
 export default function Journal() {
   const queryClient = useQueryClient();
-  const [content, setContent] = useState("");
-  const [selectedMood, setSelectedMood] = useState("happy");
+  const [text, setText] = useState("");
+  const [aiQuestion, setAiQuestion] = useState("");
+  const [questionsAsked, setQuestionsAsked] = useState([]);
+  const [generatingQuestion, setGeneratingQuestion] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [usedWords, setUsedWords] = useState([]);
   const today = new Date().toISOString().split('T')[0];
 
   const { data: userProfile } = useQuery({
@@ -46,11 +41,27 @@ export default function Journal() {
     queryFn: () => base44.entities.JournalEntry.list('-date')
   });
 
+  const { data: backpackWords = [] } = useQuery({
+    queryKey: ['backpackWords'],
+    queryFn: () => base44.entities.Word.filter({ category: "wordbank" })
+  });
+
+  const todayEntry = entries.find(e => e.date === today);
+
+  // Get suggested vocab (latest 5-10, prioritize lower-ranked)
+  const suggestedVocab = backpackWords
+    .sort((a, b) => {
+      const rankDiff = (a.times_practiced || 0) - (b.times_practiced || 0);
+      if (rankDiff !== 0) return rankDiff;
+      return new Date(b.created_date) - new Date(a.created_date);
+    })
+    .slice(0, 8);
+
   const createEntryMutation = useMutation({
     mutationFn: (entry) => base44.entities.JournalEntry.create(entry),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['journalEntries'] });
-      setContent("");
+      setShowFeedback(true);
       toast.success("Journal entry saved! 📖");
     }
   });
@@ -63,35 +74,90 @@ export default function Journal() {
     }
   });
 
-  const deleteEntryMutation = useMutation({
-    mutationFn: (id) => base44.entities.JournalEntry.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['journalEntries'] });
-      toast.success("Entry deleted");
+  // Load today's entry if exists
+  useEffect(() => {
+    if (todayEntry) {
+      setText(todayEntry.text || "");
+      setQuestionsAsked(todayEntry.ai_questions_asked || []);
+      setUsedWords(todayEntry.used_vocab_ids || []);
     }
-  });
+  }, [todayEntry]);
 
-  const todayEntry = entries.find(e => e.date === today);
+  // Check which vocab words are used
+  useEffect(() => {
+    const textLower = text.toLowerCase();
+    const found = suggestedVocab
+      .filter(v => 
+        textLower.includes(v.word.toLowerCase()) || 
+        textLower.includes(v.phonetic?.toLowerCase()) ||
+        textLower.includes(v.translation?.toLowerCase())
+      )
+      .map(v => v.id);
+    setUsedWords(found);
+  }, [text, suggestedVocab]);
+
+  const generateQuestion = async () => {
+    if (!text.trim()) return;
+    
+    setGeneratingQuestion(true);
+    try {
+      const isHebrewHeavy = (text.match(/[\u0590-\u05FF]/g) || []).length > text.length * 0.3;
+      
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `The user wrote this journal entry:
+"${text}"
+
+Previous questions asked: ${questionsAsked.join(", ") || "none"}
+
+Generate ONE simple follow-up question to help them expand their writing.
+${isHebrewHeavy ? "Ask in Hebrew." : "Ask in English."}
+
+Rules:
+- Keep it very short and simple
+- Encourage expansion, not correction
+- Don't rewrite their text
+- Examples: "What happened before that?" / "How did you feel?" / "Where were you?"
+
+Return just the question text.`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            question: { type: "string" }
+          }
+        }
+      });
+
+      setAiQuestion(result.question);
+      setQuestionsAsked([...questionsAsked, result.question]);
+    } catch (e) {
+      toast.error("Failed to generate question");
+    }
+    setGeneratingQuestion(false);
+  };
 
   const handleSave = () => {
-    if (!content.trim()) {
+    if (!text.trim()) {
       toast.error("Please write something");
       return;
     }
 
+    const entryData = {
+      date: today,
+      text,
+      used_vocab_ids: usedWords,
+      suggested_vocab_ids: suggestedVocab.map(v => v.id),
+      ai_questions_asked: questionsAsked,
+      last_edited_at: new Date().toISOString()
+    };
+
     if (todayEntry) {
-      updateEntryMutation.mutate({
-        id: todayEntry.id,
-        data: { content, mood: selectedMood }
-      });
+      updateEntryMutation.mutate({ id: todayEntry.id, data: entryData });
     } else {
-      createEntryMutation.mutate({
-        date: today,
-        content,
-        mood: selectedMood
-      });
+      createEntryMutation.mutate(entryData);
     }
   };
+
+  const unusedVocab = suggestedVocab.filter(v => !usedWords.includes(v.id));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -105,9 +171,11 @@ export default function Journal() {
           <div>
             <h1 className="text-3xl font-bold text-white flex items-center gap-2">
               <BookOpen className="w-8 h-8" />
-              My Journal
+              Daily Journal
             </h1>
-            <p className="text-white/60">Write about your day in Hebrew or English</p>
+            <p className="text-white/60">
+              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+            </p>
           </div>
         </div>
 
@@ -117,59 +185,149 @@ export default function Journal() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-6"
         >
-          <h2 className="text-white text-xl font-bold mb-4">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-          </h2>
-
-          {/* Mood Selector */}
-          <div className="mb-4">
-            <p className="text-white/60 text-sm mb-2">How are you feeling?</p>
-            <div className="flex gap-2 flex-wrap">
-              {Object.entries(moodIcons).map(([mood, { icon: Icon, color, bg }]) => (
-                <button
-                  key={mood}
-                  onClick={() => setSelectedMood(mood)}
-                  className={`px-4 py-2 rounded-xl transition-all ${
-                    selectedMood === mood
-                      ? `${bg} border-2 border-white/30 ${color}`
-                      : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
-                  }`}
-                >
-                  <Icon className="w-5 h-5 inline mr-2" />
-                  {mood}
-                </button>
-              ))}
+          {/* Suggested Vocab */}
+          {suggestedVocab.length > 0 && !showFeedback && (
+            <div className="mb-6 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-4">
+              <p className="text-white/80 text-sm mb-3">💡 Try using these words from your backpack:</p>
+              <div className="flex flex-wrap gap-2">
+                {suggestedVocab.map((word) => {
+                  const isUsed = usedWords.includes(word.id);
+                  return (
+                    <div
+                      key={word.id}
+                      className={`px-3 py-2 rounded-lg transition-all ${
+                        isUsed 
+                          ? "bg-green-500/20 border border-green-500/50" 
+                          : "bg-white/10 border border-white/20"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        {isUsed && <CheckCircle className="w-4 h-4 text-green-400" />}
+                        <div>
+                          <span className="text-cyan-400 font-bold" dir="rtl">{word.word}</span>
+                          <span className="text-white/60 text-sm ml-2">({word.phonetic})</span>
+                          <p className="text-white/50 text-xs">{word.translation}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {usedWords.length === 0 && text.length > 50 && (
+                <p className="text-amber-400 text-xs mt-2">
+                  💭 Try using at least one of today's words ☺️
+                </p>
+              )}
             </div>
-          </div>
+          )}
+
+          {/* Feedback after save */}
+          <AnimatePresence>
+            {showFeedback && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="mb-6 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/50 rounded-xl p-4"
+              >
+                <h3 className="text-white font-bold text-lg mb-2">Great job! 🎉</h3>
+                <p className="text-white/80 mb-2">
+                  You used {usedWords.length} out of {suggestedVocab.length} suggested words today 👏
+                </p>
+                {unusedVocab.length > 0 && (
+                  <div>
+                    <p className="text-white/60 text-sm mb-2">Want to try using next time?</p>
+                    <div className="flex flex-wrap gap-2">
+                      {unusedVocab.slice(0, 3).map((word) => (
+                        <div key={word.id} className="bg-white/10 px-3 py-1 rounded-lg">
+                          <span className="text-cyan-400 font-bold" dir="rtl">{word.word}</span>
+                          <span className="text-white/60 text-sm ml-2">({word.phonetic})</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <Button
+                  onClick={() => setShowFeedback(false)}
+                  variant="outline"
+                  className="mt-3 border-white/20 text-white"
+                  size="sm"
+                >
+                  Continue Editing
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* AI Question */}
+          <AnimatePresence>
+            {aiQuestion && !showFeedback && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mb-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-xl p-4"
+              >
+                <div className="flex items-start gap-3">
+                  <Sparkles className="w-5 h-5 text-cyan-400 mt-1 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-white/80">{aiQuestion}</p>
+                  </div>
+                  <button
+                    onClick={() => setAiQuestion("")}
+                    className="text-white/40 hover:text-white/60"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Text Editor */}
           <Textarea
-            value={content || todayEntry?.content || ""}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Write about your day... What did you learn? How do you feel? Any new Hebrew words?"
-            className="bg-white/5 border-white/20 text-white min-h-[200px] mb-4"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Write about your day... What did you do? How do you feel? Try using some of the suggested words above..."
+            className="bg-white/5 border-white/20 text-white min-h-[250px] mb-4 text-lg leading-relaxed"
           />
 
-          <Button
-            onClick={handleSave}
-            disabled={createEntryMutation.isPending || updateEntryMutation.isPending}
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-6"
-          >
-            {todayEntry ? "Update Today's Entry" : "Save Entry"} 📖
-          </Button>
+          <div className="flex gap-3">
+            {text.length > 20 && !aiQuestion && (
+              <Button
+                onClick={generateQuestion}
+                disabled={generatingQuestion}
+                variant="outline"
+                className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"
+              >
+                {generatingQuestion ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Thinking...</>
+                ) : (
+                  <><Sparkles className="w-4 h-4 mr-2" /> Ask me a question</>
+                )}
+              </Button>
+            )}
+            <Button
+              onClick={handleSave}
+              disabled={createEntryMutation.isPending || updateEntryMutation.isPending || !text.trim()}
+              className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-6"
+            >
+              {todayEntry ? "Update Today's Journal" : "Save Journal Entry"} 📖
+            </Button>
+          </div>
+
+          <p className="text-white/40 text-xs mt-3 text-center">
+            {todayEntry ? "You can edit today's entry anytime" : "You can write only one entry per day"}
+          </p>
         </motion.div>
 
         {/* Previous Entries */}
-        <div className="space-y-3">
-          <h3 className="text-white/60 text-sm font-medium">Previous Entries</h3>
-          {entries
-            .filter(e => e.date !== today)
-            .map((entry, idx) => {
-              const MoodIcon = moodIcons[entry.mood]?.icon || Smile;
-              const moodColor = moodIcons[entry.mood]?.color || "text-yellow-400";
-              const moodBg = moodIcons[entry.mood]?.bg || "bg-yellow-500/20";
-
-              return (
+        {entries.filter(e => e.date !== today).length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-white/60 text-sm font-medium">Previous Entries</h3>
+            {entries
+              .filter(e => e.date !== today)
+              .slice(0, 10)
+              .map((entry, idx) => (
                 <motion.div
                   key={entry.id}
                   initial={{ opacity: 0, y: 10 }}
@@ -178,30 +336,24 @@ export default function Journal() {
                   className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-4"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className={`${moodBg} p-2 rounded-lg`}>
-                        <MoodIcon className={`w-5 h-5 ${moodColor}`} />
-                      </div>
-                      <span className="text-white font-medium">
-                        {new Date(entry.date).toLocaleDateString('en-US', { 
-                          weekday: 'long', 
-                          month: 'short', 
-                          day: 'numeric' 
-                        })}
+                    <span className="text-white font-medium">
+                      {new Date(entry.date).toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        month: 'short', 
+                        day: 'numeric' 
+                      })}
+                    </span>
+                    {entry.used_vocab_ids?.length > 0 && (
+                      <span className="text-green-400 text-xs">
+                        ✓ {entry.used_vocab_ids.length} words used
                       </span>
-                    </div>
-                    <button
-                      onClick={() => deleteEntryMutation.mutate(entry.id)}
-                      className="text-red-400 hover:text-red-300 text-sm"
-                    >
-                      Delete
-                    </button>
+                    )}
                   </div>
-                  <p className="text-white/80 whitespace-pre-wrap">{entry.content}</p>
+                  <p className="text-white/80 whitespace-pre-wrap line-clamp-3">{entry.text}</p>
                 </motion.div>
-              );
-            })}
-        </div>
+              ))}
+          </div>
+        )}
       </div>
     </div>
   );
