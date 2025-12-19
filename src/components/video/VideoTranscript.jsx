@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import EditableWord from "../learning/EditableWord";
 import ClickableWord from "../learning/ClickableWord";
+import UniversalEditableWord from "../learning/UniversalEditableWord";
+import EditableSentence from "../learning/EditableSentence";
 
 export default function VideoTranscript({ videoId, videoUrl, onPauseVideo, onSeekVideo }) {
   const [expanded, setExpanded] = useState(false);
@@ -380,30 +382,27 @@ Format as array of objects with: transliteration, english, hebrew`,
                         >
                           <Plus className="w-4 h-4 text-amber-400" />
                         </button>
-                        <p className="text-white/90 text-lg leading-tight" style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'plaintext' }}>
-                          {transliteration.split(/\s+/).map((word, wordIdx) => (
-                            <span key={wordIdx}>
-                              <ClickableWord word={word} onBeforeOpen={onPauseVideo} />
-                              {wordIdx < transliteration.split(/\s+/).length - 1 ? ' ' : ''}
-                            </span>
-                          ))}
-                        </p>
-                        <p className="text-white/70 text-base leading-tight" style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'plaintext' }}>
-                          {english.split(/\s+/).map((word, wordIdx) => (
-                            <span key={wordIdx}>
-                              <ClickableWord word={word} onBeforeOpen={onPauseVideo} />
-                              {wordIdx < english.split(/\s+/).length - 1 ? ' ' : ''}
-                            </span>
-                          ))}
-                        </p>
-                        <p className="text-cyan-400 text-2xl font-bold leading-tight" style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'plaintext' }}>
-                          {hebrew.split(/\s+/).map((word, wordIdx) => (
-                            <span key={wordIdx}>
-                              <ClickableWord word={word} onBeforeOpen={onPauseVideo} />
-                              {wordIdx < hebrew.split(/\s+/).length - 1 ? ' ' : ''}
-                            </span>
-                          ))}
-                        </p>
+                        <EditableSentence
+                          text={transliteration}
+                          context="video_transcript"
+                          contextId={`${videoId}-${blockIdx}`}
+                          field="transliteration"
+                          className="text-white/90 text-lg leading-tight block"
+                        />
+                        <EditableSentence
+                          text={english}
+                          context="video_transcript"
+                          contextId={`${videoId}-${blockIdx}`}
+                          field="english"
+                          className="text-white/70 text-base leading-tight block"
+                        />
+                        <EditableSentence
+                          text={hebrew}
+                          context="video_transcript"
+                          contextId={`${videoId}-${blockIdx}`}
+                          field="hebrew"
+                          className="text-cyan-400 text-2xl font-bold leading-tight block"
+                        />
                         </div>
                         </div>
                     );
