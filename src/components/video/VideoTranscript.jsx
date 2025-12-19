@@ -10,6 +10,7 @@ import EditableWord from "../learning/EditableWord";
 import ClickableWord from "../learning/ClickableWord";
 import UniversalEditableWord from "../learning/UniversalEditableWord";
 import EditableSentence from "../learning/EditableSentence";
+import VideoTranscriptWord from "./VideoTranscriptWord";
 
 export default function VideoTranscript({ videoId, videoUrl, onPauseVideo, onSeekVideo }) {
   const [expanded, setExpanded] = useState(false);
@@ -383,31 +384,61 @@ Format as array of objects with: transliteration, english, hebrew`,
                           <Plus className="w-4 h-4 text-amber-400" />
                         </button>
                         <div className="mb-0.5">
-                          <EditableSentence
-                            text={transliteration}
-                            context="video_transcript"
-                            contextId={`${videoId}-${blockIdx}`}
-                            field="transliteration"
-                            className="text-white/90 text-lg leading-tight"
-                          />
+                          {transliteration.split(/(\s+)/).map((part, i) => 
+                            /\S/.test(part) ? (
+                              <VideoTranscriptWord
+                                key={i}
+                                word={part}
+                                hebrew={hebrew}
+                                transliteration={transliteration}
+                                english={english}
+                                onEdit={(newWord) => {
+                                  const newText = transliteration.split(/(\s+)/).map((p, idx) => idx === i ? newWord : p).join('');
+                                  updateTranscriptLine(blockIdx, 'transliteration', newText);
+                                }}
+                                onAddToBackpack={addSentenceToBackpack}
+                                className="text-white/90 text-lg leading-tight"
+                              />
+                            ) : part
+                          )}
                         </div>
                         <div className="mb-1">
-                          <EditableSentence
-                            text={english}
-                            context="video_transcript"
-                            contextId={`${videoId}-${blockIdx}`}
-                            field="english"
-                            className="text-white/70 text-base leading-tight"
-                          />
+                          {english.split(/(\s+)/).map((part, i) => 
+                            /\S/.test(part) ? (
+                              <VideoTranscriptWord
+                                key={i}
+                                word={part}
+                                hebrew={hebrew}
+                                transliteration={transliteration}
+                                english={english}
+                                onEdit={(newWord) => {
+                                  const newText = english.split(/(\s+)/).map((p, idx) => idx === i ? newWord : p).join('');
+                                  updateTranscriptLine(blockIdx, 'english', newText);
+                                }}
+                                onAddToBackpack={addSentenceToBackpack}
+                                className="text-white/70 text-base leading-tight"
+                              />
+                            ) : part
+                          )}
                         </div>
                         <div>
-                          <EditableSentence
-                            text={hebrew}
-                            context="video_transcript"
-                            contextId={`${videoId}-${blockIdx}`}
-                            field="hebrew"
-                            className="text-cyan-400 text-2xl font-bold leading-tight"
-                          />
+                          {hebrew.split(/(\s+)/).map((part, i) => 
+                            /\S/.test(part) ? (
+                              <VideoTranscriptWord
+                                key={i}
+                                word={part}
+                                hebrew={hebrew}
+                                transliteration={transliteration}
+                                english={english}
+                                onEdit={(newWord) => {
+                                  const newText = hebrew.split(/(\s+)/).map((p, idx) => idx === i ? newWord : p).join('');
+                                  updateTranscriptLine(blockIdx, 'hebrew', newText);
+                                }}
+                                onAddToBackpack={addSentenceToBackpack}
+                                className="text-cyan-400 text-2xl font-bold leading-tight"
+                              />
+                            ) : part
+                          )}
                         </div>
                         </div>
                         </div>
