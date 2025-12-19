@@ -1331,9 +1331,10 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                                   );
                                   })}
                                   </div>
+                                  )}
 
                                   <h2 className="text-white/60 text-sm font-medium mb-3">Recommended Videos</h2>
-      {level1Videos.map((video) => {
+                                  {level1Videos.map((video) => {
         // Handle both string and number comparisons
         const isExpanded = expandedVideoId == video.id || expandedVideoId === video.id;
         const hasTranscript = fullTranscripts[video.id];
