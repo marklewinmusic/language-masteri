@@ -33,18 +33,58 @@ const nameExamples = {
   custom: ["Earnie", "Value", "Return"],
 };
 
-const descriptionExamples = [
-  "A calm turtle that earns rewards by showing up every day",
-  "A playful fox that's clever and loves earning back",
-  "A friendly creature that grows with discipline and consistency",
-];
+const customizationOptions = {
+  turtle: {
+    traits: ["Round shell", "Star shell", "Simple shell", "Blush cheeks", "No blush"],
+    accessories: ["Tiny headphones", "Mini cape", "Coin pouch"],
+    vibes: ["Calm", "Steady", "Proud"]
+  },
+  rabbit: {
+    traits: ["Floppy ears", "Tiny ears", "Big eyes", "Sleepy eyes", "Freckles", "No freckles"],
+    accessories: ["Hoodie", "Little cap", "Bow tie", "Tiny backpack", "Coin pouch"],
+    vibes: ["Playful", "Focused", "Chill", "Determined"]
+  },
+  fox: {
+    traits: ["Fluffy tail", "Sleek tail", "Big eyes", "Sharp eyes", "Pointy ears"],
+    accessories: ["Scarf", "Little cap", "Coin pouch", "Tiny backpack"],
+    vibes: ["Clever", "Playful", "Focused", "Confident"]
+  },
+  bear: {
+    traits: ["Round ears", "Fuzzy", "Smooth", "Big paws", "Small paws"],
+    accessories: ["Hoodie", "Little vest", "Coin pouch", "Tiny backpack"],
+    vibes: ["Strong", "Gentle", "Friendly", "Determined"]
+  },
+  bird: {
+    traits: ["Colorful feathers", "Simple feathers", "Big eyes", "Small beak", "Round body"],
+    accessories: ["Little cap", "Tiny scarf", "Coin pouch"],
+    vibes: ["Cheerful", "Free", "Focused", "Energetic"]
+  },
+  cat: {
+    traits: ["Long tail", "Short tail", "Big eyes", "Sleepy eyes", "Pointy ears", "Round ears"],
+    accessories: ["Collar with bell", "Little cap", "Bow tie", "Coin pouch"],
+    vibes: ["Curious", "Chill", "Focused", "Playful"]
+  },
+  boy: {
+    traits: ["Curly hair", "Straight hair", "Short hair", "Long hair", "Big eyes", "Soft eyes"],
+    accessories: ["Hoodie", "Sporty jacket", "Cozy sweater", "Small backpack", "Coin pouch"],
+    vibes: ["Friendly", "Focused", "Confident", "Determined"]
+  },
+  girl: {
+    traits: ["Curly hair", "Straight hair", "Short hair", "Long hair", "Big eyes", "Soft eyes"],
+    accessories: ["Hoodie", "Sporty jacket", "Cozy sweater", "Small backpack", "Coin pouch"],
+    vibes: ["Friendly", "Focused", "Confident", "Determined"]
+  }
+};
 
 export default function AvatarSelect() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [step, setStep] = useState(1); // 1: avatar, 2: description (custom), 3: avatar selection (custom), 4: name
+  const [step, setStep] = useState(1); // 1: type, 2: describe, 3: choose image, 4: name
   const [selectedAvatar, setSelectedAvatar] = useState(null);
-  const [customDescription, setCustomDescription] = useState("");
+  const [selectedTraits, setSelectedTraits] = useState([]);
+  const [selectedAccessories, setSelectedAccessories] = useState([]);
+  const [selectedVibe, setSelectedVibe] = useState("");
+  const [extraDetails, setExtraDetails] = useState("");
   const [avatarName, setAvatarName] = useState("");
   const [suggestedNames, setSuggestedNames] = useState([]);
   const [generatingNames, setGeneratingNames] = useState(false);
@@ -69,27 +109,35 @@ export default function AvatarSelect() {
 
   const handleAvatarSelect = async (avatar) => {
     setSelectedAvatar(avatar);
-    
-    if (avatar.id === "custom") {
-      setStep(2);
-    } else {
-      setStep(4); // Go directly to name for preset avatars
-      // Generate name suggestions
-      const examples = nameExamples[avatar.type] || nameExamples.custom;
-      setSuggestedNames(examples);
-    }
+    setSelectedTraits([]);
+    setSelectedAccessories([]);
+    setSelectedVibe("");
+    setExtraDetails("");
+    setStep(2); // Always go to description step
   };
 
-  const handleCustomDescriptionDone = async () => {
-    if (!customDescription.trim()) {
-      toast.error("Please describe your avatar");
+  const handleDescriptionDone = async () => {
+    if (selectedTraits.length < 2) {
+      toast.error("Pick at least 2 traits");
+      return;
+    }
+    if (selectedAccessories.length < 1) {
+      toast.error("Pick at least 1 accessory");
+      return;
+    }
+    if (!selectedVibe) {
+      toast.error("Pick a vibe");
       return;
     }
     
     setGeneratingNames(true);
+    
+    const avatarTypeName = selectedAvatar.label;
+    const description = `A ${avatarTypeName} with ${selectedTraits.join(", ")}, wearing ${selectedAccessories.join(", ")}, with a ${selectedVibe} vibe. ${extraDetails}`;
+    
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Based on this avatar description: "${customDescription}"
+        prompt: `Based on this character: ${avatarTypeName} - ${description}
         
 Generate 3 short, fun, motivational names (max 8 characters each) that relate to earning, saving, or progress. 
 Names should be positive, easy to pronounce in English/Spanish, and have money/reward energy.
@@ -106,29 +154,29 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
         }
       });
       
-      setSuggestedNames(result.names || nameExamples.custom);
+      setSuggestedNames(result.names || nameExamples[selectedAvatar.type] || nameExamples.custom);
     } catch (e) {
-      setSuggestedNames(nameExamples.custom);
+      setSuggestedNames(nameExamples[selectedAvatar.type] || nameExamples.custom);
     }
     setGeneratingNames(false);
     setStep(3);
     
     // Start generating 3 avatar variations
-    generateAvatarOptions();
+    generateAvatarOptions(description);
   };
 
-  const generateAvatarOptions = async () => {
+  const generateAvatarOptions = async (description) => {
     setGeneratingAvatars(true);
     setAvatarOptions([]);
     
     try {
-      const basePrompt = `Create a cute, friendly character avatar with a big head and small body. ${customDescription}. The character should have a warm, approachable expression with visible eyes. Style: cartoon, kawaii, simple shapes, soft colors, clean edges. Character only on transparent background - no text, no icons, no decorative elements, no borders, no circles, no glows. Just the character cutout.`;
+      const basePrompt = `Create a cute, friendly ${selectedAvatar.label} character avatar with a big head and small body. ${description}. The character should have a warm, approachable expression with visible eyes. Style: cartoon, kawaii, simple shapes, soft colors, clean edges, PG-rated. Character only on transparent background - no text, no icons, no decorative elements, no borders, no circles, no glows. Just the character cutout.`;
       
       // Generate 3 variations
       const promises = [
-        base44.integrations.Core.GenerateImage({ prompt: basePrompt }),
-        base44.integrations.Core.GenerateImage({ prompt: basePrompt + " Slight variation in pose and expression." }),
-        base44.integrations.Core.GenerateImage({ prompt: basePrompt + " Different friendly expression and stance." })
+        base44.integrations.Core.GenerateImage({ prompt: basePrompt + " Variation A: outfit focus." }),
+        base44.integrations.Core.GenerateImage({ prompt: basePrompt + " Variation B: expression focus." }),
+        base44.integrations.Core.GenerateImage({ prompt: basePrompt + " Variation C: accessory focus." })
       ];
       
       const results = await Promise.all(promises);
@@ -159,13 +207,15 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
       return;
     }
     
+    const description = `${selectedAvatar.label}: ${selectedTraits.join(", ")}, ${selectedAccessories.join(", ")}, ${selectedVibe} vibe. ${extraDetails}`;
+    
     createProfileMutation.mutate({
       avatar_id: selectedAvatar.id,
       avatar_type: selectedAvatar.type,
       avatar_name: avatarName,
-      avatar_description: selectedAvatar.id === "custom" ? customDescription : null,
-      avatar_image_url: selectedAvatar.imageUrl || null,
-      avatar_status: selectedAvatar.imageUrl ? "ready" : (selectedAvatar.id === "custom" ? "resolving" : "ready"),
+      avatar_description: description,
+      avatar_image_url: selectedAvatarImage || null,
+      avatar_status: "ready",
       growth_stage: "starter",
       age_level: 3,
       xp: 0,
@@ -219,21 +269,7 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
                   </motion.button>
                 ))}
 
-                {/* Create Your Own */}
-                <motion.button
-                  onClick={() => handleAvatarSelect({ id: "custom", type: "custom", emoji: "✨", label: "Create Your Own" })}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="relative p-8 rounded-3xl bg-gradient-to-br from-yellow-400/20 to-orange-500/20 backdrop-blur-sm border-2 border-yellow-400/40 hover:border-yellow-400/60 transition-all"
-                >
-                  <Sparkles className="w-16 h-16 mx-auto mb-3 text-yellow-300" />
-                  <p className="text-white font-semibold text-lg">
-                    Create Your Own
-                  </p>
-                  <p className="text-white/70 text-xs mt-1">
-                    Design a cute character
-                  </p>
-                </motion.button>
+
               </div>
 
               <p className="text-center text-white/60 text-sm">
@@ -242,7 +278,7 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
             </motion.div>
           )}
 
-          {step === 2 && (
+          {step === 2 && selectedAvatar && (
             <motion.div
               key="step2"
               initial={{ opacity: 0, x: -20 }}
@@ -250,34 +286,104 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
               exit={{ opacity: 0, x: 20 }}
             >
               <div className="text-center mb-8">
+                <motion.div
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="text-7xl mb-4"
+                >
+                  {selectedAvatar.emoji}
+                </motion.div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
-                  Describe your avatar
+                  Describe your {selectedAvatar.label}
                 </h1>
                 <p className="text-xl text-white/90">
-                  Keep it cute, friendly, and motivating.
+                  Make it yours. Keep it cute.
                 </p>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 mb-6">
-                <p className="text-white/80 text-sm mb-3">Choose your player:</p>
-                <div className="space-y-2 mb-4">
-                  {descriptionExamples.map((example, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCustomDescription(example)}
-                      className="w-full text-left p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/20 text-white text-sm transition-all"
-                    >
-                      "{example}"
-                    </button>
-                  ))}
+              <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 mb-6 space-y-6">
+                {/* Traits */}
+                <div>
+                  <p className="text-white/80 text-sm mb-3">Pick traits (min 2):</p>
+                  <div className="flex flex-wrap gap-2">
+                    {customizationOptions[selectedAvatar.type]?.traits.map((trait) => (
+                      <button
+                        key={trait}
+                        onClick={() => {
+                          if (selectedTraits.includes(trait)) {
+                            setSelectedTraits(selectedTraits.filter(t => t !== trait));
+                          } else {
+                            setSelectedTraits([...selectedTraits, trait]);
+                          }
+                        }}
+                        className={`px-4 py-2 rounded-xl border transition-all ${
+                          selectedTraits.includes(trait)
+                            ? 'bg-cyan-400/30 border-cyan-400 text-white font-bold'
+                            : 'bg-white/5 border-white/20 text-white hover:bg-white/10'
+                        }`}
+                      >
+                        {trait}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                <Textarea
-                  value={customDescription}
-                  onChange={(e) => setCustomDescription(e.target.value)}
-                  placeholder="Describe your own character"
-                  className="bg-white/5 border-white/20 text-white placeholder:text-white/40 min-h-[100px]"
-                />
+                {/* Accessories */}
+                <div>
+                  <p className="text-white/80 text-sm mb-3">Pick accessory/outfit (min 1):</p>
+                  <div className="flex flex-wrap gap-2">
+                    {customizationOptions[selectedAvatar.type]?.accessories.map((acc) => (
+                      <button
+                        key={acc}
+                        onClick={() => {
+                          if (selectedAccessories.includes(acc)) {
+                            setSelectedAccessories(selectedAccessories.filter(a => a !== acc));
+                          } else {
+                            setSelectedAccessories([...selectedAccessories, acc]);
+                          }
+                        }}
+                        className={`px-4 py-2 rounded-xl border transition-all ${
+                          selectedAccessories.includes(acc)
+                            ? 'bg-purple-400/30 border-purple-400 text-white font-bold'
+                            : 'bg-white/5 border-white/20 text-white hover:bg-white/10'
+                        }`}
+                      >
+                        {acc}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Vibe */}
+                <div>
+                  <p className="text-white/80 text-sm mb-3">Pick vibe:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {customizationOptions[selectedAvatar.type]?.vibes.map((vibe) => (
+                      <button
+                        key={vibe}
+                        onClick={() => setSelectedVibe(vibe)}
+                        className={`px-4 py-2 rounded-xl border transition-all ${
+                          selectedVibe === vibe
+                            ? 'bg-yellow-400/30 border-yellow-400 text-white font-bold'
+                            : 'bg-white/5 border-white/20 text-white hover:bg-white/10'
+                        }`}
+                      >
+                        {vibe}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Extra details */}
+                <div>
+                  <p className="text-white/60 text-sm mb-2">Add any extra details (optional):</p>
+                  <Input
+                    value={extraDetails}
+                    onChange={(e) => setExtraDetails(e.target.value)}
+                    placeholder="Any extra details..."
+                    className="bg-white/5 border-white/20 text-white placeholder:text-white/40"
+                  />
+                </div>
               </div>
 
               <div className="flex gap-3">
@@ -289,17 +395,17 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
                   Back
                 </Button>
                 <Button
-                  onClick={handleCustomDescriptionDone}
-                  disabled={!customDescription.trim() || generatingNames}
+                  onClick={handleDescriptionDone}
+                  disabled={selectedTraits.length < 2 || selectedAccessories.length < 1 || !selectedVibe || generatingNames}
                   className="flex-1 py-6 text-lg font-bold bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white shadow-lg disabled:opacity-50"
                 >
-                  {generatingNames ? "Generating..." : "Next"}
+                  {generatingNames ? "Generating..." : "Generate"}
                 </Button>
               </div>
             </motion.div>
           )}
 
-          {step === 3 && selectedAvatar?.id === "custom" && (
+          {step === 3 && selectedAvatar && (
             <motion.div
               key="step3-selection"
               initial={{ opacity: 0, x: -20 }}
@@ -308,7 +414,7 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
             >
               <div className="text-center mb-8">
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
-                  Choose your avatar
+                  Choose your character
                 </h1>
                 <p className="text-xl text-white/90">
                   Pick the one that feels right.
@@ -356,7 +462,10 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
                       Edit description
                     </Button>
                     <Button
-                      onClick={generateAvatarOptions}
+                      onClick={() => {
+                        const description = `${selectedAvatar.label}: ${selectedTraits.join(", ")}, ${selectedAccessories.join(", ")}, ${selectedVibe} vibe. ${extraDetails}`;
+                        generateAvatarOptions(description);
+                      }}
                       variant="outline"
                       className="flex-1 py-6 text-lg border-white/30 bg-white/10 text-black font-semibold hover:bg-white/20"
                     >
@@ -406,7 +515,7 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
                   </motion.div>
                 )}
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
-                  Name your avatar
+                  Name your character
                 </h1>
                 <p className="text-xl text-white/90">
                   Pick a fun name that reminds you to earn it back 💰
@@ -443,7 +552,7 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
 
               <div className="flex gap-3">
                 <Button
-                  onClick={() => setStep(selectedAvatar?.id === "custom" ? 3 : 1)}
+                  onClick={() => setStep(3)}
                   variant="outline"
                   className="flex-1 py-6 text-lg border-white/30 bg-white/10 text-black font-semibold hover:bg-white/20"
                 >
