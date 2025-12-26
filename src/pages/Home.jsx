@@ -155,13 +155,13 @@ export default function Home() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['userProfile'] }),
   });
 
-  const toggleSubsectionMutation = useMutation({
-    mutationFn: async ({ dayId, subsectionId, dayNumber }) => {
+  const toggleTaskMutation = useMutation({
+    mutationFn: async ({ dayId, taskId, dayNumber }) => {
       const progress = dayProgress.find(p => p.day_id === dayId) || { day_id: dayId, day_number: dayNumber, subsections_completed: [] };
-      const isCompleted = progress.subsections_completed?.includes(subsectionId);
+      const isCompleted = progress.subsections_completed?.includes(taskId);
       const newCompleted = isCompleted 
-        ? progress.subsections_completed.filter(id => id !== subsectionId)
-        : [...(progress.subsections_completed || []), subsectionId];
+        ? progress.subsections_completed.filter(id => id !== taskId)
+        : [...(progress.subsections_completed || []), taskId];
       
       if (progress.id) {
         await base44.entities.DayProgress.update(progress.id, { subsections_completed: newCompleted });
@@ -185,6 +185,39 @@ export default function Home() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['days'] });
       toast.success("Day created!");
+    },
+  });
+
+  const deleteDayMutation = useMutation({
+    mutationFn: (dayId) => base44.entities.Day.delete(dayId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['days'] });
+      toast.success("Day deleted!");
+    },
+  });
+
+  const addDefaultTasksMutation = useMutation({
+    mutationFn: async () => {
+      const defaultTasks = [
+        { id: "video", name: "Watch a video", duration: "20 minutes", page: "BabyVideos" },
+        { id: "flashcards", name: "Vocab Flashcards", duration: "10 minutes", page: "Practice" },
+        { id: "journal", name: "Journal", duration: "5 minutes", page: "Journal" },
+        { id: "speak", name: "Speak 1 minute", duration: "1 minute", page: "Practice" }
+      ];
+      
+      for (const day of days) {
+        const existingIds = (day.subsections || []).map(s => s.id);
+        const tasksToAdd = defaultTasks.filter(t => !existingIds.includes(t.id));
+        
+        if (tasksToAdd.length > 0) {
+          const updatedSubsections = [...(day.subsections || []), ...tasksToAdd];
+          await base44.entities.Day.update(day.id, { subsections: updatedSubsections });
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['days'] });
+      toast.success("Default tasks added to all days!");
     },
   });
 
@@ -305,7 +338,7 @@ export default function Home() {
 
 
   const [expandedDay, setExpandedDay] = useState(1);
-  const [newSubsection, setNewSubsection] = useState({ name: "", duration: "", icon: "", page: "" });
+  const [newTask, setNewTask] = useState({ name: "", duration: "", page: "" });
 
   const currentDay = userProfile?.current_day || 1;
   const sortedDays = [...days].sort((a, b) => a.day_number - b.day_number);
@@ -313,19 +346,19 @@ export default function Home() {
   const isDayUnlocked = (dayNum) => isMasterUser || dayNum <= currentDay;
   const getDayProgress = (dayId) => dayProgress.find(p => p.day_id === dayId);
 
-  const handleAddSubsection = (dayId) => {
+  const handleAddTask = (dayId) => {
     const day = days.find(d => d.id === dayId);
     const updatedSubsections = [...(day.subsections || []), { 
       id: Date.now().toString(), 
-      ...newSubsection 
+      ...newTask 
     }];
     updateDayMutation.mutate({ id: dayId, data: { subsections: updatedSubsections } });
-    setNewSubsection({ name: "", duration: "", icon: "", page: "" });
+    setNewTask({ name: "", duration: "", page: "" });
   };
 
-  const handleDeleteSubsection = (dayId, subsectionId) => {
+  const handleDeleteTask = (dayId, taskId) => {
     const day = days.find(d => d.id === dayId);
-    const updatedSubsections = day.subsections.filter(s => s.id !== subsectionId);
+    const updatedSubsections = day.subsections.filter(s => s.id !== taskId);
     updateDayMutation.mutate({ id: dayId, data: { subsections: updatedSubsections } });
   };
 
@@ -474,17 +507,28 @@ export default function Home() {
                 <p className="text-white/60">Day {currentDay} of 100</p>
               </div>
               {isMasterUser && (
-                <Button onClick={() => {
-                  const nextDayNum = Math.max(...days.map(d => d.day_number), 0) + 1;
-                  createDayMutation.mutate({
-                    day_number: nextDayNum,
-                    language: userProfile?.language || 'hebrew',
-                    title: `Day ${nextDayNum}`,
-                    subsections: []
-                  });
-                }} className="bg-green-500 hover:bg-green-600">
-                  + Add Day
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={() => addDefaultTasksMutation.mutate()} className="bg-blue-500 hover:bg-blue-600">
+                    Add Default Tasks to All
+                  </Button>
+                  <Button onClick={() => {
+                    const nextDayNum = Math.max(...days.map(d => d.day_number), 0) + 1;
+                    const defaultTasks = [
+                      { id: "video", name: "Watch a video", duration: "20 minutes", page: "BabyVideos" },
+                      { id: "flashcards", name: "Vocab Flashcards", duration: "10 minutes", page: "Practice" },
+                      { id: "journal", name: "Journal", duration: "5 minutes", page: "Journal" },
+                      { id: "speak", name: "Speak 1 minute", duration: "1 minute", page: "Practice" }
+                    ];
+                    createDayMutation.mutate({
+                      day_number: nextDayNum,
+                      language: userProfile?.language || 'hebrew',
+                      title: `Day ${nextDayNum}`,
+                      subsections: defaultTasks
+                    });
+                  }} className="bg-green-500 hover:bg-green-600">
+                    + Add Day
+                  </Button>
+                </div>
               )}
             </div>
 
@@ -538,10 +582,25 @@ export default function Home() {
                           <h3 className="text-white font-bold text-xl">{day.title || `Day ${day.day_number}`}</h3>
                           {day.description && <p className="text-white/80 text-sm">{day.description}</p>}
                         </div>
-                      </div>
-                      {unlocked && <ChevronDown className={`w-6 h-6 text-white transition-transform ${isExpanded ? 'rotate-180' : ''}`} />}
-                    </div>
-                  </button>
+                        </div>
+                        <div className="flex items-center gap-2">
+                        {isMasterUser && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm('Delete this day?')) {
+                                deleteDayMutation.mutate(day.id);
+                              }
+                            }}
+                            className="text-red-400 hover:text-red-300 p-2"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        )}
+                        {unlocked && <ChevronDown className={`w-6 h-6 text-white transition-transform ${isExpanded ? 'rotate-180' : ''}`} />}
+                        </div>
+                        </div>
+                        </button>
 
                   <AnimatePresence>
                     {isExpanded && (
@@ -553,17 +612,20 @@ export default function Home() {
                         className="overflow-hidden"
                       >
                         <div className="p-6 pt-0 space-y-3">
-                          {day.subsections?.map((subsection) => {
-                            const isCompleted = progress?.subsections_completed?.includes(subsection.id);
+                          {day.subsections?.map((task, taskIdx) => {
+                            const isCompleted = progress?.subsections_completed?.includes(task.id);
                             return (
                               <div
-                                key={subsection.id}
+                                key={task.id}
                                 className={`bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 flex items-center gap-3 ${
                                   isCompleted ? 'from-green-500/10 to-green-600/10 border-green-500/30' : ''
                                 }`}
                               >
+                                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">
+                                  {taskIdx + 1}
+                                </div>
                                 <button
-                                  onClick={() => toggleSubsectionMutation.mutate({ dayId: day.id, subsectionId: subsection.id, dayNumber: day.day_number })}
+                                  onClick={() => toggleTaskMutation.mutate({ dayId: day.id, taskId: task.id, dayNumber: day.day_number })}
                                   className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all ${
                                     isCompleted ? 'bg-green-500 border-green-500' : 'border-white/40 hover:border-cyan-400'
                                   }`}
@@ -571,19 +633,18 @@ export default function Home() {
                                   {isCompleted && <Check className="w-5 h-5 text-white" />}
                                 </button>
                                 <button
-                                  onClick={() => subsection.page && navigate(createPageUrl(subsection.page))}
+                                  onClick={() => task.page && navigate(createPageUrl(task.page))}
                                   className="flex-1 flex items-center gap-3 text-left"
                                 >
-                                  <span className="text-2xl">{subsection.icon}</span>
                                   <div className="flex-1">
-                                    <p className={`text-white font-medium ${isCompleted ? 'line-through opacity-60' : ''}`}>{subsection.name}</p>
-                                    {subsection.duration && <p className="text-white/60 text-sm">Approx {subsection.duration}</p>}
+                                    <p className={`text-white font-medium ${isCompleted ? 'line-through opacity-60' : ''}`}>{task.name}</p>
+                                    {task.duration && <p className="text-white/60 text-sm">Approx {task.duration}</p>}
                                   </div>
-                                  {subsection.page && <ChevronRight className="w-5 h-5 text-white/40" />}
+                                  {task.page && <ChevronRight className="w-5 h-5 text-white/40" />}
                                 </button>
                                 {isMasterUser && (
                                   <button
-                                    onClick={() => handleDeleteSubsection(day.id, subsection.id)}
+                                    onClick={() => handleDeleteTask(day.id, task.id)}
                                     className="text-red-400 hover:text-red-300"
                                   >
                                     <Trash2 className="w-4 h-4" />
@@ -595,12 +656,11 @@ export default function Home() {
 
                           {isMasterUser && (
                             <div className="bg-white/10 rounded-xl p-4 space-y-2">
-                              <Input placeholder="Subsection name" value={newSubsection.name} onChange={(e) => setNewSubsection({...newSubsection, name: e.target.value})} className="bg-white/5 border-white/20 text-white" />
-                              <Input placeholder="Approx duration (e.g., 10 minutes)" value={newSubsection.duration} onChange={(e) => setNewSubsection({...newSubsection, duration: e.target.value})} className="bg-white/5 border-white/20 text-white" />
-                              <Input placeholder="Emoji icon" value={newSubsection.icon} onChange={(e) => setNewSubsection({...newSubsection, icon: e.target.value})} className="bg-white/5 border-white/20 text-white" />
-                              <Input placeholder="Page name (e.g., BabyVideos)" value={newSubsection.page} onChange={(e) => setNewSubsection({...newSubsection, page: e.target.value})} className="bg-white/5 border-white/20 text-white" />
-                              <Button onClick={() => handleAddSubsection(day.id)} className="w-full bg-green-500 hover:bg-green-600">
-                                <Plus className="w-4 h-4 mr-2" /> Add Subsection
+                              <Input placeholder="Task name" value={newTask.name} onChange={(e) => setNewTask({...newTask, name: e.target.value})} className="bg-white/5 border-white/20 text-white" />
+                              <Input placeholder="Approx duration (e.g., 10 minutes)" value={newTask.duration} onChange={(e) => setNewTask({...newTask, duration: e.target.value})} className="bg-white/5 border-white/20 text-white" />
+                              <Input placeholder="Page name (e.g., BabyVideos)" value={newTask.page} onChange={(e) => setNewTask({...newTask, page: e.target.value})} className="bg-white/5 border-white/20 text-white" />
+                              <Button onClick={() => handleAddTask(day.id)} className="w-full bg-green-500 hover:bg-green-600">
+                                <Plus className="w-4 h-4 mr-2" /> Add Task
                               </Button>
                             </div>
                           )}
