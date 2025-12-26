@@ -656,9 +656,6 @@ export default function Home() {
         onRestartLife={handleRestartLife}
         avatarName={userProfile?.avatar_name || 'Avatar'}
       />
-
-      {/* Translator Widget */}
-      <TranslatorWidget />
-    </div>
-  );
-}
+      </div>
+      );
+      }

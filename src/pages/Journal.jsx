@@ -546,9 +546,7 @@ Make them useful for a Hebrew learner writing a journal.`,
               ))}
           </div>
         )}
-      </div>
-
-      <TranslatorWidget />
-    </div>
-  );
-}
+        </div>
+        </div>
+        );
+        }
