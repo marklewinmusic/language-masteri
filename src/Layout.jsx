@@ -1,12 +1,11 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import FloatingAvatar from "./components/game/FloatingAvatar";
-import TranslatorWidget from "./components/TranslatorWidget";
+import BuddyDock from "./components/game/BuddyDock";
 
 export default function Layout({ children, currentPageName }) {
   // Don't show on avatar select page
-  const showFloatingElements = currentPageName !== "AvatarSelect";
+  const showDock = currentPageName !== "AvatarSelect";
 
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile'],
@@ -14,7 +13,7 @@ export default function Layout({ children, currentPageName }) {
       const profiles = await base44.entities.UserProfile.list();
       return profiles[0] || null;
     },
-    enabled: showFloatingElements,
+    enabled: showDock,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -24,18 +23,26 @@ export default function Layout({ children, currentPageName }) {
       const coins = await base44.entities.UserCoins.list();
       return coins[0] || { coins: 0 };
     },
-    enabled: showFloatingElements,
+    enabled: showDock,
     staleTime: 2 * 60 * 1000,
+  });
+
+  const { data: backpackWords = [] } = useQuery({
+    queryKey: ['backpackWords'],
+    queryFn: () => base44.entities.Word.filter({ category: "wordbank" }),
+    enabled: showDock,
+    staleTime: 5 * 60 * 1000,
   });
 
   return (
     <>
       {children}
-      {showFloatingElements && (
-        <>
-          <FloatingAvatar profile={userProfile} coins={userCoins?.coins} />
-          <TranslatorWidget />
-        </>
+      {showDock && (
+        <BuddyDock 
+          profile={userProfile} 
+          coins={userCoins?.coins} 
+          backpackCount={backpackWords.length}
+        />
       )}
     </>
   );

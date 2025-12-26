@@ -42,12 +42,13 @@ const descriptionExamples = [
 export default function AvatarSelect() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [step, setStep] = useState(1); // 1: avatar, 2: description (custom), 3: name
+  const [step, setStep] = useState(1); // 1: avatar, 2: description (custom), 3: preview (custom), 4: name
   const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [customDescription, setCustomDescription] = useState("");
   const [avatarName, setAvatarName] = useState("");
   const [suggestedNames, setSuggestedNames] = useState([]);
   const [generatingNames, setGeneratingNames] = useState(false);
+  const [previewBlink, setPreviewBlink] = useState(false);
 
   const createProfileMutation = useMutation({
     mutationFn: async (profileData) => {
@@ -70,7 +71,7 @@ export default function AvatarSelect() {
     if (avatar.id === "custom") {
       setStep(2);
     } else {
-      setStep(3);
+      setStep(4); // Go directly to name for preset avatars
       // Generate name suggestions
       const examples = nameExamples[avatar.type] || nameExamples.custom;
       setSuggestedNames(examples);
@@ -108,8 +109,19 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
       setSuggestedNames(nameExamples.custom);
     }
     setGeneratingNames(false);
-    setStep(3);
+    setStep(3); // Go to preview for custom avatars
   };
+
+  // Blink animation for preview
+  React.useEffect(() => {
+    if (step === 3) {
+      const blinkInterval = setInterval(() => {
+        setPreviewBlink(true);
+        setTimeout(() => setPreviewBlink(false), 150);
+      }, Math.random() * 6000 + 6000); // 6-12 seconds
+      return () => clearInterval(blinkInterval);
+    }
+  }, [step]);
 
   const handleFinish = () => {
     if (!avatarName.trim()) {
@@ -255,7 +267,63 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
             </motion.div>
           )}
 
-          {step === 3 && (
+          {step === 3 && selectedAvatar?.id === "custom" && (
+            <motion.div
+              key="step3-preview"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+            >
+              <div className="text-center mb-8">
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+                  Preview Your Avatar
+                </h1>
+                <p className="text-xl text-white/90">
+                  Your custom learning buddy
+                </p>
+              </div>
+
+              <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 mb-6 flex flex-col items-center">
+                {/* Avatar Preview */}
+                <motion.div
+                  animate={{ 
+                    scale: previewBlink ? [1, 1, 1] : [1, 1.02, 1],
+                    scaleY: previewBlink ? 0.1 : 1
+                  }}
+                  transition={{ 
+                    scale: { duration: 2, repeat: Infinity },
+                    scaleY: { duration: 0.1 }
+                  }}
+                  className="text-9xl mb-6"
+                >
+                  ✨
+                </motion.div>
+
+                <div className="bg-white/5 rounded-xl p-4 max-w-md">
+                  <p className="text-white/60 text-sm mb-1">Description:</p>
+                  <p className="text-white">{customDescription}</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mb-4">
+                <Button
+                  onClick={() => setStep(2)}
+                  variant="outline"
+                  className="flex-1 py-6 text-lg border-white/30 text-white hover:bg-white/10"
+                >
+                  Edit description
+                </Button>
+                <Button
+                  onClick={() => setStep(4)}
+                  className="flex-1 py-6 text-lg font-bold bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white shadow-lg"
+                >
+                  Use this player
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {step === 4 && (
             <motion.div
               key="step3"
               initial={{ opacity: 0, x: -20 }}
@@ -308,7 +376,7 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
 
               <div className="flex gap-3">
                 <Button
-                  onClick={() => setStep(selectedAvatar?.id === "custom" ? 2 : 1)}
+                  onClick={() => setStep(selectedAvatar?.id === "custom" ? 3 : 1)}
                   variant="outline"
                   className="flex-1 py-6 text-lg border-white/30 text-white hover:bg-white/10"
                 >
