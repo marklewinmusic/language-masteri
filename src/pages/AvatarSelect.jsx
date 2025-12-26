@@ -42,13 +42,15 @@ const descriptionExamples = [
 export default function AvatarSelect() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [step, setStep] = useState(1); // 1: avatar, 2: description (custom), 3: preview (custom), 4: name
+  const [step, setStep] = useState(1); // 1: avatar, 2: description (custom), 3: avatar selection (custom), 4: name
   const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [customDescription, setCustomDescription] = useState("");
   const [avatarName, setAvatarName] = useState("");
   const [suggestedNames, setSuggestedNames] = useState([]);
   const [generatingNames, setGeneratingNames] = useState(false);
-  const [previewBlink, setPreviewBlink] = useState(false);
+  const [avatarOptions, setAvatarOptions] = useState([]);
+  const [generatingAvatars, setGeneratingAvatars] = useState(false);
+  const [selectedAvatarImage, setSelectedAvatarImage] = useState(null);
 
   const createProfileMutation = useMutation({
     mutationFn: async (profileData) => {
@@ -111,34 +113,45 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
     setGeneratingNames(false);
     setStep(3);
     
-    // Start generating avatar in background
-    generateAvatarImage();
+    // Start generating 3 avatar variations
+    generateAvatarOptions();
   };
 
-  const generateAvatarImage = async () => {
+  const generateAvatarOptions = async () => {
+    setGeneratingAvatars(true);
+    setAvatarOptions([]);
+    
     try {
-      const result = await base44.integrations.Core.GenerateImage({
-        prompt: `Create a cute, friendly character avatar with a big head and small body. ${customDescription}. The character should have a warm, approachable expression with visible eyes. Style: cartoon, kawaii, simple shapes, soft colors. The character should look motivating and encouraging for a learning app.`
-      });
+      const basePrompt = `Create a cute, friendly character avatar with a big head and small body. ${customDescription}. The character should have a warm, approachable expression with visible eyes. Style: cartoon, kawaii, simple shapes, soft colors, clean edges. Character only on transparent background - no text, no icons, no decorative elements, no borders, no circles, no glows. Just the character cutout.`;
       
-      if (result?.url) {
-        setSelectedAvatar({ ...selectedAvatar, imageUrl: result.url, status: "ready" });
+      // Generate 3 variations
+      const promises = [
+        base44.integrations.Core.GenerateImage({ prompt: basePrompt }),
+        base44.integrations.Core.GenerateImage({ prompt: basePrompt + " Slight variation in pose and expression." }),
+        base44.integrations.Core.GenerateImage({ prompt: basePrompt + " Different friendly expression and stance." })
+      ];
+      
+      const results = await Promise.all(promises);
+      const validImages = results.filter(r => r?.url).map(r => r.url);
+      
+      if (validImages.length > 0) {
+        setAvatarOptions(validImages);
+      } else {
+        toast.error("Let's try again.");
       }
     } catch (e) {
       console.error("Avatar generation failed:", e);
+      toast.error("Let's try again.");
     }
+    
+    setGeneratingAvatars(false);
   };
 
-  // Blink animation for preview
-  React.useEffect(() => {
-    if (step === 3) {
-      const blinkInterval = setInterval(() => {
-        setPreviewBlink(true);
-        setTimeout(() => setPreviewBlink(false), 150);
-      }, Math.random() * 6000 + 6000); // 6-12 seconds
-      return () => clearInterval(blinkInterval);
-    }
-  }, [step]);
+  const handleAvatarSelection = (imageUrl) => {
+    setSelectedAvatarImage(imageUrl);
+    setSelectedAvatar({ ...selectedAvatar, imageUrl, status: "ready" });
+    setStep(4); // Go to naming
+  };
 
   const handleFinish = () => {
     if (!avatarName.trim()) {
@@ -288,76 +301,80 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
 
           {step === 3 && selectedAvatar?.id === "custom" && (
             <motion.div
-              key="step3-preview"
+              key="step3-selection"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
             >
               <div className="text-center mb-8">
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
-                  Preview Your Avatar
+                  Choose your avatar
                 </h1>
                 <p className="text-xl text-white/90">
-                  Your custom learning buddy
+                  Pick the one that feels right.
                 </p>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 mb-6 flex flex-col items-center">
-                {/* Starter Avatar */}
-                <div className="relative mb-6">
-                  {selectedAvatar?.imageUrl ? (
-                    <motion.img
-                      key="generated"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
-                      src={selectedAvatar.imageUrl}
-                      alt="Your avatar"
-                      className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover"
-                    />
-                  ) : (
-                    <motion.div
-                      key="starter"
-                      animate={{ 
-                        scale: previewBlink ? [1, 1, 1] : [1, 1.02, 1],
-                        scaleY: previewBlink ? 0.1 : 1
-                      }}
-                      transition={{ 
-                        scale: { duration: 2, repeat: Infinity },
-                        scaleY: { duration: 0.1 }
-                      }}
-                      className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-2xl"
+              {generatingAvatars ? (
+                <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-16 mb-6 flex flex-col items-center">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full mb-4"
+                  />
+                  <p className="text-white/80 text-lg">Creating your avatar…</p>
+                </div>
+              ) : avatarOptions.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    {avatarOptions.map((imageUrl, idx) => (
+                      <motion.button
+                        key={idx}
+                        onClick={() => handleAvatarSelection(imageUrl)}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border-2 border-white/20 hover:border-white/60 transition-all"
+                      >
+                        <div className="w-full aspect-square bg-white/5 rounded-2xl flex items-center justify-center mb-4 overflow-hidden">
+                          <img
+                            src={imageUrl}
+                            alt={`Avatar option ${idx + 1}`}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                      </motion.button>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={() => setStep(2)}
+                      variant="outline"
+                      className="flex-1 py-6 text-lg border-white/30 bg-white/10 text-black font-semibold hover:bg-white/20"
                     >
-                      <div className="text-6xl">😊</div>
-                    </motion.div>
-                  )}
+                      Edit description
+                    </Button>
+                    <Button
+                      onClick={generateAvatarOptions}
+                      variant="outline"
+                      className="flex-1 py-6 text-lg border-white/30 bg-white/10 text-black font-semibold hover:bg-white/20"
+                    >
+                      See more like this
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 mb-6 text-center">
+                  <p className="text-white text-lg mb-4">Let's try again.</p>
+                  <Button
+                    onClick={() => setStep(2)}
+                    variant="outline"
+                    className="border-white/30 bg-white/10 text-black font-semibold hover:bg-white/20"
+                  >
+                    Edit description
+                  </Button>
                 </div>
-
-                <p className="text-cyan-400 text-sm mb-4 font-medium">
-                  {selectedAvatar?.imageUrl ? "Your avatar is ready!" : "Building your avatar..."}
-                </p>
-
-                <div className="bg-white/5 rounded-xl p-4 max-w-md">
-                  <p className="text-white/60 text-sm mb-1">Description:</p>
-                  <p className="text-white">{customDescription}</p>
-                </div>
-              </div>
-
-              <div className="flex gap-3 mb-4">
-                <Button
-                  onClick={() => setStep(2)}
-                  variant="outline"
-                  className="flex-1 py-6 text-lg border-white/30 bg-white/10 text-black font-semibold hover:bg-white/20"
-                >
-                  Edit description
-                </Button>
-                <Button
-                  onClick={() => setStep(4)}
-                  className="flex-1 py-6 text-lg font-bold bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white shadow-lg"
-                >
-                  Use this player
-                </Button>
-              </div>
+              )}
             </motion.div>
           )}
 
@@ -369,13 +386,23 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
               exit={{ opacity: 0, x: 20 }}
             >
               <div className="text-center mb-8">
-                <motion.div
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="text-8xl mb-4"
-                >
-                  {selectedAvatar?.emoji}
-                </motion.div>
+                {selectedAvatarImage ? (
+                  <div className="w-32 h-32 mx-auto mb-4 bg-white/5 rounded-full flex items-center justify-center overflow-hidden">
+                    <img
+                      src={selectedAvatarImage}
+                      alt="Selected avatar"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                ) : (
+                  <motion.div
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="text-8xl mb-4"
+                  >
+                    {selectedAvatar?.emoji}
+                  </motion.div>
+                )}
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
                   Name your avatar
                 </h1>
