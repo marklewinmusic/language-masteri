@@ -106,11 +106,16 @@ export default function BuddyDock({ profile, coins, backpackCount }) {
   // Use starter avatar for custom avatars that are resolving
   const showStarterAvatar = profile.avatar_type === "custom" && profile.avatar_status === "resolving";
   const avatarDisplay = showStarterAvatar ? (
-    <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-      <span className="text-base md:text-lg">😊</span>
+    <div className="w-10 h-auto md:w-12 md:h-auto flex items-end justify-center overflow-visible">
+      <span className="text-3xl md:text-4xl">😊</span>
     </div>
   ) : profile.avatar_image_url && profile.avatar_type === "custom" ? (
-    <img src={profile.avatar_image_url} alt={profile.avatar_name} className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover" />
+    <img 
+      src={profile.avatar_image_url} 
+      alt={profile.avatar_name} 
+      className="w-10 h-auto md:w-12 md:h-auto object-contain" 
+      style={{ borderRadius: 0, clipPath: 'none', mask: 'none' }}
+    />
   ) : (
     <span className="text-3xl md:text-4xl">{avatarEmoji}</span>
   );
@@ -161,13 +166,16 @@ export default function BuddyDock({ profile, coins, backpackCount }) {
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 flex items-center justify-center">
+                <div className="w-12 h-auto flex items-end justify-center overflow-visible">
                   {showStarterAvatar ? (
-                    <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                      <span className="text-xl">😊</span>
-                    </div>
+                    <span className="text-3xl">😊</span>
                   ) : profile.avatar_image_url && profile.avatar_type === "custom" ? (
-                    <img src={profile.avatar_image_url} alt={profile.avatar_name} className="w-full h-full rounded-full object-cover" />
+                    <img 
+                      src={profile.avatar_image_url} 
+                      alt={profile.avatar_name} 
+                      className="w-full h-auto object-contain" 
+                      style={{ borderRadius: 0, clipPath: 'none', mask: 'none' }}
+                    />
                   ) : (
                     <span className="text-3xl">{avatarEmoji}</span>
                   )}

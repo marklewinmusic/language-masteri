@@ -14,9 +14,20 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
         {/* Avatar */}
                 <div className="relative flex items-center gap-3">
                   <div className="relative">
-                    <div className={`w-12 h-12 flex items-center justify-center text-3xl ${profile?.avatar_id === 'jordan' ? 'hue-rotate-[320deg]' : ''}`}>
-                      {['alex', 'jordan', 'sam'].includes(profile?.avatar_id) ? '🧍‍♂️' : '🧍‍♀️'}
-                      {!profile?.avatar_id && '👤'}
+                    <div className={`w-12 h-auto flex items-end justify-center overflow-visible ${profile?.avatar_id === 'jordan' ? 'hue-rotate-[320deg]' : ''}`}>
+                      {profile?.avatar_image_url && profile?.avatar_type === 'custom' ? (
+                        <img 
+                          src={profile.avatar_image_url} 
+                          alt={profile.avatar_name} 
+                          className="w-full h-auto object-contain" 
+                          style={{ borderRadius: 0, clipPath: 'none', mask: 'none' }}
+                        />
+                      ) : (
+                        <span className="text-3xl">
+                          {['alex', 'jordan', 'sam'].includes(profile?.avatar_id) ? '🧍‍♂️' : '🧍‍♀️'}
+                          {!profile?.avatar_id && '👤'}
+                        </span>
+                      )}
                     </div>
                     <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full px-2 py-0.5 text-xs font-bold text-black">
                       {profile?.age_level || 5}

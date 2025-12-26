@@ -333,13 +333,14 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
                         onClick={() => handleAvatarSelection(imageUrl)}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border-2 border-white/20 hover:border-white/60 transition-all"
+                        className="bg-transparent backdrop-blur-sm rounded-2xl p-6 border-2 border-white/20 hover:border-white/60 hover:shadow-lg transition-all overflow-visible"
                       >
-                        <div className="w-full aspect-square bg-white/5 rounded-2xl flex items-center justify-center mb-4 overflow-hidden">
+                        <div className="w-full h-auto flex items-end justify-center overflow-visible">
                           <img
                             src={imageUrl}
                             alt={`Avatar option ${idx + 1}`}
-                            className="w-full h-full object-contain"
+                            className="w-full h-auto object-contain"
+                            style={{ borderRadius: 0, clipPath: 'none', mask: 'none' }}
                           />
                         </div>
                       </motion.button>
@@ -387,13 +388,14 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
             >
               <div className="text-center mb-8">
                 {selectedAvatarImage ? (
-                  <div className="w-32 h-32 mx-auto mb-4 bg-white/5 rounded-full flex items-center justify-center overflow-hidden">
-                    <img
-                      src={selectedAvatarImage}
-                      alt="Selected avatar"
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
+                <div className="w-32 h-auto mx-auto mb-4 flex items-end justify-center overflow-visible">
+                  <img
+                    src={selectedAvatarImage}
+                    alt="Selected avatar"
+                    className="w-full h-auto object-contain"
+                    style={{ borderRadius: 0 }}
+                  />
+                </div>
                 ) : (
                   <motion.div
                     animate={{ scale: [1, 1.1, 1] }}
