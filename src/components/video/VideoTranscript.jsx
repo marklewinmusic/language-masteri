@@ -23,12 +23,14 @@ export default function VideoTranscript({ videoId, videoUrl, onPauseVideo, onSee
   const [generatingTranslations, setGeneratingTranslations] = useState(false);
   const [activeSegmentIdx, setActiveSegmentIdx] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
   const [editingLineIdx, setEditingLineIdx] = useState(null);
   const [editValues, setEditValues] = useState({ transliteration: '', english: '', hebrew: '' });
   const [currentUser, setCurrentUser] = useState(null);
   const activeSegmentRef = useRef(null);
   const containerRef = useRef(null);
   const queryClient = useQueryClient();
+  const iframeRef = useRef(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -471,23 +473,61 @@ Format as array of objects with: transliteration, english, hebrew`,
       const [min, sec] = timeStr.split(':').map(Number);
       seconds = (min * 60) + sec;
     } else {
-      seconds = parseInt(timeStr);
+      seconds = parseFloat(timeStr);
     }
     
     setActiveSegmentIdx(idx);
     setIsPlaying(true);
+    setCurrentTime(seconds);
     onSeekVideo(seconds);
   };
 
   // Auto-scroll to active segment
   useEffect(() => {
-    if (activeSegmentRef.current && containerRef.current) {
+    if (activeSegmentRef.current && containerRef.current && isPlaying) {
       activeSegmentRef.current.scrollIntoView({
         behavior: 'smooth',
         block: 'center'
       });
     }
-  }, [activeSegmentIdx]);
+  }, [activeSegmentIdx, isPlaying]);
+
+  // Track video playback time and auto-highlight segments
+  useEffect(() => {
+    if (!expanded || !video?.transcript_text || !isPlaying) return;
+
+    const lines = video.transcript_text.split('\n').filter(l => l.trim());
+    const segments = lines.map(line => {
+      const parts = line.split('\t');
+      return parts.length >= 4 ? parseFloat(parts[3]) : null;
+    }).filter(t => t !== null);
+
+    if (segments.length === 0) return;
+
+    const interval = setInterval(() => {
+      setCurrentTime(prev => {
+        const newTime = prev + 0.1;
+        
+        // Find which segment should be active based on current time
+        let newActiveIdx = -1;
+        for (let i = 0; i < segments.length; i++) {
+          if (newTime >= segments[i]) {
+            newActiveIdx = i;
+          } else {
+            break;
+          }
+        }
+        
+        if (newActiveIdx !== -1 && newActiveIdx !== activeSegmentIdx) {
+          setActiveSegmentIdx(newActiveIdx);
+        }
+        
+        return newTime;
+      });
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [expanded, video?.transcript_text, isPlaying, activeSegmentIdx]);
 
   const deleteTranscript = async () => {
     if (!confirm('Delete transcript?\n\nThis will remove the current transcript from this video.')) return;
