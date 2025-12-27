@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, ArrowLeft, Coins, Check, Backpack, Volume2, Star, BookOpen, Plus, ChevronRight, Loader2, FileText, GripVertical } from "lucide-react";
+import { Play, ArrowLeft, Coins, Check, Backpack, Volume2, Star, BookOpen, Plus, ChevronRight, Loader2, FileText, GripVertical, ChevronDown } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -390,6 +390,7 @@ export default function BabyVideos() {
   const [customVideoUrl, setCustomVideoUrl] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [videoEdits, setVideoEdits] = useState({});
+  const [recommendedExpanded, setRecommendedExpanded] = useState(false);
 
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile'],
@@ -1198,8 +1199,19 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                     </div>
                     )}
 
-                          <h2 className="text-white/60 text-sm font-medium mb-3">Recommended Videos</h2>
-            {level1Videos.map((video) => {
+            {/* Recommended Videos Dropdown */}
+            <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden">
+              <button
+                onClick={() => setRecommendedExpanded(!recommendedExpanded)}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-white/5 transition-all"
+              >
+                <h2 className="text-white font-medium">Recommended Videos ({level1Videos.length})</h2>
+                <ChevronDown className={`w-5 h-5 text-white/60 transition-transform ${recommendedExpanded ? 'rotate-180' : ''}`} />
+              </button>
+
+              {recommendedExpanded && (
+                <div className="border-t border-white/10 p-4 space-y-3">
+                  {level1Videos.map((video) => {
               // Handle both string and number comparisons
               const isExpanded = expandedVideoId == video.id || expandedVideoId === video.id;
               const hasTranscript = fullTranscripts[video.id];
@@ -1319,50 +1331,47 @@ Create about 15-20 conversational lines that naturally introduce and use these v
 
                       {/* Vocabulary Words - Inline */}
                       {showingVocab && (
-                        <div className="bg-white/5 rounded-xl p-4 space-y-2 max-h-80 overflow-y-auto">
-                          {video.transcript.map((item, idx) => {
-                            const inBackpack = wordRatings.find(w => w.word === item.hebrew);
-                            return (
-                              <div
-                                key={idx}
-                                className={`flex items-center justify-between p-3 rounded-lg ${
-                                  inBackpack ? "bg-green-500/10 border border-green-500/30" : "bg-white/5 border border-white/10"
-                                }`}
-                              >
-                                <div>
-                                  <span className="text-cyan-400 font-bold text-lg" dir="rtl">{item.hebrew}</span>
-                                  <p className="text-white/70 text-sm">{item.transliteration}</p>
-                                  <p className="text-white/50 text-xs">{item.meaning}</p>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {inBackpack ? (
-                                    <button
-                                      onClick={() => removeFromBackpack(item)}
-                                      className="px-3 py-1 bg-red-500/20 text-red-400 rounded-lg text-sm hover:bg-red-500/30"
-                                    >
-                                      ✕ Remove
-                                    </button>
-                                  ) : (
-                                    <button
-                                      onClick={() => addToBackpack(item)}
-                                      className="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-lg text-sm hover:bg-amber-500/30"
-                                    >
-                                      + Add
-                                    </button>
-                                  )}
-                                  </div>
-                                  </div>
-                                  );
-                                  })}
-                                  </div>
-                                  )}
-                                  </div>
-                                  )}
-                                  </div>
-                                  );
-                                  })}
-                                  </div>
-                                  )}
+                      <div className="bg-white/5 rounded-xl p-4 space-y-2 max-h-80 overflow-y-auto">
+                      {video.transcript.map((item, idx) => {
+                      const inBackpack = wordRatings.find(w => w.word === item.hebrew);
+                      return (
+                      <div
+                      key={idx}
+                      className={`flex items-center justify-between p-3 rounded-lg ${
+                      inBackpack ? "bg-green-500/10 border border-green-500/30" : "bg-white/5 border border-white/10"
+                      }`}
+                      >
+                      <div>
+                      <span className="text-cyan-400 font-bold text-lg" dir="rtl">{item.hebrew}</span>
+                      <p className="text-white/70 text-sm">{item.transliteration}</p>
+                      <p className="text-white/50 text-xs">{item.meaning}</p>
+                      </div>
+                      <button
+                      onClick={() => addToBackpack(item)}
+                      disabled={!!inBackpack}
+                      className={`px-3 py-1 rounded-lg text-sm transition-all ${
+                      inBackpack 
+                      ? "bg-green-500/20 text-green-400 cursor-not-allowed" 
+                      : "bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30"
+                      }`}
+                      >
+                      {inBackpack ? "✓ Added" : "+ Add to My Videos"}
+                      </button>
+                      </div>
+                      );
+                      })}
+                      </div>
+                      )}
+                      </div>
+                      )}
+                      </div>
+                      );
+                      })}
+                      </div>
+                      )}
+                      </div>
+                      </div>
+                      )}
 
                                   <h2 className="text-white/60 text-sm font-medium mb-3">Recommended Videos</h2>
                                   {level1Videos.map((video) => {
@@ -1467,68 +1476,65 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                           <p className="text-cyan-400 font-bold leading-tight" dir="rtl">{line.hebrew}</p>
                           <p className="text-white/70 text-xs leading-tight">{line.transliteration}</p>
                           <p className="text-white/50 text-xs leading-tight">{line.english}</p>
-                          {inBackpack && <span className="text-green-400 text-xs">✓ in backpack</span>}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+                          {inBackpack && <span className="text-green-400 text-xs">✓ added</span>}
+                          </button>
+                          );
+                          })}
+                          </div>
+                          )}
 
-                {/* Vocab Button */}
-                <button
-                  onClick={() => setShowVocabForVideo(showingVocab ? null : video.id)}
-                  className={`w-full flex items-center justify-center gap-2 ${showingVocab ? 'bg-amber-600' : 'bg-gradient-to-r from-amber-500 to-orange-500'} text-white py-3 rounded-xl font-bold`}
-                >
-                  <BookOpen className="w-5 h-5" />
-                  {showingVocab ? '📚 Hide Vocabulary' : `📚 Show Vocabulary (${video.transcript.length} words)`}
-                </button>
+                          {/* Vocab Button */}
+                          <button
+                          onClick={() => setShowVocabForVideo(showingVocab ? null : video.id)}
+                          className={`w-full flex items-center justify-center gap-2 ${showingVocab ? 'bg-amber-600' : 'bg-gradient-to-r from-amber-500 to-orange-500'} text-white py-3 rounded-xl font-bold`}
+                          >
+                          <BookOpen className="w-5 h-5" />
+                          {showingVocab ? '📚 Hide Vocabulary' : `📚 Show Vocabulary (${video.transcript.length} words)`}
+                          </button>
 
-                {/* Vocabulary Words - Inline */}
-                {showingVocab && (
-                  <div className="bg-white/5 rounded-xl p-4 space-y-2 max-h-80 overflow-y-auto">
-                    {video.transcript.map((item, idx) => {
-                      const inBackpack = wordRatings.find(w => w.word === item.hebrew);
-                      return (
-                        <div
+                          {/* Vocabulary Words - Inline */}
+                          {showingVocab && (
+                          <div className="bg-white/5 rounded-xl p-4 space-y-2 max-h-80 overflow-y-auto">
+                          {video.transcript.map((item, idx) => {
+                          const inBackpack = wordRatings.find(w => w.word === item.hebrew);
+                          return (
+                          <div
                           key={idx}
                           className={`flex items-center justify-between p-3 rounded-lg ${
-                            inBackpack ? "bg-green-500/10 border border-green-500/30" : "bg-white/5 border border-white/10"
+                           inBackpack ? "bg-green-500/10 border border-green-500/30" : "bg-white/5 border border-white/10"
                           }`}
-                        >
+                          >
                           <div>
-                            <span className="text-cyan-400 font-bold text-lg" dir="rtl">{item.hebrew}</span>
-                            <p className="text-white/70 text-sm">{item.transliteration}</p>
-                            <p className="text-white/50 text-xs">{item.meaning}</p>
+                           <span className="text-cyan-400 font-bold text-lg" dir="rtl">{item.hebrew}</span>
+                           <p className="text-white/70 text-sm">{item.transliteration}</p>
+                           <p className="text-white/50 text-xs">{item.meaning}</p>
                           </div>
-                          <div className="flex items-center gap-2">
-                            {inBackpack ? (
-                              <button
-                                onClick={() => removeFromBackpack(item)}
-                                className="px-3 py-1 bg-red-500/20 text-red-400 rounded-lg text-sm hover:bg-red-500/30"
-                              >
-                                ✕ Remove
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() => addToBackpack(item)}
-                                className="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-lg text-sm hover:bg-amber-500/30"
-                              >
-                                + Add
-                              </button>
-                            )}
+                          <button
+                           onClick={() => addToBackpack(item)}
+                           disabled={!!inBackpack}
+                           className={`px-3 py-1 rounded-lg text-sm transition-all ${
+                             inBackpack 
+                               ? "bg-green-500/20 text-green-400 cursor-not-allowed" 
+                               : "bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30"
+                           }`}
+                          >
+                           {inBackpack ? "✓ Added" : "+ Add to My Videos"}
+                          </button>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  )}
+                          );
+                          })}
+                          </div>
+                          )}
+                          </div>
+                          )}
+                          </div>
+                          );
+                          })}
+                          </div>
+                          )}
+                          </div>
+                          </div>
+                          )}
 
       {/* Backpack Dialog */}
       <Dialog open={backpackOpen} onOpenChange={setBackpackOpen}>
