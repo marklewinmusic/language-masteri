@@ -168,50 +168,38 @@ export default function VideoTranscript({ videoId, videoUrl, onPauseVideo, onSee
 
   const parseTimestampedTranscript = (text) => {
     const errors = [];
-    const blocks = text.split(/\n\s*\n/).filter(b => b.trim());
+    const lines = text.split('\n').filter(l => l.trim());
     const parsed = [];
 
-    blocks.forEach((block, idx) => {
-      const lines = block.trim().split('\n').filter(l => l.trim());
+    lines.forEach((line, idx) => {
+      // Match [MM:SS] Hebrew text or [HH:MM:SS] Hebrew text
+      const match = line.match(/^\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]\s*(.+)$/);
       
-      if (lines.length < 4) {
-        errors.push(`Block ${idx + 1}: Missing lines (need timestamp + 3 text lines)`);
+      if (!match) {
+        errors.push(`Line ${idx + 1}: Invalid format. Use [MM:SS] Hebrew text`);
         return;
       }
 
-      // First line should be timestamp [MM:SS] or [HH:MM:SS]
-      const timestampMatch = lines[0].match(/\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/);
-      if (!timestampMatch) {
-        errors.push(`Block ${idx + 1}: Invalid timestamp format. Use [MM:SS] or [HH:MM:SS]`);
-        return;
-      }
-
-      const [_, min, sec, hour] = timestampMatch;
+      const [_, min, sec, hour, hebrew] = match;
       const startSeconds = hour 
         ? parseInt(hour) * 3600 + parseInt(min) * 60 + parseInt(sec)
         : parseInt(min) * 60 + parseInt(sec);
 
-      const transliteration = lines[1].trim();
-      const translation = lines[2].trim();
-      const hebrew = lines[3].trim();
-
-      if (!transliteration || !translation || !hebrew) {
-        errors.push(`Block ${idx + 1}: One or more text lines are empty`);
+      if (!hebrew.trim()) {
+        errors.push(`Line ${idx + 1}: Hebrew text is empty`);
         return;
       }
 
       parsed.push({
         start_time: startSeconds,
-        transliteration,
-        translation,
-        hebrew
+        hebrew: hebrew.trim()
       });
     });
 
     // Validate order
     for (let i = 1; i < parsed.length; i++) {
       if (parsed[i].start_time <= parsed[i-1].start_time) {
-        errors.push(`Block ${i + 1}: Timestamp out of order`);
+        errors.push(`Line ${i + 1}: Timestamp out of order`);
       }
     }
 
@@ -237,12 +225,50 @@ export default function VideoTranscript({ videoId, videoUrl, onPauseVideo, onSee
       end_time: i < parsed.length - 1 ? parsed[i + 1].start_time : block.start_time + 10
     }));
 
-    // Convert to storage format: each line with time in 4th column
-    const formatted = blocksWithEnd.map(b => 
-      `${b.transliteration}\t${b.translation}\t${b.hebrew}\t${b.start_time}`
-    ).join('\n');
-
+    setGeneratingTranslations(true);
+    
     try {
+      // Generate transliteration and translation for all blocks
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Generate transliteration and English translation for each Hebrew segment.
+
+Hebrew segments:
+${blocksWithEnd.map((b, i) => `${i + 1}. ${b.hebrew}`).join('\n')}
+
+For each segment, provide:
+1. Transliteration (phonetic Hebrew using Latin characters)
+2. English translation
+
+Return as array of objects with: transliteration, translation`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            segments: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  transliteration: { type: "string" },
+                  translation: { type: "string" }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Merge AI results with parsed data
+      const enriched = blocksWithEnd.map((block, i) => ({
+        ...block,
+        transliteration: result.segments[i]?.transliteration || "",
+        translation: result.segments[i]?.translation || ""
+      }));
+
+      // Convert to storage format: each line with time in 4th column
+      const formatted = enriched.map(b => 
+        `${b.transliteration}\t${b.translation}\t${b.hebrew}\t${b.start_time}`
+      ).join('\n');
+
       await base44.entities.Video.update(video.id, {
         transcript_text: formatted,
         transcript_status: "complete",
@@ -259,10 +285,12 @@ export default function VideoTranscript({ videoId, videoUrl, onPauseVideo, onSee
 
       setShowManualInput(false);
       setManualTranscript("");
-      toast.success("Manual transcript saved!");
+      toast.success("Transcript saved with auto-generated translations!");
     } catch (e) {
-      toast.error("Failed to save transcript");
+      toast.error("Failed to generate transcript");
     }
+    
+    setGeneratingTranslations(false);
   };
 
   const generateTranscript = async () => {
@@ -613,20 +641,29 @@ Format as array of objects with: transliteration, english, hebrew`,
             className="mt-3 bg-white/5 border border-white/10 rounded-xl p-4"
           >
             <p className="text-white/60 text-sm mb-2">
-              Paste transcript with timestamps (format: [MM:SS] on first line, then 3 lines: Transliteration, English, Hebrew):
+              Paste Hebrew transcript with timestamps (format: [MM:SS] Hebrew text on same line):
             </p>
             <Textarea
               value={manualTranscript}
               onChange={(e) => setManualTranscript(e.target.value)}
-              placeholder="[00:42]&#10;Shalom ani rotzeh ledaber&#10;Hello, I want to speak&#10;שלום אני רוצה לדבר&#10;&#10;[01:15]&#10;Ma shlomcha&#10;How are you&#10;מה שלומך"
+              placeholder="[00:00] בוקר טוב מה שלומכם היום נעשה סרטון&#10;[00:06] למתחילים&#10;[00:08] לנשים שלא יודעים עברית"
               className="bg-white/5 border-white/20 text-white min-h-[200px] mb-3"
+              dir="rtl"
             />
             <div className="flex gap-2">
               <Button 
                 onClick={saveManualTranscript}
+                disabled={generatingTranslations}
                 className="flex-1 bg-green-500/20 text-green-400 hover:bg-green-500/30"
               >
-                Save Transcript
+                {generatingTranslations ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  "Save & Generate"
+                )}
               </Button>
               <Button 
                 onClick={() => { setShowManualInput(false); setManualTranscript(""); }}
