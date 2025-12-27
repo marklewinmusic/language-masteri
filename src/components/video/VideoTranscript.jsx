@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, ChevronUp, Loader2, Edit, Plus, Play, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Edit, Plus, Play, Sparkles, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,9 +22,20 @@ export default function VideoTranscript({ videoId, videoUrl, onPauseVideo, onSee
   const [hebrewText, setHebrewText] = useState("");
   const [generatingTranslations, setGeneratingTranslations] = useState(false);
   const [activeSegmentIdx, setActiveSegmentIdx] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const activeSegmentRef = useRef(null);
   const containerRef = useRef(null);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await base44.auth.me();
+        setCurrentUser(user);
+      } catch (e) {}
+    };
+    fetchUser();
+  }, []);
 
   const addToBackpackMutation = useMutation({
     mutationFn: (word) => base44.entities.Word.create(word),
@@ -424,6 +435,31 @@ Format as array of objects with: transliteration, english, hebrew`,
     }
   }, [activeSegmentIdx]);
 
+  const deleteTranscript = async () => {
+    if (!confirm('Delete this transcript? This cannot be undone.')) return;
+    
+    try {
+      await base44.entities.Video.update(video.id, {
+        transcript_text: null,
+        transcript_status: null,
+        transcript_source: null,
+        language: null
+      });
+
+      setVideo(prev => ({
+        ...prev,
+        transcript_text: null,
+        transcript_status: null,
+        transcript_source: null,
+        language: null
+      }));
+
+      toast.success("Transcript deleted");
+    } catch (e) {
+      toast.error("Failed to delete transcript");
+    }
+  };
+
   if (!video) return null;
 
   const isProcessing = video.transcript_status === "processing" || transcribing;
@@ -478,9 +514,20 @@ Format as array of objects with: transliteration, english, hebrew`,
                 {video.transcript_source === "youtube_captions" ? "📝 YouTube Captions" : 
                  video.transcript_source === "manual" ? "📝 Manual Transcript" : "📝 Transcript"}
               </span>
-              {video.language && (
-                <span className="text-white/40 text-xs uppercase">{video.language}</span>
-              )}
+              <div className="flex items-center gap-2">
+                {video.language && (
+                  <span className="text-white/40 text-xs uppercase">{video.language}</span>
+                )}
+                {currentUser?.role === 'admin' && (
+                  <button
+                    onClick={deleteTranscript}
+                    className="text-red-400 hover:text-red-300 p-1"
+                    title="Delete transcript"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
             <div className="space-y-6">
               {(() => {
