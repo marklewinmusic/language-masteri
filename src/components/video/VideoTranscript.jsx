@@ -423,15 +423,21 @@ Format as array of objects with: transliteration, english, hebrew`,
   };
 
   const updateTranscriptLine = async (blockIdx, lineType, newValue) => {
-    const blocks = video.transcript_text.split('\n\n').filter(b => b.trim());
-    const block = blocks[blockIdx];
-    const lines = block.trim().split('\n').filter(l => l.trim());
+    const lines = video.transcript_text.split('\n').filter(l => l && l.trim());
+    const parts = lines[blockIdx].split('\t');
     
-    const lineIndex = lineType === 'hebrew' ? 0 : lineType === 'transliteration' ? 1 : 2;
-    lines[lineIndex] = newValue;
+    // Update the correct field based on lineType
+    if (lineType === 'transliteration') {
+      parts[0] = newValue;
+    } else if (lineType === 'english') {
+      parts[1] = newValue;
+    } else if (lineType === 'hebrew') {
+      parts[2] = newValue;
+    }
     
-    blocks[blockIdx] = lines.join('\n');
-    const newTranscript = blocks.join('\n\n');
+    // Rebuild the line, preserving timestamp if it exists
+    lines[blockIdx] = parts.join('\t');
+    const newTranscript = lines.join('\n');
     
     try {
       await base44.entities.Video.update(video.id, {
