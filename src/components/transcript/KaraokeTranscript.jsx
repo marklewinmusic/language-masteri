@@ -117,7 +117,7 @@ export default function KaraokeTranscript({
             )}
             
             {/* Transliteration */}
-            <div className="transliteration mb-0.5" style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'plaintext' }}>
+            <div className="transliteration mb-0.5" style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'bidi-override' }}>
               {line.transliteration.split(/(\s+)/).map((part, i) => 
                 /\S/.test(part) ? (
                   <VideoTranscriptWord
@@ -135,7 +135,7 @@ export default function KaraokeTranscript({
             </div>
             
             {/* English */}
-            <div className="english mb-1" style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'plaintext' }}>
+            <div className="english mb-1" style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'bidi-override' }}>
               {line.english.split(/(\s+)/).map((part, i) => 
                 /\S/.test(part) ? (
                   <VideoTranscriptWord
@@ -153,7 +153,7 @@ export default function KaraokeTranscript({
             </div>
             
             {/* Hebrew */}
-            <div className="hebrew" style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'plaintext' }}>
+            <div className="hebrew" style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'bidi-override' }}>
               {line.hebrew.split(/(\s+)/).map((part, i) => 
                 /\S/.test(part) ? (
                   <VideoTranscriptWord

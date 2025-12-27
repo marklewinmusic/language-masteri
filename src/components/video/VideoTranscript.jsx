@@ -166,15 +166,85 @@ export default function VideoTranscript({ videoId, videoUrl, onPauseVideo, onSee
     setTranscribing(false);
   };
 
+  const parseTimestampedTranscript = (text) => {
+    const errors = [];
+    const blocks = text.split(/\n\s*\n/).filter(b => b.trim());
+    const parsed = [];
+
+    blocks.forEach((block, idx) => {
+      const lines = block.trim().split('\n').filter(l => l.trim());
+      
+      if (lines.length < 4) {
+        errors.push(`Block ${idx + 1}: Missing lines (need timestamp + 3 text lines)`);
+        return;
+      }
+
+      // First line should be timestamp [MM:SS] or [HH:MM:SS]
+      const timestampMatch = lines[0].match(/\[(\d{1,2}):(\d{2})(?::(\d{2}))?\]/);
+      if (!timestampMatch) {
+        errors.push(`Block ${idx + 1}: Invalid timestamp format. Use [MM:SS] or [HH:MM:SS]`);
+        return;
+      }
+
+      const [_, min, sec, hour] = timestampMatch;
+      const startSeconds = hour 
+        ? parseInt(hour) * 3600 + parseInt(min) * 60 + parseInt(sec)
+        : parseInt(min) * 60 + parseInt(sec);
+
+      const transliteration = lines[1].trim();
+      const translation = lines[2].trim();
+      const hebrew = lines[3].trim();
+
+      if (!transliteration || !translation || !hebrew) {
+        errors.push(`Block ${idx + 1}: One or more text lines are empty`);
+        return;
+      }
+
+      parsed.push({
+        start_time: startSeconds,
+        transliteration,
+        translation,
+        hebrew
+      });
+    });
+
+    // Validate order
+    for (let i = 1; i < parsed.length; i++) {
+      if (parsed[i].start_time <= parsed[i-1].start_time) {
+        errors.push(`Block ${i + 1}: Timestamp out of order`);
+      }
+    }
+
+    return { parsed, errors };
+  };
+
   const saveManualTranscript = async () => {
     if (!manualTranscript.trim()) {
       toast.error("Transcript cannot be empty");
       return;
     }
 
+    const { parsed, errors } = parseTimestampedTranscript(manualTranscript);
+
+    if (errors.length > 0) {
+      toast.error(errors[0]);
+      return;
+    }
+
+    // Calculate end times
+    const blocksWithEnd = parsed.map((block, i) => ({
+      ...block,
+      end_time: i < parsed.length - 1 ? parsed[i + 1].start_time : block.start_time + 10
+    }));
+
+    // Convert to storage format: each line with time in 4th column
+    const formatted = blocksWithEnd.map(b => 
+      `${b.transliteration}\t${b.translation}\t${b.hebrew}\t${b.start_time}`
+    ).join('\n');
+
     try {
       await base44.entities.Video.update(video.id, {
-        transcript_text: manualTranscript,
+        transcript_text: formatted,
         transcript_status: "complete",
         transcript_source: "manual",
         transcript_generated_at: new Date().toISOString()
@@ -182,7 +252,7 @@ export default function VideoTranscript({ videoId, videoUrl, onPauseVideo, onSee
 
       setVideo(prev => ({
         ...prev,
-        transcript_text: manualTranscript,
+        transcript_text: formatted,
         transcript_status: "complete",
         transcript_source: "manual"
       }));
@@ -396,7 +466,7 @@ Format as array of objects with: transliteration, english, hebrew`,
                         >
                           <Plus className="w-4 h-4 text-amber-400" />
                         </button>
-                        <div className="mb-0.5" style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'plaintext' }}>
+                        <div className="mb-0.5" style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'bidi-override' }}>
                           {transliteration.split(/(\s+)/).map((part, i) => 
                             /\S/.test(part) ? (
                               <VideoTranscriptWord
@@ -415,7 +485,7 @@ Format as array of objects with: transliteration, english, hebrew`,
                             ) : part
                           )}
                         </div>
-                        <div className="mb-1" style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'plaintext' }}>
+                        <div className="mb-1" style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'bidi-override' }}>
                           {english.split(/(\s+)/).map((part, i) => 
                             /\S/.test(part) ? (
                               <VideoTranscriptWord
@@ -434,7 +504,7 @@ Format as array of objects with: transliteration, english, hebrew`,
                             ) : part
                           )}
                         </div>
-                        <div style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'plaintext' }}>
+                        <div style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'bidi-override' }}>
                           {hebrew.split(/(\s+)/).map((part, i) => 
                             /\S/.test(part) ? (
                               <VideoTranscriptWord
@@ -448,7 +518,7 @@ Format as array of objects with: transliteration, english, hebrew`,
                                   updateTranscriptLine(blockIdx, 'hebrew', newText);
                                 }}
                                 onAddToBackpack={addSentenceToBackpack}
-                                className="text-cyan-400 text-2xl font-bold leading-tight"
+                                className="text-cyan-400 text-xl font-bold leading-tight"
                               />
                             ) : part
                           )}
@@ -543,12 +613,12 @@ Format as array of objects with: transliteration, english, hebrew`,
             className="mt-3 bg-white/5 border border-white/10 rounded-xl p-4"
           >
             <p className="text-white/60 text-sm mb-2">
-              Paste transcript below (format: each line has Transliteration[TAB]English[TAB]Hebrew):
+              Paste transcript with timestamps (format: [MM:SS] on first line, then 3 lines: Transliteration, English, Hebrew):
             </p>
             <Textarea
               value={manualTranscript}
               onChange={(e) => setManualTranscript(e.target.value)}
-              placeholder="Shalom lekulam!	Hello everyone!	שָׁלוֹם לְכֻלָּם!&#10;Hayom nilmad Ivrit.	Today we will learn Hebrew.	הַיּוֹם נִלְמַד עִבְרִית."
+              placeholder="[00:42]&#10;Shalom ani rotzeh ledaber&#10;Hello, I want to speak&#10;שלום אני רוצה לדבר&#10;&#10;[01:15]&#10;Ma shlomcha&#10;How are you&#10;מה שלומך"
               className="bg-white/5 border-white/20 text-white min-h-[200px] mb-3"
             />
             <div className="flex gap-2">
