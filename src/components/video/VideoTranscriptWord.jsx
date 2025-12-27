@@ -10,8 +10,10 @@ export default function VideoTranscriptWord({
   className = ""
 }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [value, setValue] = useState(word);
+  const [value, setValue] = useState(word || "");
   const inputRef = useRef(null);
+
+  if (!word) return null;
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -21,7 +23,7 @@ export default function VideoTranscriptWord({
   }, [isEditing]);
 
   const handleSave = () => {
-    if (value.trim() && value !== word && onEdit) {
+    if (value && value.trim() && value !== word && onEdit) {
       onEdit(value.trim());
     }
     setIsEditing(false);
