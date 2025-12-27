@@ -12,7 +12,7 @@ import UniversalEditableWord from "../learning/UniversalEditableWord";
 import EditableSentence from "../learning/EditableSentence";
 import VideoTranscriptWord from "./VideoTranscriptWord";
 
-export default function VideoTranscript({ videoId, videoUrl, onPauseVideo, onSeekVideo }) {
+export default function VideoTranscript({ videoId, videoUrl, iframeId, onPauseVideo, onSeekVideo }) {
   const [expanded, setExpanded] = useState(false);
   const [video, setVideo] = useState(null);
   const [transcribing, setTranscribing] = useState(false);
@@ -30,7 +30,8 @@ export default function VideoTranscript({ videoId, videoUrl, onPauseVideo, onSee
   const activeSegmentRef = useRef(null);
   const containerRef = useRef(null);
   const queryClient = useQueryClient();
-  const iframeRef = useRef(null);
+  const playerRef = useRef(null);
+  const timeTrackerRef = useRef(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -41,6 +42,40 @@ export default function VideoTranscript({ videoId, videoUrl, onPauseVideo, onSee
     };
     fetchUser();
   }, []);
+
+  // Initialize YouTube Player API
+  useEffect(() => {
+    if (!iframeId) return;
+    
+    const initPlayer = () => {
+      if (!window.YT || !window.YT.Player) return;
+      
+      try {
+        playerRef.current = new window.YT.Player(iframeId, {
+          events: {
+            onReady: () => {
+              console.log('YouTube player ready');
+            },
+            onStateChange: (event) => {
+              setIsPlaying(event.data === 1);
+            }
+          }
+        });
+      } catch (e) {
+        console.log('Player init failed, retrying...', e);
+      }
+    };
+
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      window.onYouTubeIframeAPIReady = initPlayer;
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    } else {
+      initPlayer();
+    }
+  }, [iframeId]);
 
   const addToBackpackMutation = useMutation({
     mutationFn: (word) => base44.entities.Word.create(word),
@@ -494,26 +529,32 @@ Format as array of objects with: transliteration, english, hebrew`,
 
   // Track video playback time and auto-highlight segments
   useEffect(() => {
-    if (!expanded || !video?.transcript_text || !isPlaying) return;
+    if (!expanded || !video?.transcript_text) return;
 
     const lines = video.transcript_text.split('\n').filter(l => l.trim());
-    const segments = lines.map(line => {
+    const segments = lines.map((line, idx) => {
       const parts = line.split('\t');
-      return parts.length >= 4 ? parseFloat(parts[3]) : null;
-    }).filter(t => t !== null);
+      return { idx, time: parts.length >= 4 ? parseFloat(parts[3]) : null };
+    }).filter(s => s.time !== null);
 
     if (segments.length === 0) return;
 
-    const interval = setInterval(() => {
-      setCurrentTime(prev => {
-        const newTime = prev + 0.1;
+    // Poll YouTube player for current time
+    const checkTime = () => {
+      if (!playerRef.current) return;
+      
+      try {
+        const currentTime = playerRef.current.getCurrentTime();
+        const playerState = playerRef.current.getPlayerState();
         
-        // Find which segment should be active based on current time
+        // Update playing state (1 = playing)
+        setIsPlaying(playerState === 1);
+        
+        // Find which segment should be active
         let newActiveIdx = -1;
-        for (let i = 0; i < segments.length; i++) {
-          if (newTime >= segments[i]) {
-            newActiveIdx = i;
-          } else {
+        for (let i = segments.length - 1; i >= 0; i--) {
+          if (currentTime >= segments[i].time) {
+            newActiveIdx = segments[i].idx;
             break;
           }
         }
@@ -521,13 +562,19 @@ Format as array of objects with: transliteration, english, hebrew`,
         if (newActiveIdx !== -1 && newActiveIdx !== activeSegmentIdx) {
           setActiveSegmentIdx(newActiveIdx);
         }
-        
-        return newTime;
-      });
-    }, 100);
+      } catch (e) {
+        // Player not ready yet
+      }
+    };
 
-    return () => clearInterval(interval);
-  }, [expanded, video?.transcript_text, isPlaying, activeSegmentIdx]);
+    timeTrackerRef.current = setInterval(checkTime, 200);
+
+    return () => {
+      if (timeTrackerRef.current) {
+        clearInterval(timeTrackerRef.current);
+      }
+    };
+  }, [expanded, video?.transcript_text, activeSegmentIdx]);
 
   const deleteTranscript = async () => {
     if (!confirm('Delete transcript?\n\nThis will remove the current transcript from this video.')) return;

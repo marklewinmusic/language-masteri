@@ -1158,7 +1158,7 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                                            id={`youtube-player-${video.id}`}
                                            width="100%"
                                            height="100%"
-                                           src={`https://www.youtube.com/embed/${ytId}?autoplay=1&enablejsapi=1`}
+                                           src={`https://www.youtube.com/embed/${ytId}?enablejsapi=1`}
                                            title={video.title}
                                            frameBorder="0"
                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -1169,6 +1169,7 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                                        <VideoTranscript 
                                          videoId={video.id}
                                          videoUrl={video.video_url}
+                                         iframeId={`youtube-player-${video.id}`}
                                          onPauseVideo={() => {
                                            const iframe = document.getElementById(`youtube-player-${video.id}`);
                                            if (iframe && iframe.contentWindow) {
