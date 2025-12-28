@@ -9,11 +9,11 @@ import { toast } from "sonner";
 
 const languages = [
   { id: "hebrew", name: "Hebrew", emoji: "🇮🇱", active: true },
-  { id: "english", name: "English", emoji: "🇺🇸", active: false },
-  { id: "spanish", name: "Spanish", emoji: "🇪🇸", active: false },
-  { id: "french", name: "French", emoji: "🇫🇷", active: false },
-  { id: "portuguese", name: "Portuguese", emoji: "🇧🇷", active: false },
-  { id: "italian", name: "Italian", emoji: "🇮🇹", active: false },
+  { id: "english", name: "English", emoji: "🇺🇸", active: true },
+  { id: "spanish", name: "Spanish", emoji: "🇪🇸", active: true },
+  { id: "french", name: "French", emoji: "🇫🇷", active: true },
+  { id: "portuguese", name: "Portuguese", emoji: "🇧🇷", active: true },
+  { id: "italian", name: "Italian", emoji: "🇮🇹", active: true },
 ];
 
 export default function LanguageSelect() {
@@ -40,10 +40,6 @@ export default function LanguageSelect() {
   });
 
   const handleSelect = (lang) => {
-    if (!lang.active) {
-      toast.error("Coming soon! Hebrew is currently available.");
-      return;
-    }
     setSelectedLanguage(lang.id);
   };
 
