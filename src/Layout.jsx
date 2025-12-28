@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import BuddyDock from "./components/game/BuddyDock";
-import DebugUserInfo from "./components/admin/DebugUserInfo";
 
 export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
@@ -67,7 +66,6 @@ export default function Layout({ children, currentPageName }) {
           backpackCount={backpackWords.length}
         />
       )}
-      <DebugUserInfo />
     </>
   );
 }
