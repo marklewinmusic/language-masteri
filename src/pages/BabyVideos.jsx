@@ -426,7 +426,7 @@ export default function BabyVideos() {
       // Filter by language and deleted status
       const filtered = videos.filter(v => {
         const notDeleted = !v.deleted_at || currentUser?.role === 'admin';
-        const matchesLanguage = !userProfile?.language || v.language === userProfile.language || v.language === 'he';
+        const matchesLanguage = !userProfile?.language || v.language === userProfile.language;
         return notDeleted && matchesLanguage;
       });
       // Sort by order field
