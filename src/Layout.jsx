@@ -37,27 +37,36 @@ export default function Layout({ children, currentPageName }) {
     enabled: isAuthChecked,
   });
 
+  // Debug label (dev only)
+  const isDev = window.location.hostname === 'localhost' || window.location.hostname.includes('dev');
+  
   // HARD BLOCK: Don't render anything except onboarding if language not set
   // This applies to ALL users regardless of role
-  if (!isOnboardingPage && isAuthChecked && !profileLoading) {
+  useEffect(() => {
+    if (isOnboardingPage || !isAuthChecked || profileLoading) return;
+    
     if (!userProfile || !userProfile.language || userProfile.language === "") {
-      // Force redirect and block render
       if (currentPageName !== "LanguageSelect") {
         navigate(createPageUrl("LanguageSelect"), { replace: true });
       }
-      return null; // Block all content rendering
+      return;
     }
     
     if (userProfile.is_new_user === true && !userProfile.avatar_id) {
       if (currentPageName !== "AvatarSelect") {
         navigate(createPageUrl("AvatarSelect"), { replace: true });
       }
-      return null; // Block all content rendering
     }
-  }
+  }, [isOnboardingPage, isAuthChecked, profileLoading, userProfile, currentPageName, navigate]);
 
-  // Debug label (dev only)
-  const isDev = window.location.hostname === 'localhost' || window.location.hostname.includes('dev');
+  // Block rendering if onboarding needed
+  const shouldBlockRender = !isOnboardingPage && isAuthChecked && !profileLoading && 
+    (!userProfile || !userProfile.language || 
+     (userProfile.is_new_user === true && !userProfile.avatar_id));
+  
+  if (shouldBlockRender) {
+    return null;
+  }
   
   return (
     <>
