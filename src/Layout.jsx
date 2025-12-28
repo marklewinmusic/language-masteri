@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import BuddyDock from "./components/game/BuddyDock";
+import DebugUserInfo from "./components/admin/DebugUserInfo";
 
 export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
@@ -31,18 +32,16 @@ export default function Layout({ children, currentPageName }) {
       return;
     }
     
-    // Check is_new_user flag
-    if (userProfile.is_new_user === true) {
-      // Need language
-      if (!userProfile.language) {
-        navigate(createPageUrl("LanguageSelect"));
-        return;
-      }
-      // Need avatar
-      if (!userProfile.avatar_id) {
-        navigate(createPageUrl("AvatarSelect"));
-        return;
-      }
+    // HARD BLOCK: No language = must select language
+    if (!userProfile.language || userProfile.language === "") {
+      navigate(createPageUrl("LanguageSelect"));
+      return;
+    }
+    
+    // Check is_new_user flag for avatar requirement
+    if (userProfile.is_new_user === true && !userProfile.avatar_id) {
+      navigate(createPageUrl("AvatarSelect"));
+      return;
     }
   }, [userProfile, profileLoading, isOnboardingPage, navigate]);
 
@@ -73,6 +72,7 @@ export default function Layout({ children, currentPageName }) {
           backpackCount={backpackWords.length}
         />
       )}
+      <DebugUserInfo />
     </>
   );
 }
