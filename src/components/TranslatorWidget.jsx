@@ -16,7 +16,7 @@ export default function TranslatorWidget() {
   const [learningLanguage, setLearningLanguage] = useState("hebrew");
 
   // Get user's learning language
-  useState(() => {
+  React.useEffect(() => {
     base44.entities.UserProfile.list().then(profiles => {
       if (profiles[0]?.language) {
         setLearningLanguage(profiles[0].language);
@@ -36,7 +36,7 @@ export default function TranslatorWidget() {
   });
 
   const handleTranslate = async () => {
-    if (!inputText.trim()) return;
+    if (!inputText.trim() || !learningLanguage) return;
     
     setIsTranslating(true);
     try {
@@ -138,7 +138,7 @@ Provide:
   };
 
   const handleAddToBackpack = () => {
-    if (!translation) return;
+    if (!translation || !learningLanguage) return;
     
     createWordMutation.mutate({
       word: translation.hebrew,
