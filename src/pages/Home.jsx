@@ -522,7 +522,7 @@ export default function Home() {
                     ];
                     createDayMutation.mutate({
                       day_number: nextDayNum,
-                      language: userProfile?.language || 'hebrew',
+                      language: userProfile?.language,
                       title: `Day ${nextDayNum}`,
                       subsections: defaultTasks
                     });
