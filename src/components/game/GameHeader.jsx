@@ -127,13 +127,13 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
             className="relative flex items-center gap-3 cursor-pointer"
           >
             <div className="relative">
-              <div className="w-12 h-auto flex items-end justify-center overflow-visible">
+              <div className="w-12 h-auto flex items-end justify-center overflow-visible bg-transparent">
                 {profile?.avatar_image_url ? (
                   <img 
                     src={profile.avatar_image_url} 
                     alt={profile.avatar_name} 
-                    className="w-full h-auto object-contain" 
-                    style={{ borderRadius: 0, clipPath: 'none', mask: 'none' }}
+                    className="w-full h-auto object-contain bg-transparent" 
+                    style={{ borderRadius: 0, clipPath: 'none', mask: 'none', backgroundColor: 'transparent' }}
                   />
                 ) : (
                   <span className="text-3xl">👤</span>
