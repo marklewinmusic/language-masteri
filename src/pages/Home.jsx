@@ -229,12 +229,28 @@ export default function Home() {
     },
   });
 
-  // Redirect to language or avatar selection if no profile
+  // Global onboarding gate
   useEffect(() => {
-    if (!profileLoading && !userProfile) {
+    if (profileLoading) return;
+    
+    // No profile = create one and start onboarding
+    if (!userProfile) {
       navigate(createPageUrl("LanguageSelect"));
-    } else if (!profileLoading && userProfile && !userProfile.language) {
-      navigate(createPageUrl("LanguageSelect"));
+      return;
+    }
+    
+    // Check is_new_user flag
+    if (userProfile.is_new_user === true) {
+      // Need language
+      if (!userProfile.language) {
+        navigate(createPageUrl("LanguageSelect"));
+        return;
+      }
+      // Need avatar
+      if (!userProfile.avatar_id) {
+        navigate(createPageUrl("AvatarSelect"));
+        return;
+      }
     }
   }, [userProfile, profileLoading, navigate]);
 

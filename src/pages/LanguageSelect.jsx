@@ -27,7 +27,11 @@ export default function LanguageSelect() {
       if (profiles.length > 0) {
         return await base44.entities.UserProfile.update(profiles[0].id, { language });
       }
-      return await base44.entities.UserProfile.create({ language, current_day: 1 });
+      return await base44.entities.UserProfile.create({ 
+        language, 
+        current_day: 1,
+        is_new_user: true
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userProfile'] });

@@ -112,7 +112,7 @@ export default function AvatarSelect() {
 
   // Redirect to language select if no language chosen
   React.useEffect(() => {
-    if (profile && !profile.language) {
+    if (profile && profile.is_new_user && !profile.language) {
       navigate(createPageUrl("LanguageSelect"));
     }
   }, [profile, navigate]);
@@ -245,6 +245,8 @@ Examples: Penny, Bucks, Clever, NestEgg, Lucky, Earnie, Value`,
       age_level: 3,
       xp: 0,
       daily_streak: 0,
+      is_new_user: false,
+      onboarding_completed_at: new Date().toISOString(),
     });
   };
 
