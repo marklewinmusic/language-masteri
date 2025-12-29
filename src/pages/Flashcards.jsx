@@ -525,20 +525,28 @@ Return JSON with sentences array, each containing:
                   </div>
                 ) : (
                   exampleSentences.map((sentence, idx) => {
-                    const [showTranslation, setShowTranslation] = React.useState(false);
+                    const isRevealed = revealedSentences.has(idx);
                     return (
                       <div 
                         key={idx} 
                         className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-4 cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setShowTranslation(!showTranslation);
+                          setRevealedSentences(prev => {
+                            const next = new Set(prev);
+                            if (next.has(idx)) {
+                              next.delete(idx);
+                            } else {
+                              next.add(idx);
+                            }
+                            return next;
+                          });
                         }}
                       >
                         <div className="flex items-start justify-between gap-3 mb-2">
                           <div className="flex-1">
                             <p className="text-cyan-400 text-base mb-2">{sentence.transliteration}</p>
-                            {showTranslation && (
+                            {isRevealed && (
                               <p className="text-white/60 text-sm mb-2">{sentence.english}</p>
                             )}
                             <p className="text-white text-base" dir="ltr">
