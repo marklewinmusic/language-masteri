@@ -44,21 +44,20 @@ export default function Layout({ children, currentPageName }) {
   // HARD BLOCK: Don't render anything except onboarding if language not set
   // This applies to ALL users regardless of role
   useEffect(() => {
-    if (isOnboardingPage || !isAuthChecked || profileLoading) return;
+    if (isOnboardingPage || !isAuthChecked) return;
+    if (profileLoading) return;
     
+    // If no profile or no language, redirect to LanguageSelect
     if (!userProfile || !userProfile.language || userProfile.language === "") {
-      if (currentPageName !== "LanguageSelect") {
-        navigate(createPageUrl("LanguageSelect"), { replace: true });
-      }
+      navigate(createPageUrl("LanguageSelect"), { replace: true });
       return;
     }
     
+    // If new user without avatar, redirect to AvatarSelect
     if (userProfile.is_new_user === true && !userProfile.avatar_id) {
-      if (currentPageName !== "AvatarSelect") {
-        navigate(createPageUrl("AvatarSelect"), { replace: true });
-      }
+      navigate(createPageUrl("AvatarSelect"), { replace: true });
     }
-  }, [isOnboardingPage, isAuthChecked, profileLoading, userProfile, currentPageName, navigate]);
+  }, [isOnboardingPage, isAuthChecked, profileLoading, userProfile, navigate]);
 
   // Block rendering if onboarding needed
   const shouldBlockRender = !isOnboardingPage && isAuthChecked && !profileLoading && 
