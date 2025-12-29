@@ -24,6 +24,7 @@ export default function Flashcards() {
   const [exampleSentences, setExampleSentences] = useState([]);
   const [generatingSentences, setGeneratingSentences] = useState(false);
   const [revealedSentences, setRevealedSentences] = useState(new Set());
+  const [skipCount, setSkipCount] = useState(0);
 
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile'],
@@ -154,14 +155,36 @@ Return JSON with sentences array, each containing:
   const handleCardTap = () => {
     if (revealState < 2) {
       setRevealState(revealState + 1);
-    } else if (currentWord?.is_verb && revealState === 2) {
-      // For verbs, stay at conjugation view
-      return;
+    } else {
+      // Skip to next word
+      handleSkip();
+    }
+  };
+
+  const handleSkip = () => {
+    const newSkipCount = skipCount + 1;
+    setSkipCount(newSkipCount);
+    
+    if (newSkipCount >= 5) {
+      toast.info("Remember to rate words to track progress!", { duration: 3000 });
+      setSkipCount(0);
+    }
+
+    if (currentIndex < sessionWords.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+      setRevealState(0);
+      setExampleSentences([]);
+      setRevealedSentences(new Set());
+    } else {
+      toast.success("Session complete! 🎉");
+      setSelectedLevel(null);
     }
   };
 
   const handleRating = async (rating) => {
     const currentWord = sessionWords[currentIndex];
+    
+    setSkipCount(0); // Reset skip count when rating
     
     await updateWordMutation.mutateAsync({
       id: currentWord.id,
@@ -308,14 +331,7 @@ Return JSON with sentences array, each containing:
                         id: currentWord.id,
                         data: { category: "deleted" }
                       });
-                      if (currentIndex < sessionWords.length - 1) {
-                        setCurrentIndex(currentIndex + 1);
-                        setRevealState(0);
-                        setExampleSentences([]);
-                        setRevealedSentences(new Set());
-                      } else {
-                        setSelectedLevel(null);
-                      }
+                      handleSkip();
                     }
                   }}
                   variant="ghost"
@@ -337,33 +353,24 @@ Return JSON with sentences array, each containing:
                 <div className="bg-black/30 backdrop-blur-sm rounded-full px-3 py-1.5 text-white text-sm font-medium">
                   Level {currentWord?.times_practiced || 0}
                 </div>
-                <div className="bg-black/30 backdrop-blur-sm rounded-full px-3 py-1.5">
-                  <span className="text-white text-sm font-medium">{currentIndex + 1}/{sessionWords.length}</span>
-                </div>
                 <div className="flex flex-col gap-2">
-                  <button
-                    onClick={() => setImageRegenDialog(true)}
-                    className="w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 flex items-center justify-center text-xl"
-                  >
-                    🎨
-                  </button>
+                  <div className="bg-black/30 backdrop-blur-sm rounded-full px-3 py-1.5">
+                    <span className="text-white text-sm font-medium">{currentIndex + 1}/{sessionWords.length}</span>
+                  </div>
                   <Button
-                    onClick={() => {
-                      if (currentIndex < sessionWords.length - 1) {
-                        setCurrentIndex(currentIndex + 1);
-                        setRevealState(0);
-                        setExampleSentences([]);
-                        setRevealedSentences(new Set());
-                      } else {
-                        toast.info("End of session!");
-                      }
-                    }}
+                    onClick={handleSkip}
                     variant="ghost"
                     size="icon"
                     className="text-white bg-black/30 backdrop-blur-sm hover:bg-black/50 rounded-full"
                   >
                     &gt;
                   </Button>
+                  <button
+                    onClick={() => setImageRegenDialog(true)}
+                    className="w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 flex items-center justify-center text-xl"
+                  >
+                    🎨
+                  </button>
                 </div>
               </div>
             </div>
@@ -612,34 +619,27 @@ Return JSON with sentences array, each containing:
             )}
           </div>
 
-          {/* Bottom rating buttons inside card */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-white/10 backdrop-blur-xl rounded-2xl border-2 border-white/20 p-4 shadow-2xl">
-              <p className="text-white/60 text-center text-xs mb-2">
-                How well do you know this?
-              </p>
-              <div className="flex gap-2">
-                {[0, 1, 2, 3, 4, 5].map((rating) => (
-                  <button
-                    key={rating}
-                    onClick={() => handleRating(rating)}
-                    className={`w-12 h-12 rounded-xl font-bold text-base transition-all hover:scale-110 active:scale-95 ${
-                      rating === 0
-                        ? "bg-gray-500/30 text-white/60"
-                        : rating === 5
-                        ? "bg-gradient-to-br from-green-500 to-emerald-500 text-white shadow-lg"
-                        : rating >= 4
-                        ? "bg-gradient-to-br from-blue-500 to-cyan-500 text-white"
-                        : rating >= 3
-                        ? "bg-gradient-to-br from-yellow-500 to-amber-500 text-white"
-                        : "bg-white/20 text-white"
-                    }`}
-                  >
-                    {rating}
-                  </button>
-                ))}
-              </div>
-            </div>
+          {/* Bottom rating buttons */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-1.5" onClick={(e) => e.stopPropagation()}>
+            {[0, 1, 2, 3, 4, 5].map((rating) => (
+              <button
+                key={rating}
+                onClick={() => handleRating(rating)}
+                className={`w-9 h-9 rounded-lg font-bold text-sm transition-all hover:scale-110 active:scale-95 ${
+                  rating === 0
+                    ? "bg-gray-500/40 text-white/70"
+                    : rating === 5
+                    ? "bg-gradient-to-br from-green-500 to-emerald-500 text-white shadow-lg"
+                    : rating >= 4
+                    ? "bg-gradient-to-br from-blue-500 to-cyan-500 text-white"
+                    : rating >= 3
+                    ? "bg-gradient-to-br from-yellow-500 to-amber-500 text-white"
+                    : "bg-white/30 text-white"
+                }`}
+              >
+                {rating}
+              </button>
+            ))}
           </div>
           </motion.div>
         </AnimatePresence>
