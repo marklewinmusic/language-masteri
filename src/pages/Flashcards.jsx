@@ -218,6 +218,8 @@ Return JSON with sentences array, each containing:
     }
   };
 
+  const currentWord = sessionWords[currentIndex];
+
   React.useEffect(() => {
     if (currentWord && revealState >= 1) {
       generateSentences(currentWord);
@@ -235,8 +237,6 @@ Return JSON with sentences array, each containing:
       </div>
     );
   }
-
-  const currentWord = sessionWords[currentIndex];
 
   // Filter screen
   if (selectedLevel === null) {
