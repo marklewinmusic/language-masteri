@@ -23,7 +23,8 @@ export default function LanguageSelect() {
 
   const selectLanguageMutation = useMutation({
     mutationFn: async (language) => {
-      const profiles = await base44.entities.UserProfile.list();
+      const currentUser = await base44.auth.me();
+      const profiles = await base44.entities.UserProfile.filter({ created_by: currentUser.email });
       if (profiles.length > 0) {
         return await base44.entities.UserProfile.update(profiles[0].id, { language });
       }
@@ -33,8 +34,9 @@ export default function LanguageSelect() {
         is_new_user: true
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+    onSuccess: async () => {
+      const currentUser = await base44.auth.me();
+      await queryClient.invalidateQueries({ queryKey: ['userProfile', currentUser?.email] });
       navigate(createPageUrl("AvatarSelect"));
     },
   });
