@@ -300,14 +300,39 @@ Return JSON with sentences array, each containing:
           >
             {/* Top bar inside card */}
             <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
-              <Button
-                onClick={() => setSelectedLevel(null)}
-                variant="ghost"
-                size="icon"
-                className="text-white bg-black/30 backdrop-blur-sm hover:bg-black/50 rounded-full"
-              >
-                <X className="w-5 h-5" />
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button
+                  onClick={() => {
+                    if (confirm("Delete this word?")) {
+                      updateWordMutation.mutate({
+                        id: currentWord.id,
+                        data: { category: "deleted" }
+                      });
+                      if (currentIndex < sessionWords.length - 1) {
+                        setCurrentIndex(currentIndex + 1);
+                        setRevealState(0);
+                        setExampleSentences([]);
+                        setRevealedSentences(new Set());
+                      } else {
+                        setSelectedLevel(null);
+                      }
+                    }
+                  }}
+                  variant="ghost"
+                  size="icon"
+                  className="text-white bg-black/30 backdrop-blur-sm hover:bg-black/50 rounded-full"
+                >
+                  🗑️
+                </Button>
+                <Button
+                  onClick={() => setSelectedLevel(null)}
+                  variant="ghost"
+                  size="icon"
+                  className="text-white bg-black/30 backdrop-blur-sm hover:bg-black/50 rounded-full text-xs"
+                >
+                  Back
+                </Button>
+              </div>
               <div className="flex items-center gap-3">
                 <div className="bg-black/30 backdrop-blur-sm rounded-full px-3 py-1.5 text-white text-sm font-medium">
                   Level {currentWord?.times_practiced || 0}
