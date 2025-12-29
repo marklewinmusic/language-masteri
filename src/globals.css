@@ -4,6 +4,25 @@
 
 @layer base {
   :root {
+    /* BASE44 Color System */
+    --app-bg: #1F2A44;
+    --app-bg-light: #162035;
+    --card-bg: #FFFFFF;
+    --card-shadow: rgba(0, 0, 0, 0.12);
+    --divider: #E6E9EF;
+    
+    /* Text colors */
+    --text-primary: #1F2A44;
+    --text-secondary: rgba(31, 42, 68, 0.7);
+    --text-disabled: rgba(31, 42, 68, 0.45);
+    --text-on-blue: #FFFFFF;
+    --text-on-blue-muted: rgba(255, 255, 255, 0.75);
+    
+    /* Accent (earned states only) */
+    --accent-gold: #F4C430;
+    --accent-gold-dark: #D4A417;
+    --accent-gold-soft: #FFE28A;
+
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -71,7 +90,9 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    background: linear-gradient(180deg, #1F2A44 0%, #162035 100%);
+    min-height: 100vh;
+    @apply text-foreground;
   }
 }
 

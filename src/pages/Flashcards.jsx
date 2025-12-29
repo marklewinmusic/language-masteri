@@ -253,11 +253,12 @@ Return JSON with sentences array, each containing:
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(180deg, #1F2A44 0%, #162035 100%)' }}>
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full"
+          className="w-12 h-12 border-4 rounded-full"
+          style={{ borderColor: '#F4C430', borderTopColor: 'transparent' }}
         />
       </div>
     );
@@ -266,37 +267,44 @@ Return JSON with sentences array, each containing:
   // Filter screen
   if (selectedLevel === null) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #1F2A44 0%, #162035 100%)' }}>
         <GameHeader profile={userProfile} coins={userCoins?.coins} onBuyCoins={() => {}} />
 
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-white mb-2">Flashcards</h1>
-            <p className="text-white/60">Pick a level to start learning</p>
+            <p className="text-white/75">Pick a level to start learning</p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {levelData.map(({ level, label, subtitle, gradient }) => {
               const count = getWordsForLevel(level).length;
+              const isGold = level > 0;
               return (
                 <motion.button
                   key={level}
                   whileHover={{ scale: count > 0 ? 1.05 : 1 }}
                   whileTap={{ scale: count > 0 ? 0.95 : 1 }}
                   onClick={() => count > 0 && startSession(level)}
-                  className={`relative p-6 rounded-3xl border-2 transition-all ${
+                  className={`relative p-6 rounded-3xl transition-all ${
                     count > 0
-                      ? 'border-white/20 bg-white/5 hover:border-cyan-400/50 cursor-pointer'
-                      : 'border-white/10 bg-white/5 opacity-50 cursor-not-allowed'
+                      ? 'bg-white shadow-lg hover:shadow-xl cursor-pointer'
+                      : 'bg-white/50 shadow opacity-50 cursor-not-allowed'
                   }`}
+                  style={{ boxShadow: count > 0 ? '0 4px 16px rgba(0, 0, 0, 0.12)' : undefined }}
                 >
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-4 mx-auto shadow-lg`}>
-                    <span className="text-3xl font-bold text-white">{level}</span>
+                  <div 
+                    className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 mx-auto`}
+                    style={{ 
+                      background: isGold ? '#F4C430' : '#1F2A44',
+                    }}
+                  >
+                    <span className="text-3xl font-bold" style={{ color: isGold ? '#1F2A44' : '#FFFFFF' }}>{level}</span>
                   </div>
-                  <h3 className="text-white font-bold text-xl mb-1">{label}</h3>
-                  <p className="text-white/60 text-sm mb-2">{subtitle}</p>
-                  <div className="bg-white/10 rounded-xl px-3 py-1 inline-block">
-                    <span className="text-white font-medium">{count} words</span>
+                  <h3 className="font-bold text-xl mb-1" style={{ color: '#1F2A44' }}>{label}</h3>
+                  <p className="text-sm mb-2" style={{ color: 'rgba(31, 42, 68, 0.7)' }}>{subtitle}</p>
+                  <div className="rounded-xl px-3 py-1 inline-block" style={{ backgroundColor: '#E6E9EF' }}>
+                    <span className="font-medium" style={{ color: '#1F2A44' }}>{count} words</span>
                   </div>
                 </motion.button>
               );
@@ -309,7 +317,7 @@ Return JSON with sentences array, each containing:
 
   // Full-screen flashcard session
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col">
+    <div className="fixed inset-0 flex flex-col" style={{ background: 'linear-gradient(180deg, #1F2A44 0%, #162035 100%)' }}>
       {/* Main card area */}
       <div className="flex-1 flex items-center justify-center p-4 py-8">
         <AnimatePresence mode="wait">
@@ -319,7 +327,8 @@ Return JSON with sentences array, each containing:
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             onClick={handleCardTap}
-            className="w-full max-w-2xl h-full max-h-[700px] bg-white/10 backdrop-blur-xl rounded-3xl border-2 border-white/20 p-8 cursor-pointer flex flex-col items-center justify-start relative overflow-y-auto"
+            className="w-full max-w-2xl h-full max-h-[700px] bg-white rounded-3xl p-8 cursor-pointer flex flex-col items-center justify-start relative overflow-y-auto"
+            style={{ boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)' }}
           >
             {/* Top bar inside card */}
             <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
@@ -336,7 +345,8 @@ Return JSON with sentences array, each containing:
                   }}
                   variant="ghost"
                   size="icon"
-                  className="text-white bg-black/30 backdrop-blur-sm hover:bg-black/50 rounded-full"
+                  className="rounded-full"
+                  style={{ backgroundColor: 'rgba(31, 42, 68, 0.1)' }}
                 >
                   🗑️
                 </Button>
@@ -344,30 +354,39 @@ Return JSON with sentences array, each containing:
                   onClick={() => setSelectedLevel(null)}
                   variant="ghost"
                   size="icon"
-                  className="text-white bg-black/30 backdrop-blur-sm hover:bg-black/50 rounded-full"
+                  className="rounded-full font-bold"
+                  style={{ backgroundColor: 'rgba(31, 42, 68, 0.1)', color: '#1F2A44' }}
                 >
-                  &lt;
+                  ✕
                 </Button>
               </div>
               <div className="flex items-center gap-3">
-                <div className="bg-black/30 backdrop-blur-sm rounded-full px-3 py-1.5 text-white text-sm font-medium">
+                <div 
+                  className="rounded-full px-3 py-1.5 text-sm font-medium"
+                  style={{ 
+                    backgroundColor: (currentWord?.times_practiced || 0) > 0 ? '#F4C430' : '#E6E9EF',
+                    color: '#1F2A44'
+                  }}
+                >
                   Level {currentWord?.times_practiced || 0}
                 </div>
                 <div className="flex flex-col gap-2">
-                  <div className="bg-black/30 backdrop-blur-sm rounded-full px-3 py-1.5">
-                    <span className="text-white text-sm font-medium">{currentIndex + 1}/{sessionWords.length}</span>
+                  <div className="rounded-full px-3 py-1.5" style={{ backgroundColor: '#E6E9EF' }}>
+                    <span className="text-sm font-medium" style={{ color: '#1F2A44' }}>{currentIndex + 1}/{sessionWords.length}</span>
                   </div>
                   <Button
                     onClick={handleSkip}
                     variant="ghost"
                     size="icon"
-                    className="text-white bg-black/30 backdrop-blur-sm hover:bg-black/50 rounded-full"
+                    className="rounded-full font-bold"
+                    style={{ backgroundColor: 'rgba(31, 42, 68, 0.1)', color: '#1F2A44' }}
                   >
-                    &gt;
+                    →
                   </Button>
                   <button
                     onClick={() => setImageRegenDialog(true)}
-                    className="w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 flex items-center justify-center text-xl"
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-xl"
+                    style={{ backgroundColor: 'rgba(31, 42, 68, 0.1)' }}
                   >
                     🎨
                   </button>
@@ -382,37 +401,47 @@ Return JSON with sentences array, each containing:
                 <EditableWord
                   text={currentWord?.translation || ''}
                   onSave={(newText) => updateWordMutation.mutate({ id: currentWord.id, data: { translation: newText } })}
-                  className="text-white text-5xl font-bold uppercase"
+                  className="text-5xl font-bold uppercase"
+                  style={{ color: '#1F2A44' }}
                 />
               </div>
             )}
 
-            {/* Target language (state 2) */}
+            {/* Transliteration (state 2) */}
             {revealState >= 2 && !currentWord?.is_verb && (
-              <div className="text-center" onClick={(e) => e.stopPropagation()}>
-                <div className="flex items-center gap-3 justify-center mb-2" dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+              <div className="text-center mb-2" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-3 justify-center" dir="ltr" style={{ unicodeBidi: 'isolate' }}>
                   <EditableWord
                     text={currentWord?.phonetic || ''}
                     onSave={(newText) => updateWordMutation.mutate({ id: currentWord.id, data: { phonetic: newText } })}
-                    className="text-cyan-400 text-3xl font-medium"
+                    className="text-2xl font-medium"
+                    style={{ color: 'rgba(31, 42, 68, 0.7)' }}
                   />
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       speakWord(currentWord);
                     }}
-                    className="w-10 h-10 rounded-full bg-cyan-500/20 hover:bg-cyan-500/30 flex items-center justify-center"
+                    className="w-10 h-10 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: 'rgba(31, 42, 68, 0.1)' }}
                   >
-                    <Volume2 className="w-5 h-5 text-cyan-400" />
+                    <Volume2 className="w-5 h-5" style={{ color: '#1F2A44' }} />
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* Hebrew (state 2) - under transliteration */}
+            {revealState >= 2 && !currentWord?.is_verb && (
+              <div className="text-center mb-4" onClick={(e) => e.stopPropagation()}>
                 <div dir="rtl" lang="he" style={{ unicodeBidi: 'plaintext', textAlign: 'center' }}>
                   <bdi>
                     <EditableWord
                       text={currentWord?.word || ''}
                       language="he"
                       onSave={(newText) => updateWordMutation.mutate({ id: currentWord.id, data: { word: newText } })}
-                      className="text-white/80 text-2xl"
+                      className="text-3xl font-medium"
+                      style={{ color: '#1F2A44' }}
                     />
                   </bdi>
                 </div>
@@ -433,16 +462,16 @@ Return JSON with sentences array, each containing:
             {/* Verb conjugation table (state 2) */}
             {revealState >= 2 && currentWord?.is_verb && currentWord?.verb_conjugations && (
               <div className="w-full max-w-3xl overflow-x-auto mb-4" onClick={(e) => e.stopPropagation()}>
-                <div className="grid grid-cols-3 gap-4 text-white text-sm">
+                <div className="grid grid-cols-3 gap-4 text-sm">
                   {/* Headers */}
                   <div className="text-center" onClick={(e) => e.stopPropagation()}>
-                    <h4 className="font-bold text-white/60 mb-3 text-base">PAST</h4>
+                    <h4 className="font-bold mb-3 text-base" style={{ color: 'rgba(31, 42, 68, 0.7)' }}>PAST</h4>
                   </div>
                   <div className="text-center" onClick={(e) => e.stopPropagation()}>
-                    <h4 className="font-bold text-cyan-400 mb-3 text-xl">PRESENT</h4>
+                    <h4 className="font-bold mb-3 text-xl" style={{ color: '#F4C430' }}>PRESENT</h4>
                   </div>
                   <div className="text-center" onClick={(e) => e.stopPropagation()}>
-                    <h4 className="font-bold text-white/60 mb-3 text-base">FUTURE</h4>
+                    <h4 className="font-bold mb-3 text-base" style={{ color: 'rgba(31, 42, 68, 0.7)' }}>FUTURE</h4>
                   </div>
 
                   {/* Rows for each person */}
@@ -451,19 +480,22 @@ Return JSON with sentences array, each containing:
                     return (
                       <React.Fragment key={person}>
                         {/* Past */}
-                        <div className="text-center p-2 bg-white/5 rounded-lg" onClick={(e) => e.stopPropagation()}>
-                          <p className="text-white/40 text-xs mb-1">{labels[person]}</p>
-                          <EditableWord
-                            text={currentWord.verb_conjugations.past?.[person]?.transliteration || '-'}
-                            onSave={(newText) => {
-                              const updated = { ...currentWord.verb_conjugations };
-                              if (!updated.past) updated.past = {};
-                              if (!updated.past[person]) updated.past[person] = {};
-                              updated.past[person].transliteration = newText;
-                              updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
-                            }}
-                            className="text-white/80 font-medium"
-                          />
+                        <div className="text-center p-2 rounded-lg" onClick={(e) => e.stopPropagation()} style={{ backgroundColor: 'rgba(31, 42, 68, 0.05)' }}>
+                          <p className="text-xs mb-1" style={{ color: 'rgba(31, 42, 68, 0.45)' }}>{labels[person]}</p>
+                          <div className="mb-1">
+                            <EditableWord
+                              text={currentWord.verb_conjugations.past?.[person]?.transliteration || '-'}
+                              onSave={(newText) => {
+                                const updated = { ...currentWord.verb_conjugations };
+                                if (!updated.past) updated.past = {};
+                                if (!updated.past[person]) updated.past[person] = {};
+                                updated.past[person].transliteration = newText;
+                                updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
+                              }}
+                              className="font-medium"
+                              style={{ color: 'rgba(31, 42, 68, 0.7)' }}
+                            />
+                          </div>
                           <div dir="rtl" lang="he" style={{ unicodeBidi: 'plaintext' }}>
                             <bdi>
                               <EditableWord
@@ -476,26 +508,30 @@ Return JSON with sentences array, each containing:
                                   updated.past[person].native = newText;
                                   updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
                                 }}
-                                className="text-white/60 text-xs"
+                                className="text-xs"
+                                style={{ color: '#1F2A44' }}
                               />
                             </bdi>
                           </div>
                         </div>
                         
-                        {/* Present (highlighted) */}
-                        <div className="text-center p-2 bg-cyan-500/20 rounded-lg border border-cyan-500/30" onClick={(e) => e.stopPropagation()}>
-                          <p className="text-cyan-300 text-xs mb-1">{labels[person]}</p>
-                          <EditableWord
-                            text={currentWord.verb_conjugations.present?.[person]?.transliteration || '-'}
-                            onSave={(newText) => {
-                              const updated = { ...currentWord.verb_conjugations };
-                              if (!updated.present) updated.present = {};
-                              if (!updated.present[person]) updated.present[person] = {};
-                              updated.present[person].transliteration = newText;
-                              updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
-                            }}
-                            className="text-white font-bold text-lg"
-                          />
+                        {/* Present (highlighted with gold) */}
+                        <div className="text-center p-2 rounded-lg" onClick={(e) => e.stopPropagation()} style={{ backgroundColor: '#FFE28A', border: '2px solid #F4C430' }}>
+                          <p className="text-xs mb-1" style={{ color: '#1F2A44' }}>{labels[person]}</p>
+                          <div className="mb-1">
+                            <EditableWord
+                              text={currentWord.verb_conjugations.present?.[person]?.transliteration || '-'}
+                              onSave={(newText) => {
+                                const updated = { ...currentWord.verb_conjugations };
+                                if (!updated.present) updated.present = {};
+                                if (!updated.present[person]) updated.present[person] = {};
+                                updated.present[person].transliteration = newText;
+                                updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
+                              }}
+                              className="font-bold"
+                              style={{ color: '#1F2A44' }}
+                            />
+                          </div>
                           <div dir="rtl" lang="he" style={{ unicodeBidi: 'plaintext' }}>
                             <bdi>
                               <EditableWord
@@ -508,26 +544,30 @@ Return JSON with sentences array, each containing:
                                   updated.present[person].native = newText;
                                   updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
                                 }}
-                                className="text-cyan-300 text-sm"
+                                className="text-sm font-medium"
+                                style={{ color: '#1F2A44' }}
                               />
                             </bdi>
                           </div>
                         </div>
                         
                         {/* Future */}
-                        <div className="text-center p-2 bg-white/5 rounded-lg" onClick={(e) => e.stopPropagation()}>
-                          <p className="text-white/40 text-xs mb-1">{labels[person]}</p>
-                          <EditableWord
-                            text={currentWord.verb_conjugations.future?.[person]?.transliteration || '-'}
-                            onSave={(newText) => {
-                              const updated = { ...currentWord.verb_conjugations };
-                              if (!updated.future) updated.future = {};
-                              if (!updated.future[person]) updated.future[person] = {};
-                              updated.future[person].transliteration = newText;
-                              updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
-                            }}
-                            className="text-white/80 font-medium"
-                          />
+                        <div className="text-center p-2 rounded-lg" onClick={(e) => e.stopPropagation()} style={{ backgroundColor: 'rgba(31, 42, 68, 0.05)' }}>
+                          <p className="text-xs mb-1" style={{ color: 'rgba(31, 42, 68, 0.45)' }}>{labels[person]}</p>
+                          <div className="mb-1">
+                            <EditableWord
+                              text={currentWord.verb_conjugations.future?.[person]?.transliteration || '-'}
+                              onSave={(newText) => {
+                                const updated = { ...currentWord.verb_conjugations };
+                                if (!updated.future) updated.future = {};
+                                if (!updated.future[person]) updated.future[person] = {};
+                                updated.future[person].transliteration = newText;
+                                updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
+                              }}
+                              className="font-medium"
+                              style={{ color: 'rgba(31, 42, 68, 0.7)' }}
+                            />
+                          </div>
                           <div dir="rtl" lang="he" style={{ unicodeBidi: 'plaintext' }}>
                             <bdi>
                               <EditableWord
@@ -540,7 +580,8 @@ Return JSON with sentences array, each containing:
                                   updated.future[person].native = newText;
                                   updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
                                 }}
-                                className="text-white/60 text-xs"
+                                className="text-xs"
+                                style={{ color: '#1F2A44' }}
                               />
                             </bdi>
                           </div>
@@ -556,8 +597,8 @@ Return JSON with sentences array, each containing:
             {revealState >= 1 && (
               <div className="w-full mt-6 space-y-3" onClick={(e) => e.stopPropagation()}>
                 {generatingSentences ? (
-                  <div className="text-center text-white/60 py-4">
-                    <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
+                  <div className="text-center py-4" style={{ color: 'rgba(31, 42, 68, 0.7)' }}>
+                    <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" style={{ color: '#1F2A44' }} />
                     <p className="text-sm">Generating sentences...</p>
                   </div>
                 ) : (
@@ -567,7 +608,8 @@ Return JSON with sentences array, each containing:
                       return (
                         <div 
                           key={idx} 
-                          className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-4 cursor-pointer"
+                          className="rounded-2xl p-4 cursor-pointer"
+                          style={{ backgroundColor: 'rgba(31, 42, 68, 0.05)', border: '1px solid #E6E9EF' }}
                           onClick={(e) => {
                             e.stopPropagation();
                             setRevealedSentences(prev => {
@@ -583,10 +625,10 @@ Return JSON with sentences array, each containing:
                         >
                           <div className="flex items-start justify-between gap-3 mb-2">
                             <div className="flex-1">
-                              <p className="text-white/60 text-sm mb-2">{sentence.english}</p>
+                              <p className="text-sm mb-2" style={{ color: 'rgba(31, 42, 68, 0.7)' }}>{sentence.english}</p>
                               {isRevealed && (
                                 <>
-                                  <p className="text-cyan-400 text-base mb-2" dir="ltr" style={{ unicodeBidi: 'isolate' }}>{sentence.transliteration}</p>
+                                  <p className="text-base mb-2" dir="ltr" style={{ unicodeBidi: 'isolate', color: 'rgba(31, 42, 68, 0.7)' }}>{sentence.transliteration}</p>
                                   <div className="mb-2" dir="rtl" lang="he" style={{ unicodeBidi: 'plaintext', textAlign: 'right' }}>
                                     <bdi>
                                       {sentence.hebrew.split(' ').map((word, wordIdx) => (
@@ -601,7 +643,8 @@ Return JSON with sentences array, each containing:
                                               newSentences[idx] = { ...sentence, hebrew: words.join(' ') };
                                               setExampleSentences(newSentences);
                                             }}
-                                            className="text-white text-base"
+                                            className="text-base"
+                                            style={{ color: '#1F2A44' }}
                                           />
                                           <button
                                             onClick={(e) => {
@@ -662,7 +705,8 @@ Return JSON with sentences array, each containing:
                           generateSentences(currentWord);
                         }}
                         variant="outline"
-                        className="w-full bg-white/5 border-white/20 text-white hover:bg-white/10"
+                        className="w-full"
+                        style={{ backgroundColor: 'rgba(31, 42, 68, 0.05)', borderColor: '#E6E9EF', color: '#1F2A44' }}
                       >
                         <Sparkles className="w-4 h-4 mr-2" />
                         Generate New Sentences
@@ -680,17 +724,12 @@ Return JSON with sentences array, each containing:
               <button
                 key={rating}
                 onClick={() => handleRating(rating)}
-                className={`w-9 h-9 rounded-lg font-bold text-sm transition-all hover:scale-110 active:scale-95 ${
-                  rating === 0
-                    ? "bg-gray-500/40 text-white/70"
-                    : rating === 5
-                    ? "bg-gradient-to-br from-green-500 to-emerald-500 text-white shadow-lg"
-                    : rating >= 4
-                    ? "bg-gradient-to-br from-blue-500 to-cyan-500 text-white"
-                    : rating >= 3
-                    ? "bg-gradient-to-br from-yellow-500 to-amber-500 text-white"
-                    : "bg-white/30 text-white"
-                }`}
+                className="w-9 h-9 rounded-lg font-bold text-sm transition-all hover:scale-110 active:scale-95"
+                style={{
+                  backgroundColor: rating === 0 ? '#E6E9EF' : rating >= 4 ? '#F4C430' : 'rgba(31, 42, 68, 0.1)',
+                  color: '#1F2A44',
+                  boxShadow: rating >= 4 ? '0 2px 8px rgba(244, 196, 48, 0.3)' : undefined
+                }}
               >
                 {rating}
               </button>
@@ -702,28 +741,30 @@ Return JSON with sentences array, each containing:
 
       {/* Image regeneration dialog */}
       <Dialog open={imageRegenDialog} onOpenChange={setImageRegenDialog}>
-        <DialogContent className="bg-slate-900 border-white/20 text-white">
+        <DialogContent className="bg-white">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-cyan-400" />
+            <DialogTitle className="flex items-center gap-2" style={{ color: '#1F2A44' }}>
+              <Sparkles className="w-5 h-5" style={{ color: '#F4C430' }} />
               Suggest New Image
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <p className="text-white/60 text-sm mb-2">This word sounds like...</p>
+              <p className="text-sm mb-2" style={{ color: 'rgba(31, 42, 68, 0.7)' }}>This word sounds like...</p>
               <Input
                 value={imagePrompt}
                 onChange={(e) => setImagePrompt(e.target.value)}
                 placeholder="e.g. 'a cat running' or 'someone eating'"
-                className="bg-white/5 border-white/20 text-white"
+                className="bg-white"
+                style={{ borderColor: '#E6E9EF', color: '#1F2A44' }}
                 onKeyDown={(e) => e.key === 'Enter' && handleImageRegenerate()}
               />
             </div>
             <Button
               onClick={handleImageRegenerate}
               disabled={!imagePrompt.trim() || generatingImage}
-              className="w-full bg-gradient-to-r from-cyan-500 to-purple-500"
+              className="w-full"
+              style={{ backgroundColor: '#F4C430', color: '#1F2A44' }}
             >
               {generatingImage ? (
                 <>
