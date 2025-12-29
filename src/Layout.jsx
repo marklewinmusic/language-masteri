@@ -41,11 +41,10 @@ export default function Layout({ children, currentPageName }) {
   // Debug label (dev only)
   const isDev = window.location.hostname === 'localhost' || window.location.hostname.includes('dev');
   
-  // HARD BLOCK: Don't render anything except onboarding if language not set
-  // This applies to ALL users regardless of role
+  // Only redirect authenticated users with loaded profiles
   useEffect(() => {
-    if (isOnboardingPage || !isAuthChecked || !currentUser) return;
-    if (profileLoading) return;
+    if (isOnboardingPage) return;
+    if (!isAuthChecked || !currentUser || profileLoading) return;
     
     // If no profile or no language, redirect to LanguageSelect
     if (!userProfile || !userProfile.language || userProfile.language === "") {
@@ -59,13 +58,16 @@ export default function Layout({ children, currentPageName }) {
     }
   }, [isOnboardingPage, isAuthChecked, currentUser, profileLoading, userProfile, navigate]);
 
-  // Block rendering if onboarding needed (but allow rendering while checking auth)
-  const shouldBlockRender = !isOnboardingPage && isAuthChecked && currentUser && !profileLoading && 
-    (!userProfile || !userProfile.language || 
-     (userProfile.is_new_user === true && !userProfile.avatar_id));
-  
-  if (shouldBlockRender) {
-    return null;
+  // Show loading during initial auth check
+  if (!isAuthChecked) {
+    return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900" />;
+  }
+
+  // Block rendering only for authenticated users who need onboarding
+  if (!isOnboardingPage && currentUser && !profileLoading) {
+    if (!userProfile || !userProfile.language || (userProfile.is_new_user === true && !userProfile.avatar_id)) {
+      return null;
+    }
   }
   
   return (
