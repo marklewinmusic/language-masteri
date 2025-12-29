@@ -422,7 +422,7 @@ Return JSON with sentences array, each containing:
 
             {/* Verb conjugation table (state 2) */}
             {revealState >= 2 && currentWord?.is_verb && currentWord?.verb_conjugations && (
-              <div className="w-full max-w-3xl overflow-x-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="w-full max-w-3xl overflow-x-auto mb-4" onClick={(e) => e.stopPropagation()}>
                 <div className="grid grid-cols-3 gap-4 text-white text-sm">
                   {/* Headers */}
                   <div className="text-center" onClick={(e) => e.stopPropagation()}>
