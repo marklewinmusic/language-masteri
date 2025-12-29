@@ -587,29 +587,43 @@ Return JSON with sentences array, each containing:
                               {isRevealed && (
                                 <>
                                   <p className="text-cyan-400 text-base mb-2" dir="ltr" style={{ unicodeBidi: 'isolate' }}>{sentence.transliteration}</p>
-                                  <p className="text-white text-base mb-2" dir="rtl" lang="he" style={{ unicodeBidi: 'plaintext', textAlign: 'right' }}>
+                                  <div className="mb-2" dir="rtl" lang="he" style={{ unicodeBidi: 'plaintext', textAlign: 'right' }}>
                                     <bdi>
                                       {sentence.hebrew.split(' ').map((word, wordIdx) => (
-                                        <span
-                                          key={wordIdx}
-                                          className="hover:text-cyan-400 transition-colors cursor-pointer inline-block"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            createWordMutation.mutate({
-                                              word: word,
-                                              translation: "",
-                                              phonetic: "",
-                                              category: "wordbank",
-                                              times_practiced: 0,
-                                            });
-                                          }}
-                                          title="Click to add this word to backpack"
-                                        >
-                                          {word}{' '}
+                                        <span key={wordIdx} className="inline-flex items-center gap-1 group">
+                                          <EditableWord
+                                            text={word}
+                                            language="he"
+                                            onSave={(newWord) => {
+                                              const words = sentence.hebrew.split(' ');
+                                              words[wordIdx] = newWord;
+                                              const newSentences = [...exampleSentences];
+                                              newSentences[idx] = { ...sentence, hebrew: words.join(' ') };
+                                              setExampleSentences(newSentences);
+                                            }}
+                                            className="text-white text-base"
+                                          />
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              createWordMutation.mutate({
+                                                word: word,
+                                                translation: "",
+                                                phonetic: "",
+                                                category: "wordbank",
+                                                times_practiced: 0,
+                                              });
+                                            }}
+                                            className="opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                                            title="Add to backpack"
+                                          >
+                                            🎒
+                                          </button>
+                                          {' '}
                                         </span>
                                       ))}
                                     </bdi>
-                                  </p>
+                                  </div>
                                 </>
                               )}
                             </div>
