@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import EditableWord from "../components/learning/EditableWord";
 
 export default function Flashcards() {
   const queryClient = useQueryClient();
@@ -279,10 +280,13 @@ export default function Flashcards() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="text-center mb-4"
+                onClick={(e) => e.stopPropagation()}
               >
-                <p className="text-white text-5xl font-bold">
-                  {currentWord?.translation?.toUpperCase()}
-                </p>
+                <EditableWord
+                  text={currentWord?.translation || ''}
+                  onSave={(newText) => updateWordMutation.mutate({ id: currentWord.id, data: { translation: newText } })}
+                  className="text-white text-5xl font-bold uppercase"
+                />
               </motion.div>
             )}
 
@@ -292,11 +296,14 @@ export default function Flashcards() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="text-center"
+                onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center gap-3 justify-center mb-2">
-                  <p className="text-cyan-400 text-3xl font-medium">
-                    {currentWord?.phonetic}
-                  </p>
+                  <EditableWord
+                    text={currentWord?.phonetic || ''}
+                    onSave={(newText) => updateWordMutation.mutate({ id: currentWord.id, data: { phonetic: newText } })}
+                    className="text-cyan-400 text-3xl font-medium"
+                  />
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -307,9 +314,13 @@ export default function Flashcards() {
                     <Volume2 className="w-5 h-5 text-cyan-400" />
                   </button>
                 </div>
-                <p className="text-white/80 text-2xl" dir="rtl">
-                  {currentWord?.word}
-                </p>
+                <EditableWord
+                  text={currentWord?.word || ''}
+                  language="he"
+                  onSave={(newText) => updateWordMutation.mutate({ id: currentWord.id, data: { word: newText } })}
+                  className="text-white/80 text-2xl"
+                  dir="rtl"
+                />
               </motion.div>
             )}
 
@@ -322,13 +333,13 @@ export default function Flashcards() {
               >
                 <div className="grid grid-cols-3 gap-4 text-white text-sm">
                   {/* Headers */}
-                  <div className="text-center">
+                  <div className="text-center" onClick={(e) => e.stopPropagation()}>
                     <h4 className="font-bold text-white/60 mb-3 text-base">PAST</h4>
                   </div>
-                  <div className="text-center">
+                  <div className="text-center" onClick={(e) => e.stopPropagation()}>
                     <h4 className="font-bold text-cyan-400 mb-3 text-xl">PRESENT</h4>
                   </div>
-                  <div className="text-center">
+                  <div className="text-center" onClick={(e) => e.stopPropagation()}>
                     <h4 className="font-bold text-white/60 mb-3 text-base">FUTURE</h4>
                   </div>
 
@@ -338,24 +349,90 @@ export default function Flashcards() {
                     return (
                       <React.Fragment key={person}>
                         {/* Past */}
-                        <div className="text-center p-2 bg-white/5 rounded-lg">
+                        <div className="text-center p-2 bg-white/5 rounded-lg" onClick={(e) => e.stopPropagation()}>
                           <p className="text-white/40 text-xs mb-1">{labels[person]}</p>
-                          <p className="text-white/80 font-medium">{currentWord.verb_conjugations.past?.[person]?.transliteration || '-'}</p>
-                          <p className="text-white/60 text-xs" dir="rtl">{currentWord.verb_conjugations.past?.[person]?.native || ''}</p>
+                          <EditableWord
+                            text={currentWord.verb_conjugations.past?.[person]?.transliteration || '-'}
+                            onSave={(newText) => {
+                              const updated = { ...currentWord.verb_conjugations };
+                              if (!updated.past) updated.past = {};
+                              if (!updated.past[person]) updated.past[person] = {};
+                              updated.past[person].transliteration = newText;
+                              updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
+                            }}
+                            className="text-white/80 font-medium"
+                          />
+                          <EditableWord
+                            text={currentWord.verb_conjugations.past?.[person]?.native || ''}
+                            language="he"
+                            onSave={(newText) => {
+                              const updated = { ...currentWord.verb_conjugations };
+                              if (!updated.past) updated.past = {};
+                              if (!updated.past[person]) updated.past[person] = {};
+                              updated.past[person].native = newText;
+                              updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
+                            }}
+                            className="text-white/60 text-xs"
+                            dir="rtl"
+                          />
                         </div>
                         
                         {/* Present (highlighted) */}
-                        <div className="text-center p-2 bg-cyan-500/20 rounded-lg border border-cyan-500/30">
+                        <div className="text-center p-2 bg-cyan-500/20 rounded-lg border border-cyan-500/30" onClick={(e) => e.stopPropagation()}>
                           <p className="text-cyan-300 text-xs mb-1">{labels[person]}</p>
-                          <p className="text-white font-bold text-lg">{currentWord.verb_conjugations.present?.[person]?.transliteration || '-'}</p>
-                          <p className="text-cyan-300 text-sm" dir="rtl">{currentWord.verb_conjugations.present?.[person]?.native || ''}</p>
+                          <EditableWord
+                            text={currentWord.verb_conjugations.present?.[person]?.transliteration || '-'}
+                            onSave={(newText) => {
+                              const updated = { ...currentWord.verb_conjugations };
+                              if (!updated.present) updated.present = {};
+                              if (!updated.present[person]) updated.present[person] = {};
+                              updated.present[person].transliteration = newText;
+                              updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
+                            }}
+                            className="text-white font-bold text-lg"
+                          />
+                          <EditableWord
+                            text={currentWord.verb_conjugations.present?.[person]?.native || ''}
+                            language="he"
+                            onSave={(newText) => {
+                              const updated = { ...currentWord.verb_conjugations };
+                              if (!updated.present) updated.present = {};
+                              if (!updated.present[person]) updated.present[person] = {};
+                              updated.present[person].native = newText;
+                              updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
+                            }}
+                            className="text-cyan-300 text-sm"
+                            dir="rtl"
+                          />
                         </div>
                         
                         {/* Future */}
-                        <div className="text-center p-2 bg-white/5 rounded-lg">
+                        <div className="text-center p-2 bg-white/5 rounded-lg" onClick={(e) => e.stopPropagation()}>
                           <p className="text-white/40 text-xs mb-1">{labels[person]}</p>
-                          <p className="text-white/80 font-medium">{currentWord.verb_conjugations.future?.[person]?.transliteration || '-'}</p>
-                          <p className="text-white/60 text-xs" dir="rtl">{currentWord.verb_conjugations.future?.[person]?.native || ''}</p>
+                          <EditableWord
+                            text={currentWord.verb_conjugations.future?.[person]?.transliteration || '-'}
+                            onSave={(newText) => {
+                              const updated = { ...currentWord.verb_conjugations };
+                              if (!updated.future) updated.future = {};
+                              if (!updated.future[person]) updated.future[person] = {};
+                              updated.future[person].transliteration = newText;
+                              updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
+                            }}
+                            className="text-white/80 font-medium"
+                          />
+                          <EditableWord
+                            text={currentWord.verb_conjugations.future?.[person]?.native || ''}
+                            language="he"
+                            onSave={(newText) => {
+                              const updated = { ...currentWord.verb_conjugations };
+                              if (!updated.future) updated.future = {};
+                              if (!updated.future[person]) updated.future[person] = {};
+                              updated.future[person].native = newText;
+                              updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
+                            }}
+                            className="text-white/60 text-xs"
+                            dir="rtl"
+                          />
                         </div>
                       </React.Fragment>
                     );
