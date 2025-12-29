@@ -181,6 +181,7 @@ Return JSON with sentences array, each containing:
       setCurrentIndex(currentIndex + 1);
       setRevealState(0);
       setExampleSentences([]);
+      setRevealedSentences(new Set());
     } else {
       toast.success("Session complete! 🎉");
       setSelectedLevel(null);
