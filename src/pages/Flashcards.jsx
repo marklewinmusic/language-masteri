@@ -390,7 +390,7 @@ Return JSON with sentences array, each containing:
             {/* Target language (state 2) */}
             {revealState >= 2 && !currentWord?.is_verb && (
               <div className="text-center" onClick={(e) => e.stopPropagation()}>
-                <div className="flex items-center gap-3 justify-center mb-2">
+                <div className="flex items-center gap-3 justify-center mb-2" dir="ltr" style={{ unicodeBidi: 'isolate' }}>
                   <EditableWord
                     text={currentWord?.phonetic || ''}
                     onSave={(newText) => updateWordMutation.mutate({ id: currentWord.id, data: { phonetic: newText } })}
@@ -406,13 +406,16 @@ Return JSON with sentences array, each containing:
                     <Volume2 className="w-5 h-5 text-cyan-400" />
                   </button>
                 </div>
-                <EditableWord
-                  text={currentWord?.word || ''}
-                  language="he"
-                  onSave={(newText) => updateWordMutation.mutate({ id: currentWord.id, data: { word: newText } })}
-                  className="text-white/80 text-2xl"
-                  dir="rtl"
-                />
+                <div dir="rtl" lang="he" style={{ unicodeBidi: 'plaintext', textAlign: 'center' }}>
+                  <bdi>
+                    <EditableWord
+                      text={currentWord?.word || ''}
+                      language="he"
+                      onSave={(newText) => updateWordMutation.mutate({ id: currentWord.id, data: { word: newText } })}
+                      className="text-white/80 text-2xl"
+                    />
+                  </bdi>
+                </div>
               </div>
             )}
 
@@ -461,19 +464,22 @@ Return JSON with sentences array, each containing:
                             }}
                             className="text-white/80 font-medium"
                           />
-                          <EditableWord
-                            text={currentWord.verb_conjugations.past?.[person]?.native || ''}
-                            language="he"
-                            onSave={(newText) => {
-                              const updated = { ...currentWord.verb_conjugations };
-                              if (!updated.past) updated.past = {};
-                              if (!updated.past[person]) updated.past[person] = {};
-                              updated.past[person].native = newText;
-                              updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
-                            }}
-                            className="text-white/60 text-xs"
-                            dir="rtl"
-                          />
+                          <div dir="rtl" lang="he" style={{ unicodeBidi: 'plaintext' }}>
+                            <bdi>
+                              <EditableWord
+                                text={currentWord.verb_conjugations.past?.[person]?.native || ''}
+                                language="he"
+                                onSave={(newText) => {
+                                  const updated = { ...currentWord.verb_conjugations };
+                                  if (!updated.past) updated.past = {};
+                                  if (!updated.past[person]) updated.past[person] = {};
+                                  updated.past[person].native = newText;
+                                  updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
+                                }}
+                                className="text-white/60 text-xs"
+                              />
+                            </bdi>
+                          </div>
                         </div>
                         
                         {/* Present (highlighted) */}
@@ -490,19 +496,22 @@ Return JSON with sentences array, each containing:
                             }}
                             className="text-white font-bold text-lg"
                           />
-                          <EditableWord
-                            text={currentWord.verb_conjugations.present?.[person]?.native || ''}
-                            language="he"
-                            onSave={(newText) => {
-                              const updated = { ...currentWord.verb_conjugations };
-                              if (!updated.present) updated.present = {};
-                              if (!updated.present[person]) updated.present[person] = {};
-                              updated.present[person].native = newText;
-                              updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
-                            }}
-                            className="text-cyan-300 text-sm"
-                            dir="rtl"
-                          />
+                          <div dir="rtl" lang="he" style={{ unicodeBidi: 'plaintext' }}>
+                            <bdi>
+                              <EditableWord
+                                text={currentWord.verb_conjugations.present?.[person]?.native || ''}
+                                language="he"
+                                onSave={(newText) => {
+                                  const updated = { ...currentWord.verb_conjugations };
+                                  if (!updated.present) updated.present = {};
+                                  if (!updated.present[person]) updated.present[person] = {};
+                                  updated.present[person].native = newText;
+                                  updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
+                                }}
+                                className="text-cyan-300 text-sm"
+                              />
+                            </bdi>
+                          </div>
                         </div>
                         
                         {/* Future */}
@@ -519,19 +528,22 @@ Return JSON with sentences array, each containing:
                             }}
                             className="text-white/80 font-medium"
                           />
-                          <EditableWord
-                            text={currentWord.verb_conjugations.future?.[person]?.native || ''}
-                            language="he"
-                            onSave={(newText) => {
-                              const updated = { ...currentWord.verb_conjugations };
-                              if (!updated.future) updated.future = {};
-                              if (!updated.future[person]) updated.future[person] = {};
-                              updated.future[person].native = newText;
-                              updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
-                            }}
-                            className="text-white/60 text-xs"
-                            dir="rtl"
-                          />
+                          <div dir="rtl" lang="he" style={{ unicodeBidi: 'plaintext' }}>
+                            <bdi>
+                              <EditableWord
+                                text={currentWord.verb_conjugations.future?.[person]?.native || ''}
+                                language="he"
+                                onSave={(newText) => {
+                                  const updated = { ...currentWord.verb_conjugations };
+                                  if (!updated.future) updated.future = {};
+                                  if (!updated.future[person]) updated.future[person] = {};
+                                  updated.future[person].native = newText;
+                                  updateWordMutation.mutate({ id: currentWord.id, data: { verb_conjugations: updated } });
+                                }}
+                                className="text-white/60 text-xs"
+                              />
+                            </bdi>
+                          </div>
                         </div>
                       </React.Fragment>
                     );
