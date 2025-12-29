@@ -396,6 +396,7 @@ Return JSON with sentences array, each containing:
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="w-full max-w-3xl overflow-x-auto"
+                onClick={(e) => e.stopPropagation()}
               >
                 <div className="grid grid-cols-3 gap-4 text-white text-sm">
                   {/* Headers */}
@@ -506,6 +507,61 @@ Return JSON with sentences array, each containing:
                 </div>
               </motion.div>
             )}
+
+            {/* Example sentences (state 1+) */}
+            {revealState >= 1 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="w-full mt-6 space-y-3"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {generatingSentences ? (
+                  <div className="text-center text-white/60 py-4">
+                    <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
+                    <p className="text-sm">Generating sentences...</p>
+                  </div>
+                ) : (
+                  exampleSentences.map((sentence, idx) => (
+                    <div key={idx} className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-4">
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <p className="text-white text-base flex-1 cursor-text" dir="ltr">
+                          {sentence.hebrew.split(' ').map((word, wordIdx) => (
+                            <span
+                              key={wordIdx}
+                              className="hover:text-cyan-400 transition-colors cursor-pointer inline-block mr-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if ('speechSynthesis' in window) {
+                                  const utterance = new SpeechSynthesisUtterance(word);
+                                  utterance.lang = 'he-IL';
+                                  window.speechSynthesis.speak(utterance);
+                                }
+                              }}
+                            >
+                              {word}
+                            </span>
+                          ))}
+                        </p>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addSentenceToBackpack(sentence);
+                          }}
+                          className="text-2xl hover:scale-110 transition-transform"
+                          title="Add to backpack"
+                        >
+                          🎒
+                        </button>
+                      </div>
+                      <p className="text-cyan-400 text-sm mb-1">{sentence.transliteration}</p>
+                      <p className="text-white/60 text-sm">{sentence.english}</p>
+                    </div>
+                  ))
+                )}
+              </motion.div>
+            )}
+            </div>
           </motion.div>
         </AnimatePresence>
       </div>
