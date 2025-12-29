@@ -595,33 +595,33 @@ Return JSON with sentences array, each containing:
         </AnimatePresence>
       </div>
 
-      {/* Bottom rating buttons (always visible) */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/50 to-transparent backdrop-blur-sm">
-        <p className="text-white/60 text-center text-sm mb-3">
-          How well do you know this?
-        </p>
-        <div className="flex gap-2 justify-center">
-          {[0, 1, 2, 3, 4, 5].map((rating) => (
-            <motion.button
-              key={rating}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => handleRating(rating)}
-              className={`w-14 h-14 rounded-xl font-bold text-lg transition-all ${
-                rating === 0
-                  ? "bg-gray-500/30 text-white/60"
-                  : rating === 5
-                  ? "bg-gradient-to-br from-green-500 to-emerald-500 text-white shadow-lg"
-                  : rating >= 4
-                  ? "bg-gradient-to-br from-blue-500 to-cyan-500 text-white"
-                  : rating >= 3
-                  ? "bg-gradient-to-br from-yellow-500 to-amber-500 text-white"
-                  : "bg-white/20 text-white"
-              }`}
-            >
-              {rating}
-            </motion.button>
-          ))}
+      {/* Bottom rating buttons inside card */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20">
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border-2 border-white/20 p-4 shadow-2xl">
+          <p className="text-white/60 text-center text-xs mb-2">
+            How well do you know this?
+          </p>
+          <div className="flex gap-2">
+            {[0, 1, 2, 3, 4, 5].map((rating) => (
+              <button
+                key={rating}
+                onClick={() => handleRating(rating)}
+                className={`w-12 h-12 rounded-xl font-bold text-base transition-all hover:scale-110 active:scale-95 ${
+                  rating === 0
+                    ? "bg-gray-500/30 text-white/60"
+                    : rating === 5
+                    ? "bg-gradient-to-br from-green-500 to-emerald-500 text-white shadow-lg"
+                    : rating >= 4
+                    ? "bg-gradient-to-br from-blue-500 to-cyan-500 text-white"
+                    : rating >= 3
+                    ? "bg-gradient-to-br from-yellow-500 to-amber-500 text-white"
+                    : "bg-white/20 text-white"
+                }`}
+              >
+                {rating}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
