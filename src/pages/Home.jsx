@@ -144,6 +144,14 @@ export default function Home() {
     refetchOnMount: false,
   });
 
+  const { data: activityProgress = [] } = useQuery({
+    queryKey: ['activityProgress'],
+    queryFn: () => base44.entities.ActivityProgress.list(),
+    staleTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
+
   const updateCoinsMutation = useMutation({
     mutationFn: (data) => base44.entities.UserCoins.update(userCoins?.id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['userCoins'] }),
