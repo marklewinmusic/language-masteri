@@ -14,6 +14,10 @@ export default function EditableWord({
   const inputRef = useRef(null);
 
   useEffect(() => {
+    setValue(text);
+  }, [text]);
+
+  useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus();
       inputRef.current.select();
