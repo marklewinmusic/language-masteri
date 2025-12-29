@@ -331,10 +331,10 @@ Make them useful for a Hebrew learner writing a journal.`,
                     >
                       <div className="flex items-center gap-2">
                         {isUsed && <CheckCircle className="w-4 h-4 text-green-400" />}
-                        <div>
-                          <span className="text-cyan-400 font-bold" dir="rtl">{word.word}</span>
-                          <span className="text-white/60 text-sm ml-2">({word.phonetic})</span>
-                          <p className="text-white/50 text-xs">{word.translation}</p>
+                        <div className="flex flex-col">
+                          <span className="text-cyan-400 text-sm font-medium">{word.phonetic}</span>
+                          <span className="text-white/80 text-xs">{word.translation}</span>
+                          <span className="text-white/60 text-xs" dir="rtl">{word.word}</span>
                         </div>
                       </div>
                     </div>
