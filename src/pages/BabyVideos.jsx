@@ -549,6 +549,27 @@ export default function BabyVideos() {
     },
   });
 
+  const copyToMyVideosMutation = useMutation({
+    mutationFn: async (video) => {
+      const ytId = video.youtubeId;
+      const youtubeUrl = `https://www.youtube.com/watch?v=${ytId}`;
+      
+      return await base44.entities.Video.create({
+        video_url: youtubeUrl,
+        title: video.title,
+        youtube_video_id: ytId,
+        language: userProfile?.language || 'hebrew',
+        order: customVideos.length,
+        level: 1,
+        tags: video.category || '',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customVideos'] });
+      toast.success("Added to My Videos! 🎬");
+    },
+  });
+
   // Auto-expand video from URL parameter
   useEffect(() => {
     const videoId = searchParams.get('videoId');
@@ -1372,14 +1393,24 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                         </div>
                       )}
 
-                      {/* Vocab Button */}
-                      <button
-                        onClick={() => setShowVocabForVideo(showingVocab ? null : video.id)}
-                        className={`w-full flex items-center justify-center gap-2 ${showingVocab ? 'bg-amber-600' : 'bg-gradient-to-r from-amber-500 to-orange-500'} text-white py-3 rounded-xl font-bold`}
-                      >
-                        <BookOpen className="w-5 h-5" />
-                        {showingVocab ? '📚 Hide Vocabulary' : `📚 Show Vocabulary (${video.transcript.length} words)`}
-                      </button>
+                      {/* Action Buttons */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => copyToMyVideosMutation.mutate(video)}
+                          disabled={copyToMyVideosMutation.isPending}
+                          className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-3 rounded-xl font-bold hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50"
+                        >
+                          <Plus className="w-5 h-5" />
+                          Add to My Videos
+                        </button>
+                        <button
+                          onClick={() => setShowVocabForVideo(showingVocab ? null : video.id)}
+                          className={`flex-1 flex items-center justify-center gap-2 ${showingVocab ? 'bg-amber-600' : 'bg-gradient-to-r from-amber-500 to-orange-500'} text-white py-3 rounded-xl font-bold`}
+                        >
+                          <BookOpen className="w-5 h-5" />
+                          {showingVocab ? 'Hide Vocab' : 'Show Vocab'}
+                        </button>
+                      </div>
 
                       {/* Vocabulary Words - Inline */}
                       {showingVocab && (
