@@ -411,6 +411,8 @@ export default function Home() {
   const [newTask, setNewTask] = useState({ name: "", duration: "" });
   const [showAddTaskDialog, setShowAddTaskDialog] = useState(false);
   const [editingDayId, setEditingDayId] = useState(null);
+  const [editingTask, setEditingTask] = useState(null);
+  const [daysToShow, setDaysToShow] = useState(3);
 
   const currentDay = userProfile?.current_day || 1;
   const sortedDays = [...days].sort((a, b) => a.day_number - b.day_number);
@@ -419,24 +421,51 @@ export default function Home() {
   const getDayProgress = (dayId) => dayProgress.find(p => p.day_id === dayId);
 
   const handleAddTask = () => {
-    if (!editingDayId || !newTask.name.trim()) return;
-    
-    const day = days.find(d => d.id === editingDayId);
-    const updatedSubsections = [...(day.subsections || []), { 
-      id: Date.now().toString(), 
-      name: newTask.name,
-      duration: newTask.duration
-    }];
-    updateDayMutation.mutate({ id: editingDayId, data: { subsections: updatedSubsections } });
-    setNewTask({ name: "", duration: "" });
-    setShowAddTaskDialog(false);
-    setEditingDayId(null);
+    if (editingTask) {
+      handleSaveEditedTask();
+    } else {
+      if (!editingDayId || !newTask.name.trim()) return;
+      
+      const day = days.find(d => d.id === editingDayId);
+      const updatedSubsections = [...(day.subsections || []), { 
+        id: Date.now().toString(), 
+        name: newTask.name,
+        duration: newTask.duration
+      }];
+      updateDayMutation.mutate({ id: editingDayId, data: { subsections: updatedSubsections } });
+      setNewTask({ name: "", duration: "" });
+      setShowAddTaskDialog(false);
+      setEditingDayId(null);
+    }
   };
 
   const handleDeleteTask = (dayId, taskId) => {
     const day = days.find(d => d.id === dayId);
     const updatedSubsections = day.subsections.filter(s => s.id !== taskId);
     updateDayMutation.mutate({ id: dayId, data: { subsections: updatedSubsections } });
+  };
+
+  const handleEditTask = (dayId, task) => {
+    setEditingDayId(dayId);
+    setEditingTask(task);
+    setNewTask({ name: task.name, duration: task.duration || "" });
+    setShowAddTaskDialog(true);
+  };
+
+  const handleSaveEditedTask = () => {
+    if (!editingDayId || !newTask.name.trim()) return;
+    
+    const day = days.find(d => d.id === editingDayId);
+    const updatedSubsections = day.subsections.map(s => 
+      s.id === editingTask.id 
+        ? { ...s, name: newTask.name, duration: newTask.duration }
+        : s
+    );
+    updateDayMutation.mutate({ id: editingDayId, data: { subsections: updatedSubsections } });
+    setNewTask({ name: "", duration: "" });
+    setShowAddTaskDialog(false);
+    setEditingDayId(null);
+    setEditingTask(null);
   };
 
   const currentAge = userProfile?.age_level || 3;
@@ -821,7 +850,7 @@ export default function Home() {
                   </Button>
                 )}
               </div>
-            ) : sortedDays.map((day, idx) => {
+            ) : sortedDays.slice(0, daysToShow).map((day, idx) => {
               const unlocked = isDayUnlocked(day.day_number);
               const progress = getDayProgress(day.id);
               const isExpanded = expandedDay === day.day_number;
@@ -920,15 +949,15 @@ export default function Home() {
                                   {taskIdx + 1}
                                 </div>
                                 <button
-                                  onClick={() => toggleTaskMutation.mutate({ dayId: day.id, taskId: task.id, dayNumber: day.day_number })}
-                                  className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all ${
-                                    isCompleted ? 'bg-green-500 border-green-500' : 'border-white/40 hover:border-cyan-400'
-                                  }`}
-                                >
-                                  {isCompleted && <Check className="w-5 h-5 text-white" />}
-                                </button>
-                                <button
-                                  onClick={async () => {
+                                      onClick={() => toggleTaskMutation.mutate({ dayId: day.id, taskId: task.id, dayNumber: day.day_number })}
+                                      className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all ${
+                                        isCompleted ? 'bg-green-500 border-green-500' : 'border-white/40 hover:border-cyan-400'
+                                      }`}
+                                    >
+                                      {isCompleted && <Check className="w-5 h-5 text-white" />}
+                                    </button>
+                                    <button
+                                      onClick={isMasterUser ? () => handleEditTask(day.id, task) : async () => {
                                     if (task.page === "BabyVideos") {
                                       // Find video matching current day
                                       const videos = await base44.entities.Video.filter({ 
@@ -982,11 +1011,22 @@ export default function Home() {
                     )}
                   </AnimatePresence>
                 </motion.div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                );
+                })}
+
+                {sortedDays.length > daysToShow && (
+                <div className="flex justify-center mt-6">
+                <Button
+                  onClick={() => setDaysToShow(prev => prev + 3)}
+                  className="bg-white/10 border border-white/20 text-white hover:bg-white/20"
+                >
+                  Show More Days
+                </Button>
+                </div>
+                )}
+                </div>
+                )}
+                </div>
 
       {/* Buy Coins Dialog */}
       <Dialog open={buyCoinsDialog} onOpenChange={setBuyCoinsDialog}>
@@ -1099,10 +1139,15 @@ export default function Home() {
       </Dialog>
 
       {/* Add Task Dialog */}
-      <Dialog open={showAddTaskDialog} onOpenChange={setShowAddTaskDialog}>
+      <Dialog open={showAddTaskDialog} onOpenChange={() => {
+        setShowAddTaskDialog(false);
+        setEditingTask(null);
+        setEditingDayId(null);
+        setNewTask({ name: "", duration: "" });
+      }}>
         <DialogContent className="bg-slate-900 border-white/20 text-white">
           <DialogHeader>
-            <DialogTitle>Add New Task</DialogTitle>
+            <DialogTitle>{editingTask ? 'Edit Task' : 'Add New Task'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -1128,6 +1173,7 @@ export default function Home() {
                 onClick={() => {
                   setShowAddTaskDialog(false);
                   setEditingDayId(null);
+                  setEditingTask(null);
                   setNewTask({ name: "", duration: "" });
                 }}
                 variant="outline"
@@ -1140,7 +1186,7 @@ export default function Home() {
                 disabled={!newTask.name.trim()}
                 className="flex-1 bg-green-500 hover:bg-green-600"
               >
-                Add Task
+                {editingTask ? 'Save Changes' : 'Add Task'}
               </Button>
             </div>
           </div>
