@@ -1,4 +1,3 @@
-import AnimalsZone from './pages/AnimalsZone';
 import AvatarSelect from './pages/AvatarSelect';
 import BabyVideos from './pages/BabyVideos';
 import Backpack from './pages/Backpack';
@@ -27,7 +26,6 @@ import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "AnimalsZone": AnimalsZone,
     "AvatarSelect": AvatarSelect,
     "BabyVideos": BabyVideos,
     "Backpack": Backpack,
@@ -55,7 +53,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "AnimalsZone",
+    mainPage: "AvatarSelect",
     Pages: PAGES,
     Layout: __Layout,
 };
