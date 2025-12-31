@@ -79,9 +79,9 @@ export default function VideoAdminControls({ video, onUpdate, onDelete, onReplac
   };
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
       <Button
-        onClick={() => setShowEditDialog(true)}
+        onClick={(e) => { e.stopPropagation(); setShowEditDialog(true); }}
         variant="outline"
         size="sm"
         className="bg-blue-500/20 border-blue-500/50 text-blue-400 hover:bg-blue-500/30"
@@ -91,7 +91,7 @@ export default function VideoAdminControls({ video, onUpdate, onDelete, onReplac
       </Button>
 
       <Button
-        onClick={() => setShowReplaceDialog(true)}
+        onClick={(e) => { e.stopPropagation(); setShowReplaceDialog(true); }}
         variant="outline"
         size="sm"
         className="bg-amber-500/20 border-amber-500/50 text-amber-400 hover:bg-amber-500/30"
@@ -101,7 +101,7 @@ export default function VideoAdminControls({ video, onUpdate, onDelete, onReplac
       </Button>
 
       <Button
-        onClick={() => setShowDeleteDialog(true)}
+        onClick={(e) => { e.stopPropagation(); setShowDeleteDialog(true); }}
         variant="outline"
         size="sm"
         className="bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30"
