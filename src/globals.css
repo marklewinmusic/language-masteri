@@ -73,6 +73,14 @@
   body {
     @apply bg-background text-foreground;
   }
+  button[class*="bg-white"], 
+  button[class*="bg-slate-50"],
+  button[class*="bg-gray-50"],
+  .bg-white button,
+  .bg-slate-50 button,
+  .bg-gray-50 button {
+    color: black !important;
+  }
 }
 
 /* Never-Circle Avatar CSS - Overrides all circular avatar defaults */
