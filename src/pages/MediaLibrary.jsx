@@ -146,17 +146,14 @@ export default function MediaLibrary() {
     setFormData(prev => ({ ...prev, video_id: videoId }));
 
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Extract the title from this YouTube URL: ${url}. Return ONLY the video title as plain text, nothing else.`,
-        add_context_from_internet: true
-      });
-
-      const title = typeof result === 'string' ? result.trim() : result;
+      const response = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);
+      const data = await response.json();
+      
       const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
       
       setFormData(prev => ({
         ...prev,
-        title: title || prev.title,
+        title: data.title || prev.title,
         thumbnail_url: thumbnailUrl
       }));
 
