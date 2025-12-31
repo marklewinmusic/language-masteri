@@ -697,7 +697,7 @@ Return JSON only.`,
                 exit={{ opacity: 0, height: 0 }}
                 className="space-y-4"
               >
-              {allVideosData
+                {allVideosData
                 .filter(video => {
                   // Only show Hebrew videos for Hebrew learners
                   if (userProfile?.language === 'hebrew') {
@@ -754,7 +754,7 @@ Return JSON only.`,
                     )}
                   </div>
                 </motion.div>
-              ))}
+                ))}
               </motion.div>
             )}
           </div>
