@@ -369,8 +369,8 @@ Return JSON with sentences array, each containing:
 
             {/* Target language (state 2) */}
             {revealState >= 2 && !currentWord?.is_verb && (
-              <div className="text-center" onClick={(e) => e.stopPropagation()}>
-                <div className="flex items-center gap-3 justify-center mb-2" dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+              <div className="text-center space-y-1" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-3 justify-center" dir="ltr" style={{ unicodeBidi: 'isolate' }}>
                   <EditableWord
                     text={currentWord?.phonetic || ''}
                     onSave={(newText) => updateWordMutation.mutate({ id: currentWord.id, data: { phonetic: newText } })}
