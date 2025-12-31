@@ -111,17 +111,19 @@ export default function Flashcards() {
     try {
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `Generate 3 simple example sentences in Hebrew using the word "${word.word}" (${word.translation}).
-        
-Each sentence should:
-- Be short (5-10 words)
-- Use common vocabulary
-- Show natural usage
-- Include the target word
 
-Return JSON with sentences array, each containing:
-- hebrew: the Hebrew sentence
-- transliteration: phonetic spelling
-- english: English translation`,
+      Each sentence should:
+      - Be short (5-10 words)
+      - Use common vocabulary
+      - Show natural usage
+      - Include the target word
+
+      Return JSON with sentences array, each containing:
+      - hebrew: the Hebrew sentence WITH nikud (vowel markings)
+      - transliteration: phonetic spelling with nikud included (use nikud diacritics in the Hebrew text)
+      - english: English translation
+
+      IMPORTANT: The hebrew field MUST include nikud (vowel points) for proper pronunciation.`,
         response_json_schema: {
           type: "object",
           properties: {
