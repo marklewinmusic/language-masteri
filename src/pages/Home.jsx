@@ -906,9 +906,6 @@ export default function Home() {
                                   isCompleted ? 'from-green-500/10 to-green-600/10 border-green-500/30' : ''
                                 }`}
                               >
-                                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-xs">
-                                  {taskIdx + 1}
-                                </div>
                                 <button
                                   onClick={() => toggleTaskMutation.mutate({ dayId: day.id, taskId: task.id, dayNumber: day.day_number })}
                                   className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
@@ -955,7 +952,7 @@ export default function Home() {
                                   </div>
                                 ) : (
                                   <button
-                                    onClick={isMasterUser ? () => handleStartEditTask(task) : () => {
+                                    onClick={() => {
                                       if (task.page) {
                                         window.open(task.page, '_blank');
                                       }
@@ -971,12 +968,20 @@ export default function Home() {
                                 )}
 
                                 {isMasterUser && !isEditing && (
-                                  <button
-                                    onClick={() => handleDeleteTask(day.id, task.id)}
-                                    className="text-red-400 hover:text-red-300"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
+                                  <div className="flex gap-1">
+                                    <button
+                                      onClick={() => handleStartEditTask(task)}
+                                      className="text-cyan-400 hover:text-cyan-300 p-1"
+                                    >
+                                      <span className="text-xs">✏️</span>
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteTask(day.id, task.id)}
+                                      className="text-red-400 hover:text-red-300"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </div>
                                 )}
                               </div>
                             );
