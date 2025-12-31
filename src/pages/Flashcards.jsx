@@ -559,13 +559,17 @@ Return JSON with sentences array, each containing:
                         >
                           <div className="flex items-start justify-between gap-3 mb-2">
                             <div className="flex-1">
-                              <p className="text-white/60 text-sm mb-2">{sentence.english}</p>
+                              <div dir="ltr">
+                                <p className="text-white/60 text-sm mb-2">{sentence.english}</p>
+                              </div>
                               {isRevealed && (
                                 <>
-                                  <p className="text-cyan-400 text-base mb-2" dir="ltr" style={{ unicodeBidi: 'isolate' }}>{sentence.transliteration}</p>
-                                  <div className="mb-2" dir="rtl" lang="he" style={{ unicodeBidi: 'plaintext', textAlign: 'right' }}>
+                                  <div dir="ltr">
+                                    <p className="text-cyan-400 text-base mb-2">{sentence.transliteration}</p>
+                                  </div>
+                                  <div dir="rtl" lang="he" style={{ unicodeBidi: 'plaintext' }} className="mb-2 text-right">
                                     {sentence.hebrew.split(' ').map((word, wordIdx) => (
-                                      <span key={wordIdx} className="inline-block group" dir="rtl" style={{ unicodeBidi: 'isolate' }}>
+                                      <span key={wordIdx} className="inline-block group">
                                         <EditableWord
                                           text={word}
                                           language="he"
@@ -589,7 +593,7 @@ Return JSON with sentences array, each containing:
                                               times_practiced: 0,
                                             });
                                           }}
-                                          className="opacity-0 group-hover:opacity-100 transition-opacity text-xs ml-1"
+                                          className="opacity-0 group-hover:opacity-100 transition-opacity text-xs mr-1"
                                           title="Add to backpack"
                                         >
                                           🎒
