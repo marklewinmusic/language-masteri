@@ -924,39 +924,34 @@ export default function Home() {
                                       <Input
                                         value={editingTaskData.name}
                                         onChange={(e) => setEditingTaskData({...editingTaskData, name: e.target.value})}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') handleSaveEditedTask(day.id);
+                                          if (e.key === 'Escape') handleCancelEdit();
+                                        }}
                                         className="bg-white/5 border-white/20 text-white text-sm"
                                         placeholder="Task name"
                                       />
                                       <Input
                                         value={editingTaskData.duration}
                                         onChange={(e) => setEditingTaskData({...editingTaskData, duration: e.target.value})}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') handleSaveEditedTask(day.id);
+                                          if (e.key === 'Escape') handleCancelEdit();
+                                        }}
                                         className="bg-white/5 border-white/20 text-white text-sm"
                                         placeholder="Duration (optional)"
                                       />
                                       <Input
                                         value={editingTaskData.page}
                                         onChange={(e) => setEditingTaskData({...editingTaskData, page: e.target.value})}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') handleSaveEditedTask(day.id);
+                                          if (e.key === 'Escape') handleCancelEdit();
+                                        }}
                                         className="bg-white/5 border-white/20 text-white text-sm"
-                                        placeholder="Page to link (e.g., BabyVideos)"
+                                        placeholder="Link URL (optional)"
                                       />
-                                    </div>
-                                    <div className="flex gap-1">
-                                      <Button
-                                        onClick={() => handleSaveEditedTask(day.id)}
-                                        size="sm"
-                                        className="bg-green-500 hover:bg-green-600"
-                                      >
-                                        <Check className="w-4 h-4" />
-                                      </Button>
-                                      <Button
-                                        onClick={handleCancelEdit}
-                                        size="sm"
-                                        variant="outline"
-                                        className="border-white/20"
-                                      >
-                                        <X className="w-4 h-4" />
-                                      </Button>
-                                    </div>
+                                      </div>
                                   </div>
                                 ) : (
                                   <button
