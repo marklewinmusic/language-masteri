@@ -22,12 +22,6 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
     avatarId: profile?.avatar_id 
   });
 
-  // Don't render if profile is missing critical data
-  if (!profile?.language || !profile?.avatar_id) {
-    console.log('GameHeader: hiding - incomplete profile');
-    return null;
-  }
-
   const languageFlags = {
     hebrew: '🇮🇱',
     english: '🇺🇸',
