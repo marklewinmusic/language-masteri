@@ -433,18 +433,27 @@ export default function BabyVideos() {
     fetchUser();
   }, []);
 
+  // Check if current user is a coach managing students
+  const { data: coachAssignments = [] } = useQuery({
+    queryKey: ['myCoachAssignments', currentUser?.email],
+    queryFn: () => base44.entities.CoachAssignment.filter({ coach_email: currentUser.email }),
+    enabled: !!currentUser && currentUser.role !== 'admin',
+  });
+
   const { data: customVideos = [] } = useQuery({
     queryKey: ['customVideos', userProfile?.language, managingUserEmail],
     queryFn: async () => {
       const videos = await base44.entities.Video.list();
-      // Filter by language, deleted status, and user (if admin is managing)
+      // Filter by language, deleted status, and user (if admin/coach is managing)
       const filtered = videos.filter(v => {
         const notDeleted = !v.deleted_at && v.is_active !== false;
         const matchesLanguage = !userProfile?.language || v.language === userProfile.language;
         
         // If admin is managing a user, show only that user's videos
+        // If coach, check if managing this student
+        const isCoachOfStudent = managingUserEmail && coachAssignments.some(a => a.student_email === managingUserEmail);
         const matchesUser = managingUserEmail 
-          ? v.created_by === managingUserEmail 
+          ? (v.created_by === managingUserEmail && (currentUser.role === 'admin' || isCoachOfStudent))
           : v.created_by === currentUser?.email;
         
         return notDeleted && matchesLanguage && matchesUser;
@@ -1159,8 +1168,8 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                                   }`}
                                 >
                                   <div {...provided.draggableProps} className="p-4 space-y-3">
-                                    {/* Trash button - top right */}
-                                    {currentUser?.role === 'admin' && (
+                                    {/* Trash button - top right - Admin/Coach can delete */}
+                                    {(currentUser?.role === 'admin' || coachAssignments.length > 0) && (
                                       <button
                                         onClick={async (e) => {
                                           e.stopPropagation();
@@ -1179,10 +1188,12 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                                         🗑️
                                       </button>
                                     )}
-                                   {/* Admin Controls */}
-                                   {currentUser?.role === 'admin' && (
+                                   {/* Admin/Coach Controls */}
+                                   {(currentUser?.role === 'admin' || coachAssignments.length > 0) && (
                                      <div className="flex justify-between items-center mb-2">
-                                       <span className="text-xs text-white/40">Admin Controls</span>
+                                       <span className="text-xs text-white/40">
+                                         {currentUser?.role === 'admin' ? 'Admin Controls' : 'Coach Controls'}
+                                       </span>
                                        <VideoAdminControls
                                          video={video}
                                          onUpdate={(data) => updateVideoMutation.mutate({ id: video.id, data })}
