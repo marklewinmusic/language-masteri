@@ -535,6 +535,7 @@ Return JSON only.`,
                              handleEdit(video);
                            }}
                            className="text-xl transition-transform hover:scale-110"
+                           style={{ transform: 'scaleX(-1)' }}
                          >
                            ✏️
                          </button>
@@ -620,6 +621,7 @@ Return JSON only.`,
                             handleEdit(video);
                           }}
                           className="text-xl transition-transform hover:scale-110"
+                          style={{ transform: 'scaleX(-1)' }}
                         >
                           ✏️
                         </button>
