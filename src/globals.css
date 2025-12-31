@@ -76,9 +76,17 @@
   button[class*="bg-white"], 
   button[class*="bg-slate-50"],
   button[class*="bg-gray-50"],
+  button[class*="border-white"],
   .bg-white button,
   .bg-slate-50 button,
-  .bg-gray-50 button {
+  .bg-gray-50 button,
+  button[class*="variant-outline"],
+  button[class*="outline"] {
+    color: black !important;
+  }
+  button[class*="bg-white"] *,
+  button[class*="bg-slate-50"] *,
+  button[class*="bg-gray-50"] * {
     color: black !important;
   }
 }
