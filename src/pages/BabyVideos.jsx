@@ -560,7 +560,7 @@ export default function BabyVideos() {
         youtube_video_id: ytId,
         language: userProfile?.language || 'hebrew',
         order: customVideos.length,
-        level: 1,
+        level: userProfile?.current_day || 1,
         tags: video.category || '',
       });
     },
