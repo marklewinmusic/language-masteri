@@ -244,9 +244,9 @@ export default function Home() {
     mutationFn: async () => {
       const defaultTasks = [
         { id: "video", name: "Watch a video", duration: "20 minutes", page: "BabyVideos" },
-        { id: "flashcards", name: "Vocab Flashcards", duration: "10 minutes", page: "Practice" },
+        { id: "flashcards", name: "Vocab Flashcards", duration: "10 minutes", page: "Flashcards" },
         { id: "journal", name: "Journal", duration: "5 minutes", page: "Journal" },
-        { id: "speak", name: "Speak 1 minute", duration: "1 minute", page: "Practice" }
+        { id: "speak", name: "Speak 1 minute", duration: "1 minute", page: "Flashcards" }
       ];
       
       for (const day of days) {
