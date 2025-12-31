@@ -23,6 +23,8 @@ import Songs from './pages/Songs';
 import Store from './pages/Store';
 import StoryLearning from './pages/StoryLearning';
 import Videos from './pages/Videos';
+import MediaLibrary from './pages/MediaLibrary';
+import MyProgram from './pages/MyProgram';
 import __Layout from './Layout.jsx';
 
 
@@ -52,6 +54,8 @@ export const PAGES = {
     "Store": Store,
     "StoryLearning": StoryLearning,
     "Videos": Videos,
+    "MediaLibrary": MediaLibrary,
+    "MyProgram": MyProgram,
 }
 
 export const pagesConfig = {

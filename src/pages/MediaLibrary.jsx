@@ -1,0 +1,637 @@
+import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Plus, Edit, Trash2, Search, Filter, Video, Users } from "lucide-react";
+import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+
+const topics = [
+  "Religion / Spirituality",
+  "Sports / Fitness",
+  "Cooking / Food",
+  "Nutrition",
+  "Health / Wellness",
+  "Meditation / Mindfulness",
+  "Music",
+  "Travel",
+  "Culture",
+  "Education / Learning",
+  "Business / Career",
+  "Personal Growth",
+  "Relationships",
+  "News / Current Events"
+];
+
+export default function MediaLibrary() {
+  const queryClient = useQueryClient();
+  const [currentUser, setCurrentUser] = useState(null);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingVideo, setEditingVideo] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterLanguage, setFilterLanguage] = useState("all");
+  const [filterDifficulty, setFilterDifficulty] = useState("all");
+  const [filterTopic, setFilterTopic] = useState("all");
+  const [showAssignDialog, setShowAssignDialog] = useState(false);
+  const [assigningVideo, setAssigningVideo] = useState(null);
+  const [selectedUser, setSelectedUser] = useState("");
+
+  const [formData, setFormData] = useState({
+    title: "",
+    language: "hebrew",
+    video_url: "",
+    video_id: "",
+    topics: [],
+    difficulty_level: "All",
+    duration_minutes: "",
+    tags: "",
+    speaking_speed: "Normal",
+    accent_region: "",
+    suitable_for_journaling: false,
+    suitable_for_speaking: false,
+    is_active: true,
+    thumbnail_url: "",
+    notes: ""
+  });
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await base44.auth.me();
+        setCurrentUser(user);
+      } catch (e) {}
+    };
+    fetchUser();
+    document.title = "Media Library - Lashon Languages";
+  }, []);
+
+  const { data: videos = [] } = useQuery({
+    queryKey: ['mediaLibrary'],
+    queryFn: () => base44.entities.MediaLibrary.list(),
+  });
+
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['allUsers'],
+    queryFn: async () => {
+      if (currentUser?.role !== 'admin' && currentUser?.role !== 'coach') return [];
+      return await base44.entities.User.list();
+    },
+    enabled: currentUser?.role === 'admin' || currentUser?.role === 'coach',
+  });
+
+  const createVideoMutation = useMutation({
+    mutationFn: (data) => base44.entities.MediaLibrary.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mediaLibrary'] });
+      setShowAddDialog(false);
+      resetForm();
+      toast.success("Video added to library!");
+    },
+  });
+
+  const updateVideoMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.MediaLibrary.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mediaLibrary'] });
+      setEditingVideo(null);
+      resetForm();
+      toast.success("Video updated!");
+    },
+  });
+
+  const deleteVideoMutation = useMutation({
+    mutationFn: (id) => base44.entities.MediaLibrary.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mediaLibrary'] });
+      toast.success("Video deleted from library");
+    },
+  });
+
+  const assignVideoMutation = useMutation({
+    mutationFn: (data) => base44.entities.UserProgram.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userPrograms'] });
+      setShowAssignDialog(false);
+      setAssigningVideo(null);
+      setSelectedUser("");
+      toast.success("Video assigned to user!");
+    },
+  });
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      language: "hebrew",
+      video_url: "",
+      video_id: "",
+      topics: [],
+      difficulty_level: "All",
+      duration_minutes: "",
+      tags: "",
+      speaking_speed: "Normal",
+      accent_region: "",
+      suitable_for_journaling: false,
+      suitable_for_speaking: false,
+      is_active: true,
+      thumbnail_url: "",
+      notes: ""
+    });
+  };
+
+  const handleSubmit = () => {
+    if (!formData.title || !formData.video_url || !formData.video_id) {
+      toast.error("Title, URL, and Video ID are required");
+      return;
+    }
+
+    const data = {
+      ...formData,
+      duration_minutes: formData.duration_minutes ? parseFloat(formData.duration_minutes) : null
+    };
+
+    if (editingVideo) {
+      updateVideoMutation.mutate({ id: editingVideo.id, data });
+    } else {
+      createVideoMutation.mutate(data);
+    }
+  };
+
+  const handleEdit = (video) => {
+    setEditingVideo(video);
+    setFormData({
+      title: video.title,
+      language: video.language,
+      video_url: video.video_url,
+      video_id: video.video_id,
+      topics: video.topics || [],
+      difficulty_level: video.difficulty_level || "All",
+      duration_minutes: video.duration_minutes || "",
+      tags: video.tags || "",
+      speaking_speed: video.speaking_speed || "Normal",
+      accent_region: video.accent_region || "",
+      suitable_for_journaling: video.suitable_for_journaling || false,
+      suitable_for_speaking: video.suitable_for_speaking || false,
+      is_active: video.is_active !== false,
+      thumbnail_url: video.thumbnail_url || "",
+      notes: video.notes || ""
+    });
+    setShowAddDialog(true);
+  };
+
+  const handleAssign = (video) => {
+    setAssigningVideo(video);
+    setShowAssignDialog(true);
+  };
+
+  const confirmAssign = () => {
+    if (!selectedUser) {
+      toast.error("Select a user");
+      return;
+    }
+
+    assignVideoMutation.mutate({
+      user_email: selectedUser,
+      media_library_id: assigningVideo.id,
+      assigned_by: currentUser.email,
+      assigned_at: new Date().toISOString(),
+      order: 0
+    });
+  };
+
+  const toggleTopic = (topic) => {
+    setFormData(prev => ({
+      ...prev,
+      topics: prev.topics.includes(topic)
+        ? prev.topics.filter(t => t !== topic)
+        : [...prev.topics, topic]
+    }));
+  };
+
+  const filteredVideos = videos.filter(video => {
+    const matchesSearch = video.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (video.tags || "").toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesLanguage = filterLanguage === "all" || video.language === filterLanguage;
+    const matchesDifficulty = filterDifficulty === "all" || video.difficulty_level === filterDifficulty;
+    const matchesTopic = filterTopic === "all" || (video.topics || []).includes(filterTopic);
+    return matchesSearch && matchesLanguage && matchesDifficulty && matchesTopic && video.is_active !== false;
+  });
+
+  const canEdit = currentUser?.role === 'admin' || currentUser?.role === 'coach';
+  const canDelete = currentUser?.role === 'admin';
+  const canAssign = currentUser?.role === 'admin' || currentUser?.role === 'coach';
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-4xl font-bold text-white mb-2">Media Library</h1>
+            <p className="text-white/60">Central repository for all learning videos</p>
+          </div>
+          {canEdit && (
+            <Button
+              onClick={() => { resetForm(); setEditingVideo(null); setShowAddDialog(true); }}
+              className="bg-gradient-to-r from-cyan-500 to-blue-500"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Add Video
+            </Button>
+          )}
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <Label className="text-white/80 mb-2">Search</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40" />
+                <Input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search videos..."
+                  className="pl-10 bg-white/5 border-white/20 text-white"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-white/80 mb-2">Language</Label>
+              <Select value={filterLanguage} onValueChange={setFilterLanguage}>
+                <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Languages</SelectItem>
+                  <SelectItem value="hebrew">Hebrew</SelectItem>
+                  <SelectItem value="english">English</SelectItem>
+                  <SelectItem value="spanish">Spanish</SelectItem>
+                  <SelectItem value="french">French</SelectItem>
+                  <SelectItem value="portuguese">Portuguese</SelectItem>
+                  <SelectItem value="italian">Italian</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-white/80 mb-2">Difficulty</Label>
+              <Select value={filterDifficulty} onValueChange={setFilterDifficulty}>
+                <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Levels</SelectItem>
+                  <SelectItem value="Beginner">Beginner</SelectItem>
+                  <SelectItem value="Intermediate">Intermediate</SelectItem>
+                  <SelectItem value="Advanced">Advanced</SelectItem>
+                  <SelectItem value="All">All</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-white/80 mb-2">Topic</Label>
+              <Select value={filterTopic} onValueChange={setFilterTopic}>
+                <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Topics</SelectItem>
+                  {topics.map(topic => (
+                    <SelectItem key={topic} value={topic}>{topic}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+
+        {/* Videos Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <AnimatePresence>
+            {filteredVideos.map((video) => (
+              <motion.div
+                key={video.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden hover:border-white/30 transition-all"
+              >
+                <div className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <h3 className="text-white font-bold text-lg mb-1">{video.title}</h3>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        <span className="text-xs bg-cyan-500/20 text-cyan-400 px-2 py-1 rounded">
+                          {video.language}
+                        </span>
+                        <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded">
+                          {video.difficulty_level}
+                        </span>
+                        {video.duration_minutes && (
+                          <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded">
+                            {video.duration_minutes} min
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <Video className="w-5 h-5 text-white/40" />
+                  </div>
+
+                  {video.topics && video.topics.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {video.topics.slice(0, 3).map((topic, idx) => (
+                        <span key={idx} className="text-xs bg-white/10 text-white/70 px-2 py-0.5 rounded">
+                          {topic}
+                        </span>
+                      ))}
+                      {video.topics.length > 3 && (
+                        <span className="text-xs text-white/40">+{video.topics.length - 3}</span>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    {canAssign && (
+                      <Button
+                        onClick={() => handleAssign(video)}
+                        size="sm"
+                        className="flex-1 bg-green-500/20 border border-green-500/50 text-green-400 hover:bg-green-500/30"
+                      >
+                        <Users className="w-4 h-4 mr-1" />
+                        Assign
+                      </Button>
+                    )}
+                    {canEdit && (
+                      <Button
+                        onClick={() => handleEdit(video)}
+                        size="sm"
+                        variant="outline"
+                        className="bg-blue-500/20 border-blue-500/50 text-blue-400 hover:bg-blue-500/30"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                    )}
+                    {canDelete && (
+                      <Button
+                        onClick={() => {
+                          if (confirm("Delete this video from library?")) {
+                            deleteVideoMutation.mutate(video.id);
+                          }
+                        }}
+                        size="sm"
+                        variant="outline"
+                        className="bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+
+        {filteredVideos.length === 0 && (
+          <div className="text-center py-16">
+            <Video className="w-16 h-16 text-white/20 mx-auto mb-4" />
+            <p className="text-white/60">No videos found</p>
+          </div>
+        )}
+      </div>
+
+      {/* Add/Edit Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="bg-slate-900 border-white/20 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingVideo ? "Edit Video" : "Add Video to Library"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Title *</Label>
+              <Input
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="bg-white/5 border-white/20 text-white"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Language *</Label>
+                <Select value={formData.language} onValueChange={(val) => setFormData({ ...formData, language: val })}>
+                  <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hebrew">Hebrew</SelectItem>
+                    <SelectItem value="english">English</SelectItem>
+                    <SelectItem value="spanish">Spanish</SelectItem>
+                    <SelectItem value="french">French</SelectItem>
+                    <SelectItem value="portuguese">Portuguese</SelectItem>
+                    <SelectItem value="italian">Italian</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Difficulty</Label>
+                <Select value={formData.difficulty_level} onValueChange={(val) => setFormData({ ...formData, difficulty_level: val })}>
+                  <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Beginner">Beginner</SelectItem>
+                    <SelectItem value="Intermediate">Intermediate</SelectItem>
+                    <SelectItem value="Advanced">Advanced</SelectItem>
+                    <SelectItem value="All">All</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label>Video URL *</Label>
+              <Input
+                value={formData.video_url}
+                onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
+                placeholder="https://youtube.com/watch?v=..."
+                className="bg-white/5 border-white/20 text-white"
+              />
+            </div>
+
+            <div>
+              <Label>Video ID * (unique identifier)</Label>
+              <Input
+                value={formData.video_id}
+                onChange={(e) => setFormData({ ...formData, video_id: e.target.value })}
+                placeholder="e.g., YouTube ID or custom ID"
+                className="bg-white/5 border-white/20 text-white"
+              />
+            </div>
+
+            <div>
+              <Label>Topics (select multiple)</Label>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {topics.map(topic => (
+                  <button
+                    key={topic}
+                    type="button"
+                    onClick={() => toggleTopic(topic)}
+                    className={`text-sm px-3 py-2 rounded border transition-all ${
+                      formData.topics.includes(topic)
+                        ? 'bg-cyan-500/30 border-cyan-500 text-cyan-400'
+                        : 'bg-white/5 border-white/20 text-white/70 hover:bg-white/10'
+                    }`}
+                  >
+                    {topic}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label>Duration (min)</Label>
+                <Input
+                  type="number"
+                  value={formData.duration_minutes}
+                  onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
+                  className="bg-white/5 border-white/20 text-white"
+                />
+              </div>
+
+              <div>
+                <Label>Speaking Speed</Label>
+                <Select value={formData.speaking_speed} onValueChange={(val) => setFormData({ ...formData, speaking_speed: val })}>
+                  <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Slow">Slow</SelectItem>
+                    <SelectItem value="Normal">Normal</SelectItem>
+                    <SelectItem value="Fast">Fast</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Accent/Region</Label>
+                <Input
+                  value={formData.accent_region}
+                  onChange={(e) => setFormData({ ...formData, accent_region: e.target.value })}
+                  placeholder="Optional"
+                  className="bg-white/5 border-white/20 text-white"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label>Tags (comma separated)</Label>
+              <Input
+                value={formData.tags}
+                onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                placeholder="keywords, phrases, topics"
+                className="bg-white/5 border-white/20 text-white"
+              />
+            </div>
+
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 text-white/80 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.suitable_for_journaling}
+                  onChange={(e) => setFormData({ ...formData, suitable_for_journaling: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                Suitable for journaling
+              </label>
+
+              <label className="flex items-center gap-2 text-white/80 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.suitable_for_speaking}
+                  onChange={(e) => setFormData({ ...formData, suitable_for_speaking: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                Suitable for speaking
+              </label>
+
+              <label className="flex items-center gap-2 text-white/80 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.is_active}
+                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                Active
+              </label>
+            </div>
+
+            <div>
+              <Label>Notes</Label>
+              <Textarea
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                className="bg-white/5 border-white/20 text-white"
+                rows={3}
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <Button onClick={handleSubmit} className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500">
+                {editingVideo ? "Update Video" : "Add to Library"}
+              </Button>
+              <Button onClick={() => { setShowAddDialog(false); setEditingVideo(null); resetForm(); }} variant="outline" className="border-white/20">
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Dialog */}
+      <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
+        <DialogContent className="bg-slate-900 border-white/20 text-white">
+          <DialogHeader>
+            <DialogTitle>Assign Video to User</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Video: {assigningVideo?.title}</Label>
+            </div>
+            <div>
+              <Label>Select User</Label>
+              <Select value={selectedUser} onValueChange={setSelectedUser}>
+                <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                  <SelectValue placeholder="Choose user..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {allUsers.map(user => (
+                    <SelectItem key={user.id} value={user.email}>
+                      {user.full_name || user.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={confirmAssign} className="flex-1 bg-green-500 hover:bg-green-600">
+                Assign
+              </Button>
+              <Button onClick={() => { setShowAssignDialog(false); setAssigningVideo(null); setSelectedUser(""); }} variant="outline" className="border-white/20">
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
