@@ -524,19 +524,33 @@ Return JSON only.`,
                   <div className="p-4">
                    <div className="flex items-start justify-between gap-2 mb-2">
                      <h3 className="text-white font-bold text-lg flex-1">{video.title}</h3>
-                     {canDelete && (
-                       <button
-                         onClick={(e) => {
-                           e.stopPropagation();
-                           if (confirm("Delete this video from your list?")) {
-                             deleteVideoMutation.mutate(video.id);
-                           }
-                         }}
-                         className="text-xl opacity-40 hover:opacity-100 transition-opacity"
-                       >
-                         🗑️
-                       </button>
-                     )}
+                     <div className="flex gap-2">
+                       {canEdit && (
+                         <button
+                           onClick={(e) => {
+                             e.stopPropagation();
+                             handleEdit(video);
+                           }}
+                           className="text-xl opacity-40 hover:opacity-100 transition-opacity"
+                         >
+                           ✏️
+                         </button>
+                       )}
+                       {canDelete && (
+                         <button
+                           onClick={(e) => {
+                             e.stopPropagation();
+                             if (confirm("Delete this video from your list?")) {
+                               deleteVideoMutation.mutate(video.id);
+                             }
+                           }}
+                           className="text-xl opacity-40 hover:opacity-100 transition-opacity"
+                           style={{ filter: 'grayscale(100%) brightness(200%)' }}
+                         >
+                           🗑️
+                         </button>
+                       )}
+                     </div>
                    </div>
                    {video.completed && (
                      <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">✓ Completed</span>
@@ -577,19 +591,33 @@ Return JSON only.`,
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <h3 className="text-white font-bold text-lg flex-1">{video.title}</h3>
-                    {canDelete && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (confirm("Delete this video from library?")) {
-                            deleteVideoMutation.mutate(video.id);
-                          }
-                        }}
-                        className="text-xl opacity-40 hover:opacity-100 transition-opacity"
-                      >
-                        🗑️
-                      </button>
-                    )}
+                    <div className="flex gap-2">
+                      {canEdit && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEdit(video);
+                          }}
+                          className="text-xl opacity-40 hover:opacity-100 transition-opacity"
+                        >
+                          ✏️
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm("Delete this video from library?")) {
+                              deleteVideoMutation.mutate(video.id);
+                            }
+                          }}
+                          className="text-xl opacity-40 hover:opacity-100 transition-opacity"
+                          style={{ filter: 'grayscale(100%) brightness(200%)' }}
+                        >
+                          🗑️
+                        </button>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="flex gap-2 mb-3 overflow-x-auto">
@@ -645,16 +673,7 @@ Return JSON only.`,
                         </SelectContent>
                       </Select>
                     )}
-                    {canEdit && (
-                      <Button
-                        onClick={() => handleEdit(video)}
-                        size="sm"
-                        variant="outline"
-                        className="w-full bg-blue-500/20 border-blue-500/50 text-blue-400 hover:bg-blue-500/30"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                    )}
+
                   </div>
                 </div>
               </motion.div>
