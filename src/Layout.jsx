@@ -32,7 +32,13 @@ export default function Layout({ children, currentPageName }) {
     queryFn: async () => {
       if (!currentUser?.email) return null;
       const profiles = await base44.entities.UserProfile.filter({ created_by: currentUser.email });
-      console.log('Layout: Fetched profile for', currentUser.email, ':', profiles[0]);
+      console.log('Layout: Profile query result:', { 
+        email: currentUser.email, 
+        foundProfile: profiles[0], 
+        hasLanguage: profiles[0]?.language,
+        isNewUser: profiles[0]?.is_new_user,
+        hasAvatar: profiles[0]?.avatar_id 
+      });
       return profiles[0] || null;
     },
     staleTime: 5 * 60 * 1000,
