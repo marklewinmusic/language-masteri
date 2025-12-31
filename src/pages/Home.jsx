@@ -408,9 +408,9 @@ export default function Home() {
 
 
   const [expandedDay, setExpandedDay] = useState(null);
-  const [newTask, setNewTask] = useState({ name: "", duration: "" });
+  const [newTask, setNewTask] = useState({ name: "", duration: "", page: "" });
   const [editingTaskId, setEditingTaskId] = useState(null);
-  const [editingTaskData, setEditingTaskData] = useState({ name: "", duration: "" });
+  const [editingTaskData, setEditingTaskData] = useState({ name: "", duration: "", page: "" });
   const [daysToShow, setDaysToShow] = useState(7);
   const [addingTaskToDayId, setAddingTaskToDayId] = useState(null);
 
@@ -427,10 +427,11 @@ export default function Home() {
     const updatedSubsections = [...(day.subsections || []), { 
       id: Date.now().toString(), 
       name: newTask.name,
-      duration: newTask.duration
+      duration: newTask.duration,
+      page: newTask.page
     }];
     updateDayMutation.mutate({ id: dayId, data: { subsections: updatedSubsections } });
-    setNewTask({ name: "", duration: "" });
+    setNewTask({ name: "", duration: "", page: "" });
     setAddingTaskToDayId(null);
   };
 
@@ -442,7 +443,7 @@ export default function Home() {
 
   const handleStartEditTask = (task) => {
     setEditingTaskId(task.id);
-    setEditingTaskData({ name: task.name, duration: task.duration || "" });
+    setEditingTaskData({ name: task.name, duration: task.duration || "", page: task.page || "" });
   };
 
   const handleSaveEditedTask = (dayId) => {
@@ -451,17 +452,17 @@ export default function Home() {
     const day = days.find(d => d.id === dayId);
     const updatedSubsections = day.subsections.map(s => 
       s.id === editingTaskId 
-        ? { ...s, name: editingTaskData.name, duration: editingTaskData.duration }
+        ? { ...s, name: editingTaskData.name, duration: editingTaskData.duration, page: editingTaskData.page }
         : s
     );
     updateDayMutation.mutate({ id: dayId, data: { subsections: updatedSubsections } });
     setEditingTaskId(null);
-    setEditingTaskData({ name: "", duration: "" });
+    setEditingTaskData({ name: "", duration: "", page: "" });
   };
 
   const handleCancelEdit = () => {
     setEditingTaskId(null);
-    setEditingTaskData({ name: "", duration: "" });
+    setEditingTaskData({ name: "", duration: "", page: "" });
   };
 
   const currentAge = userProfile?.age_level || 3;
@@ -975,6 +976,12 @@ export default function Home() {
                                         onChange={(e) => setEditingTaskData({...editingTaskData, duration: e.target.value})}
                                         className="bg-white/5 border-white/20 text-white text-sm"
                                         placeholder="Duration (optional)"
+                                      />
+                                      <Input
+                                        value={editingTaskData.page}
+                                        onChange={(e) => setEditingTaskData({...editingTaskData, page: e.target.value})}
+                                        className="bg-white/5 border-white/20 text-white text-sm"
+                                        placeholder="Page to link (e.g., BabyVideos)"
                                       />
                                     </div>
                                     <div className="flex gap-1">
