@@ -438,9 +438,7 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
   };
 
   const handleSeekTo = (seconds) => {
-    if (videoPlayer) {
-      videoPlayer.seekTo(seconds);
-    }
+    // Timestamp display only - YouTube iframe API would be needed for actual seeking
   };
 
   const getThumbnailUrl = (video) => {
@@ -1094,12 +1092,9 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                   {transcript.map((segment, idx) => (
                     <div key={idx} className="bg-white/5 rounded-xl p-3 hover:bg-white/10 transition-all">
                       <div className="flex items-start gap-3">
-                        <button
-                          onClick={() => handleSeekTo(segment.start)}
-                          className="flex-shrink-0 w-8 h-8 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 flex items-center justify-center transition-all"
-                        >
-                          <Play className="w-4 h-4 text-cyan-400" />
-                        </button>
+                        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-xs text-cyan-400 font-mono">
+                          {Math.floor(segment.start / 60)}:{String(Math.floor(segment.start % 60)).padStart(2, '0')}
+                        </div>
                         <div className="flex-1 text-center space-y-0.5">
                           {/* Transliteration */}
                           {segment.transliteration && (
