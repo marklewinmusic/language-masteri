@@ -967,14 +967,15 @@ export default function Home() {
                           })}
 
                           {isMasterUser && (
-                            <div className="bg-white/10 rounded-xl p-4 space-y-2">
-                              <Input placeholder="Task name" value={newTask.name} onChange={(e) => setNewTask({...newTask, name: e.target.value})} className="bg-white/5 border-white/20 text-white" />
-                              <Input placeholder="Approx duration (e.g., 10 minutes)" value={newTask.duration} onChange={(e) => setNewTask({...newTask, duration: e.target.value})} className="bg-white/5 border-white/20 text-white" />
-                              <Input placeholder="Page name (e.g., BabyVideos)" value={newTask.page} onChange={(e) => setNewTask({...newTask, page: e.target.value})} className="bg-white/5 border-white/20 text-white" />
-                              <Button onClick={() => handleAddTask(day.id)} className="w-full bg-green-500 hover:bg-green-600">
-                                <Plus className="w-4 h-4 mr-2" /> Add Task
-                              </Button>
-                            </div>
+                            <Button 
+                              onClick={() => {
+                                setEditingDayId(day.id);
+                                setShowAddTaskDialog(true);
+                              }} 
+                              className="w-full bg-green-500 hover:bg-green-600"
+                            >
+                              <Plus className="w-4 h-4 mr-2" /> Add Task
+                            </Button>
                           )}
                         </div>
                       </motion.div>
