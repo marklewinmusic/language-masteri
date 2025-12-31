@@ -1122,7 +1122,8 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                               title: `YouTube Video ${Date.now()}`,
                               youtube_video_id: ytId,
                               language: userProfile?.language || 'hebrew',
-                              order: customVideos.length
+                              order: customVideos.length,
+                              level: userProfile?.current_day || 1
                             });
                           }}
                           disabled={!customVideoUrl.trim() || createVideoMutation.isPending}
