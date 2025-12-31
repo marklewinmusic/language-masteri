@@ -406,7 +406,7 @@ export default function Home() {
 
   const [expandedDay, setExpandedDay] = useState(null);
   const [newTask, setNewTask] = useState({ name: "", duration: "", page: "" });
-  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editingTask, setEditingTask] = useState(null); // { dayId, taskId }
   const [editingTaskData, setEditingTaskData] = useState({ name: "", duration: "", page: "" });
   const [currentWeek, setCurrentWeek] = useState(1);
   const [addingTaskToDayId, setAddingTaskToDayId] = useState(null);
@@ -438,8 +438,8 @@ export default function Home() {
     updateDayMutation.mutate({ id: dayId, data: { subsections: updatedSubsections } });
   };
 
-  const handleStartEditTask = (task) => {
-    setEditingTaskId(task.id);
+  const handleStartEditTask = (dayId, task) => {
+    setEditingTask({ dayId, taskId: task.id });
     setEditingTaskData({ name: task.name, duration: task.duration || "", page: task.page || "" });
   };
 
@@ -448,17 +448,17 @@ export default function Home() {
     
     const day = days.find(d => d.id === dayId);
     const updatedSubsections = day.subsections.map(s => 
-      s.id === editingTaskId 
+      s.id === editingTask.taskId 
         ? { ...s, name: editingTaskData.name, duration: editingTaskData.duration, page: editingTaskData.page }
         : s
     );
     updateDayMutation.mutate({ id: dayId, data: { subsections: updatedSubsections } });
-    setEditingTaskId(null);
+    setEditingTask(null);
     setEditingTaskData({ name: "", duration: "", page: "" });
   };
 
   const handleCancelEdit = () => {
-    setEditingTaskId(null);
+    setEditingTask(null);
     setEditingTaskData({ name: "", duration: "", page: "" });
   };
 
@@ -854,7 +854,7 @@ export default function Home() {
                         <div className="p-3 pt-0 space-y-2">
                           {day.subsections?.map((task, taskIdx) => {
                             const isCompleted = progress?.subsections_completed?.includes(task.id);
-                            const isEditing = editingTaskId === task.id;
+                            const isEditing = editingTask?.dayId === day.id && editingTask?.taskId === task.id;
 
                             return (
                               <div
@@ -927,7 +927,7 @@ export default function Home() {
                                 {isMasterUser && !isEditing && (
                                   <div className="flex gap-1">
                                     <button
-                                      onClick={() => handleStartEditTask(task)}
+                                      onClick={() => handleStartEditTask(day.id, task)}
                                       className="text-cyan-400 hover:text-cyan-300 p-1"
                                     >
                                       <span className="text-xs">✏️</span>
