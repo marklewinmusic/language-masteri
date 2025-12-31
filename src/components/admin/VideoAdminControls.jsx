@@ -13,6 +13,7 @@ export default function VideoAdminControls({ video, onUpdate }) {
   const [editForm, setEditForm] = useState({
     title: video.title || "",
     day: video.level || 1,
+    url: video.video_url || "",
     tags: video.tags || "",
     notes: video.notes || ""
   });
@@ -22,6 +23,7 @@ export default function VideoAdminControls({ video, onUpdate }) {
       await onUpdate({
         title: editForm.title,
         level: parseInt(editForm.day) || 1,
+        video_url: editForm.url,
         tags: editForm.tags,
         notes: editForm.notes
       });
@@ -69,6 +71,15 @@ export default function VideoAdminControls({ video, onUpdate }) {
                 max="100"
                 value={editForm.day}
                 onChange={(e) => setEditForm({ ...editForm, day: e.target.value })}
+                className="bg-white/5 border-white/20 text-white"
+              />
+            </div>
+            <div>
+              <Label>URL or Link</Label>
+              <Input
+                value={editForm.url}
+                onChange={(e) => setEditForm({ ...editForm, url: e.target.value })}
+                placeholder="https://youtube.com/watch?v=..."
                 className="bg-white/5 border-white/20 text-white"
               />
             </div>
