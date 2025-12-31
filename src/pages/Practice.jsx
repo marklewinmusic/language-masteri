@@ -431,7 +431,7 @@ export default function Practice() {
                             </div>
                             
                             {/* Inline sentence display */}
-                            {wordWithSentences?.id === word.id && (
+                            {wordWithSentences?.id === word.id && (wordWithSentences.sentence || loadingSentences) && (
                               <motion.div
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: "auto" }}
@@ -442,7 +442,7 @@ export default function Practice() {
                                     <Loader2 className="w-3 h-3 animate-spin" />
                                     Generating...
                                   </div>
-                                ) : wordWithSentences.sentence ? (
+                                ) : (
                                   <>
                                     <p className="text-cyan-400 text-sm mb-1" dir="rtl">{wordWithSentences.sentence.hebrew}</p>
                                     <p className="text-white/60 text-xs mb-1">{wordWithSentences.sentence.phonetic}</p>
@@ -466,7 +466,7 @@ export default function Practice() {
                                       </button>
                                     </div>
                                   </>
-                                ) : null}
+                                )}
                               </motion.div>
                             )}
                           </div>
