@@ -1068,103 +1068,93 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
               </button>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 overflow-hidden flex">
-              {/* Video Player */}
-              <div className="w-1/2 bg-black flex items-center justify-center">
-                {(selectedVideo?.video_id || selectedVideo?.youtube_video_id || selectedVideo?.video_url) && (
-                  <div className="w-full h-full">
-                    <iframe
-                      ref={setVideoPlayer}
-                      width="100%"
-                      height="100%"
-                      src={`https://www.youtube.com/embed/${selectedVideo?.video_id || selectedVideo?.youtube_video_id || extractYouTubeId(selectedVideo?.video_url)}?enablejsapi=1`}
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  </div>
-                )}
-              </div>
+            {/* Video Player */}
+            <div className="w-full bg-black flex items-center justify-center" style={{ height: '60vh' }}>
+              {(selectedVideo?.video_id || selectedVideo?.youtube_video_id || selectedVideo?.video_url) && (
+                <iframe
+                  ref={setVideoPlayer}
+                  width="100%"
+                  height="100%"
+                  src={`https://www.youtube.com/embed/${selectedVideo?.video_id || selectedVideo?.youtube_video_id || extractYouTubeId(selectedVideo?.video_url)}?enablejsapi=1`}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              )}
+            </div>
 
-              {/* Transcript */}
-              <div className="w-1/2 overflow-y-auto p-6 space-y-3">
-                {loadingTranscript ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
-                  </div>
-                ) : transcript.length > 0 ? (
-                  <>
-                    <h3 className="text-white font-bold text-lg mb-4">Interactive Transcript</h3>
-                    {transcript.map((segment, idx) => (
-                      <div key={idx} className="bg-white/5 rounded-xl p-4 hover:bg-white/10 transition-all">
-                        <div className="flex items-start gap-3">
-                          <button
-                            onClick={() => handleSeekTo(segment.start)}
-                            className="flex-shrink-0 w-10 h-10 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 flex items-center justify-center transition-all"
-                          >
-                            <Play className="w-5 h-5 text-cyan-400" />
-                          </button>
-                          <div className="flex-1 space-y-2">
-                            <div className="text-xs text-white/40">
-                              {Math.floor(segment.start / 60)}:{String(Math.floor(segment.start % 60)).padStart(2, '0')}
+            {/* Transcript */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {loadingTranscript ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+                </div>
+              ) : transcript.length > 0 ? (
+                <div className="max-w-3xl mx-auto space-y-2">
+                  {transcript.map((segment, idx) => (
+                    <div key={idx} className="bg-white/5 rounded-xl p-3 hover:bg-white/10 transition-all">
+                      <div className="flex items-start gap-3">
+                        <button
+                          onClick={() => handleSeekTo(segment.start)}
+                          className="flex-shrink-0 w-8 h-8 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 flex items-center justify-center transition-all"
+                        >
+                          <Play className="w-4 h-4 text-cyan-400" />
+                        </button>
+                        <div className="flex-1 text-center space-y-0.5">
+                          {/* Transliteration */}
+                          {segment.transliteration && (
+                            <div className="text-cyan-400 font-medium text-lg">
+                              {segment.transliteration.split(/\s+/).map((word, wordIdx) => (
+                                <button
+                                  key={wordIdx}
+                                  onClick={() => handleAddWordFromTranscript(word)}
+                                  className="inline-block mr-1.5 hover:bg-cyan-500/20 px-1 rounded transition-all"
+                                >
+                                  {word}
+                                </button>
+                              ))}
                             </div>
-                            
-                            {/* English */}
-                            {segment.english && (
-                              <div className="text-white/90 text-sm leading-relaxed">
-                                {segment.english}
-                              </div>
-                            )}
-                            
-                            {/* Transliteration */}
-                            {segment.transliteration && (
-                              <div className="text-cyan-400 font-medium">
-                                {segment.transliteration.split(/\s+/).map((word, wordIdx) => (
-                                  <button
-                                    key={wordIdx}
-                                    onClick={() => handleAddWordFromTranscript(word)}
-                                    className="inline-block mr-2 mb-1 hover:bg-cyan-500/20 px-1.5 py-0.5 rounded transition-all"
-                                  >
-                                    {word}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                            
-                            {/* Hebrew */}
-                            {segment.hebrew && (
-                              <div className="text-white text-lg" dir="rtl">
-                                {segment.hebrew}
-                              </div>
-                            )}
-                            
-                            {/* Fallback to text if no specific fields */}
-                            {!segment.english && !segment.transliteration && !segment.hebrew && segment.text && (
-                              <div className="text-white leading-relaxed">
-                                {segment.text.split(/\s+/).map((word, wordIdx) => (
-                                  <button
-                                    key={wordIdx}
-                                    onClick={() => handleAddWordFromTranscript(word)}
-                                    className="inline-block mr-1.5 mb-1 hover:text-cyan-400 hover:bg-cyan-500/20 px-1 rounded transition-all"
-                                  >
-                                    {word}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                          )}
+                          
+                          {/* Translation */}
+                          {segment.english && (
+                            <div className="text-white/70 text-sm">
+                              {segment.english}
+                            </div>
+                          )}
+                          
+                          {/* Hebrew */}
+                          {segment.hebrew && (
+                            <div className="text-white/90" dir="rtl">
+                              {segment.hebrew}
+                            </div>
+                          )}
+                          
+                          {/* Fallback to text if no specific fields */}
+                          {!segment.english && !segment.transliteration && !segment.hebrew && segment.text && (
+                            <div className="text-white">
+                              {segment.text.split(/\s+/).map((word, wordIdx) => (
+                                <button
+                                  key={wordIdx}
+                                  onClick={() => handleAddWordFromTranscript(word)}
+                                  className="inline-block mr-1.5 hover:text-cyan-400 hover:bg-cyan-500/20 px-1 rounded transition-all"
+                                >
+                                  {word}
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
-                    ))}
-                  </>
-                ) : (
-                  <div className="bg-white/5 rounded-xl p-8 text-center">
-                    <p className="text-white/60">No transcript available for this video</p>
-                    <p className="text-white/40 text-sm mt-2">Add a transcript in the edit dialog to see it here</p>
-                  </div>
-                )}
-              </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="max-w-3xl mx-auto bg-white/5 rounded-xl p-8 text-center">
+                  <p className="text-white/60">No transcript available for this video</p>
+                  <p className="text-white/40 text-sm mt-2">Add a transcript in the edit dialog to see it here</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
