@@ -408,7 +408,9 @@ export default function Home() {
 
 
   const [expandedDay, setExpandedDay] = useState(null);
-  const [newTask, setNewTask] = useState({ name: "", duration: "", page: "" });
+  const [newTask, setNewTask] = useState({ name: "", duration: "" });
+  const [showAddTaskDialog, setShowAddTaskDialog] = useState(false);
+  const [editingDayId, setEditingDayId] = useState(null);
 
   const currentDay = userProfile?.current_day || 1;
   const sortedDays = [...days].sort((a, b) => a.day_number - b.day_number);
