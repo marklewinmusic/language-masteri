@@ -339,19 +339,19 @@ Return JSON only.`,
     
     // For MediaLibrary videos with video_id
     if (video.video_id) {
-      return `https://img.youtube.com/vi/${video.video_id}/mqdefault.jpg`;
+      return `https://img.youtube.com/vi/${video.video_id}/hqdefault.jpg`;
     }
     
     // For Video entity with youtube_video_id
     if (video.youtube_video_id) {
-      return `https://img.youtube.com/vi/${video.youtube_video_id}/mqdefault.jpg`;
+      return `https://img.youtube.com/vi/${video.youtube_video_id}/hqdefault.jpg`;
     }
     
     // Try to extract from video_url
     if (video.video_url) {
       const videoId = extractYouTubeId(video.video_url);
       if (videoId) {
-        return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+        return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
       }
     }
     
