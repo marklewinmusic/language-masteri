@@ -563,7 +563,7 @@ export default function Flashcards() {
                           }}
                         >
                           <div className="flex items-start justify-between gap-3">
-                            <div className="flex-1 space-y-2">
+                            <div className="flex-1 space-y-0.5 text-center">
                               <div dir="ltr">
                                 <p className="text-white/60 text-sm">{sentence.english}</p>
                               </div>
@@ -572,7 +572,7 @@ export default function Flashcards() {
                                   <div dir="ltr">
                                     <p className="text-cyan-400 text-base">{sentence.transliteration}</p>
                                   </div>
-                                  <div dir="rtl" lang="he" className="text-right">
+                                  <div dir="rtl" lang="he">
                                     <p className="text-white text-base" style={{ unicodeBidi: 'plaintext', direction: 'rtl' }}>
                                       {sentence.hebrew}
                                     </p>
