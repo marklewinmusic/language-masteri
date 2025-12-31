@@ -24,7 +24,6 @@ import Sentences from './pages/Sentences';
 import Songs from './pages/Songs';
 import Store from './pages/Store';
 import StoryLearning from './pages/StoryLearning';
-import Videos from './pages/Videos';
 import __Layout from './Layout.jsx';
 
 
@@ -55,7 +54,6 @@ export const PAGES = {
     "Songs": Songs,
     "Store": Store,
     "StoryLearning": StoryLearning,
-    "Videos": Videos,
 }
 
 export const pagesConfig = {
