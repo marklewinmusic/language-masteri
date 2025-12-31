@@ -105,11 +105,13 @@ export default function BuddyDock({ profile, coins, backpackCount }) {
   
   // Use starter avatar for custom avatars that are resolving
   const showStarterAvatar = profile.avatar_type === "custom" && profile.avatar_status === "resolving";
+  const hasCustomImage = profile.avatar_image_url && profile.avatar_type === "custom";
+  
   const avatarDisplay = showStarterAvatar ? (
     <div className="w-10 h-auto md:w-12 md:h-auto flex items-end justify-center overflow-visible">
       <span className="text-3xl md:text-4xl">😊</span>
     </div>
-  ) : profile.avatar_image_url && profile.avatar_type === "custom" ? (
+  ) : hasCustomImage ? (
     <img 
       src={profile.avatar_image_url} 
       alt={profile.avatar_name} 
