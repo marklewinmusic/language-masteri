@@ -1052,7 +1052,7 @@ export default function Home() {
                                   <Button onClick={() => handleAddTask(day.id)} className="flex-1 bg-green-500 hover:bg-green-600" size="sm" disabled={!newTask.name.trim()}>
                                     Add
                                   </Button>
-                                  <Button onClick={() => { setAddingTaskToDayId(null); setNewTask({ name: "", duration: "" }); }} variant="outline" className="border-white/20" size="sm">
+                                  <Button onClick={() => { setAddingTaskToDayId(null); setNewTask({ name: "", duration: "", page: "" }); }} variant="outline" className="border-white/20" size="sm">
                                     Cancel
                                   </Button>
                                 </div>
