@@ -54,6 +54,10 @@ export default function Home() {
   const [timerSpeed, setTimerSpeed] = useState(1);
   const [currentUser, setCurrentUser] = useState(null);
   const [showExtras, setShowExtras] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState(null);
+  const [showUserManager, setShowUserManager] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
 
 
   // Get current user
@@ -150,6 +154,26 @@ export default function Home() {
     staleTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
+  });
+
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['allUsers'],
+    queryFn: async () => {
+      if (currentUser?.role !== 'admin') return [];
+      return await base44.entities.User.list();
+    },
+    enabled: currentUser?.role === 'admin',
+    staleTime: 30 * 60 * 1000,
+  });
+
+  const { data: allProfiles = [] } = useQuery({
+    queryKey: ['allProfiles'],
+    queryFn: async () => {
+      if (currentUser?.role !== 'admin') return [];
+      return await base44.entities.UserProfile.list();
+    },
+    enabled: currentUser?.role === 'admin',
+    staleTime: 30 * 60 * 1000,
   });
 
   const updateCoinsMutation = useMutation({
@@ -424,6 +448,114 @@ export default function Home() {
             </motion.div>
           </Link>
         </div>
+
+        {/* Admin Controls */}
+        {currentUser?.role === 'admin' && (
+          <div className="mt-4 space-y-2">
+            <Button
+              onClick={() => setShowAdminPanel(!showAdminPanel)}
+              className="w-full bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/50 text-white hover:from-red-500/30 hover:to-orange-500/30"
+            >
+              🔧 Admin: Manage Content by Language
+            </Button>
+            <Button
+              onClick={() => setShowUserManager(!showUserManager)}
+              className="w-full bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border border-indigo-500/50 text-white hover:from-indigo-500/30 hover:to-purple-500/30"
+            >
+              👥 Admin: Manage Users
+            </Button>
+          </div>
+        )}
+
+        {/* Language Selection Panel */}
+        <AnimatePresence>
+          {showAdminPanel && currentUser?.role === 'admin' && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-2 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-4 space-y-3"
+            >
+              <p className="text-white/60 text-sm">Select a language to add content:</p>
+              <div className="grid grid-cols-2 gap-2">
+                {['hebrew', 'english', 'spanish', 'french', 'portuguese', 'italian'].map((lang) => (
+                  <Button
+                    key={lang}
+                    onClick={() => {
+                      setSelectedLanguage(lang);
+                      // Update profile temporarily to switch context
+                      updateProfileMutation.mutate({ language: lang });
+                      toast.success(`Switched to ${lang.charAt(0).toUpperCase() + lang.slice(1)}`);
+                    }}
+                    className={`${
+                      userProfile?.language === lang
+                        ? 'bg-cyan-500 text-white'
+                        : 'bg-white/10 text-white/70 hover:bg-white/20'
+                    }`}
+                  >
+                    {lang.charAt(0).toUpperCase() + lang.slice(1)}
+                  </Button>
+                ))}
+              </div>
+              <p className="text-white/40 text-xs">Your current view is: {userProfile?.language}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* User Manager Panel */}
+        <AnimatePresence>
+          {showUserManager && currentUser?.role === 'admin' && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-2 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-4 space-y-3 max-h-96 overflow-y-auto"
+            >
+              <p className="text-white/60 text-sm font-medium">Select user to manage their content:</p>
+              {allUsers.map((user) => {
+                const profile = allProfiles.find(p => p.created_by === user.email);
+                return (
+                  <button
+                    key={user.id}
+                    onClick={() => {
+                      setSelectedUserId(user.id);
+                      toast.info(`Viewing ${user.full_name || user.email}'s profile`);
+                    }}
+                    className={`w-full text-left p-3 rounded-lg border transition-all ${
+                      selectedUserId === user.id
+                        ? 'bg-cyan-500/20 border-cyan-500/50'
+                        : 'bg-white/5 border-white/10 hover:bg-white/10'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-white font-medium">{user.full_name || user.email}</p>
+                        <p className="text-white/60 text-xs">{user.email}</p>
+                        {profile && (
+                          <div className="flex gap-2 mt-1">
+                            <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded">
+                              {profile.language || 'no language'}
+                            </span>
+                            <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded">
+                              Day {profile.current_day || 1}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Link to={`${createPageUrl("BabyVideos")}`}>
+                          <Button size="sm" className="bg-blue-500/20 text-blue-400 border border-blue-500/50">
+                            Videos
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
 
