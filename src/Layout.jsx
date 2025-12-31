@@ -50,6 +50,18 @@ export default function Layout({ children, currentPageName }) {
   
   // Only redirect authenticated users with loaded profiles
   useEffect(() => {
+    console.log('Layout redirect check:', {
+      isOnboardingPage,
+      isAuthChecked,
+      profileLoading,
+      hasUser: !!currentUser,
+      hasProfile: !!userProfile,
+      language: userProfile?.language,
+      isNewUser: userProfile?.is_new_user,
+      hasAvatar: userProfile?.avatar_id,
+      currentPage: currentPageName
+    });
+
     if (isOnboardingPage) return;
     if (!isAuthChecked || profileLoading) return;
     
@@ -58,17 +70,17 @@ export default function Layout({ children, currentPageName }) {
     
     // If no profile or no language, redirect to LanguageSelect
     if (!userProfile || !userProfile.language || userProfile.language === "") {
-      console.log("Redirecting to LanguageSelect - no profile or language");
+      console.log("→ Redirecting to LanguageSelect - no profile or language");
       navigate(createPageUrl("LanguageSelect"), { replace: true });
       return;
     }
     
     // If new user without avatar, redirect to AvatarSelect
     if (userProfile.is_new_user === true && !userProfile.avatar_id) {
-      console.log("Redirecting to AvatarSelect - no avatar");
+      console.log("→ Redirecting to AvatarSelect - no avatar");
       navigate(createPageUrl("AvatarSelect"), { replace: true });
     }
-  }, [isOnboardingPage, isAuthChecked, currentUser, profileLoading, userProfile, navigate]);
+  }, [isOnboardingPage, isAuthChecked, currentUser, profileLoading, userProfile, navigate, currentPageName]);
 
   // Show loading during initial auth check
   if (!isAuthChecked) {
