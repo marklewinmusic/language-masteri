@@ -107,6 +107,12 @@ export default function Flashcards() {
   };
 
   const generateSentences = async (word) => {
+    // Check if word has saved sentences first
+    if (word.saved_sentences && word.saved_sentences.length > 0) {
+      setExampleSentences(word.saved_sentences);
+      return;
+    }
+    
     if (exampleSentences.length > 0) return;
     setGeneratingSentences(true);
     try {
@@ -609,18 +615,33 @@ export default function Flashcards() {
                       );
                     })}
                     {exampleSentences.length > 0 && (
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setExampleSentences([]);
-                          generateSentences(currentWord);
-                        }}
-                        variant="outline"
-                        className="w-full bg-white/5 border-white/20 text-white hover:bg-white/10"
-                      >
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        Generate New Sentences
-                      </Button>
+                      <div className="space-y-2">
+                        <Button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            await updateWordMutation.mutateAsync({
+                              id: currentWord.id,
+                              data: { saved_sentences: exampleSentences }
+                            });
+                            toast.success("Sentences saved to card!");
+                          }}
+                          className="w-full bg-gradient-to-r from-green-500 to-emerald-500"
+                        >
+                          ✓ Approve & Save Sentences
+                        </Button>
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExampleSentences([]);
+                            generateSentences(currentWord);
+                          }}
+                          variant="outline"
+                          className="w-full bg-white/5 border-white/20 text-white hover:bg-white/10"
+                        >
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Generate New Sentences
+                        </Button>
+                      </div>
                     )}
                   </>
                 )}
