@@ -16,6 +16,11 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
   const xpToNextLevel = 1000;
   const xpProgress = ((profile?.xp || 0) % xpToNextLevel) / xpToNextLevel * 100;
 
+  // Don't render if profile is missing critical data
+  if (!profile?.language || !profile?.avatar_id) {
+    return null;
+  }
+
   const languageFlags = {
     hebrew: '🇮🇱',
     english: '🇺🇸',
