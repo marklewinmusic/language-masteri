@@ -63,11 +63,26 @@ export default function Layout({ children, currentPageName }) {
       currentPage: currentPageName
     });
 
-    if (isOnboardingPage) return;
-    if (!isAuthChecked || profileLoading) return;
+    if (isOnboardingPage) {
+      console.log("On onboarding page, skipping redirects");
+      return;
+    }
+    
+    if (!isAuthChecked) {
+      console.log("Auth not checked yet");
+      return;
+    }
+    
+    if (profileLoading) {
+      console.log("Profile still loading");
+      return;
+    }
     
     // Not authenticated - allow access to public pages
-    if (!currentUser) return;
+    if (!currentUser) {
+      console.log("No user, allowing access");
+      return;
+    }
     
     // If no profile or no language, redirect to LanguageSelect
     if (!userProfile || !userProfile.language || userProfile.language === "") {
