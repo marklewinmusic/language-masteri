@@ -865,31 +865,34 @@ export default function Home() {
               ];
               const gradient = gradients[idx % gradients.length];
 
+              // Scale down as more days are shown
+              const isCompact = daysToShow > 6;
+
               return (
                 <motion.div
                   key={day.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 overflow-hidden ${
+                  className={`bg-white/5 backdrop-blur-xl ${isCompact ? 'rounded-xl' : 'rounded-3xl'} border border-white/10 overflow-hidden ${
                     !unlocked ? 'opacity-50' : ''
                   }`}
                 >
                   <button
                     onClick={() => unlocked && setExpandedDay(isExpanded ? null : day.day_number)}
                     disabled={!unlocked}
-                    className={`w-full bg-gradient-to-r ${gradient} p-4 transition-all`}
+                    className={`w-full bg-gradient-to-r ${gradient} ${isCompact ? 'p-2' : 'p-4'} transition-all`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         {!unlocked && (
-                          <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10">
-                            <Lock className="w-5 h-5 text-white/60" />
+                          <div className={`${isCompact ? 'w-6 h-6' : 'w-10 h-10'} rounded-full flex items-center justify-center bg-white/10`}>
+                            <Lock className={`${isCompact ? 'w-3 h-3' : 'w-5 h-5'} text-white/60`} />
                           </div>
                         )}
                         <div className="text-left flex-1">
                           <div className="flex items-center gap-2">
-                            <h3 className="text-white font-bold text-xl">{day.title || `Day ${day.day_number}`}</h3>
-                            {allCompleted && (
+                            <h3 className={`text-white font-bold ${isCompact ? 'text-base' : 'text-xl'}`}>{day.title || `Day ${day.day_number}`}</h3>
+                            {allCompleted && !isCompact && (
                               <>
                                 <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
                                   <Check className="w-4 h-4 text-white" />
@@ -897,12 +900,17 @@ export default function Home() {
                                 <span className="text-green-400 font-medium text-sm">Completed 🔥</span>
                               </>
                             )}
+                            {allCompleted && isCompact && (
+                              <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+                                <Check className="w-3 h-3 text-white" />
+                              </div>
+                            )}
                           </div>
-                          {day.description && <p className="text-white/80 text-sm">{day.description}</p>}
+                          {day.description && !isCompact && <p className="text-white/80 text-sm">{day.description}</p>}
                         </div>
                         </div>
                         <div className="flex items-center gap-2">
-                        {isMasterUser && (
+                        {isMasterUser && !isCompact && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -915,7 +923,7 @@ export default function Home() {
                             <Trash2 className="w-5 h-5" />
                           </button>
                         )}
-                        {unlocked && <ChevronDown className={`w-6 h-6 text-white transition-transform ${isExpanded ? 'rotate-180' : ''}`} />}
+                        {unlocked && <ChevronDown className={`${isCompact ? 'w-4 h-4' : 'w-6 h-6'} text-white transition-transform ${isExpanded ? 'rotate-180' : ''}`} />}
                         </div>
                         </div>
                         </button>
@@ -1045,15 +1053,15 @@ export default function Home() {
                 );
                 })}
 
-                {sortedDays.length > daysToShow && (
-                <div className="flex justify-center mt-6">
-                <Button
-                  onClick={() => setDaysToShow(prev => prev + 3)}
-                  className="bg-white/10 border border-white/20 text-white hover:bg-white/20"
-                >
-                  Show More Days
-                </Button>
-                </div>
+                {sortedDays.length > 3 && (
+                  <div className="flex justify-center mt-6">
+                    <Button
+                      onClick={() => setDaysToShow(prev => prev === 3 ? sortedDays.length : 3)}
+                      className="bg-white/10 border border-white/20 text-white hover:bg-white/20"
+                    >
+                      {daysToShow === 3 ? 'Show More Days' : 'Hide More Days'}
+                    </Button>
+                  </div>
                 )}
                 </div>
                 )}
