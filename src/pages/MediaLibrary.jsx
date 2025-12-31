@@ -11,6 +11,7 @@ import { Plus, Edit, Trash2, Search, Filter, Video, Users, Play, Loader2, Chevro
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import EditableWord from "../components/learning/EditableWord";
+import TranslatorWidget from "../components/TranslatorWidget";
 
 const topics = [
   "Religion / Spirituality",
@@ -1225,5 +1226,7 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
         </div>
       )}
     </div>
-  );
-}
+
+    <TranslatorWidget />
+    );
+    }
