@@ -1111,31 +1111,27 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                                     snapshot.isDragging ? 'shadow-2xl scale-105' : ''
                                   }`}
                                 >
-                                  {/* Trash button - top right */}
-                                  {currentUser?.role === 'admin' && (
-                                    <button
-                                      onClick={async (e) => {
-                                        e.stopPropagation();
-                                        console.log('DELETE clicked for video:', video.id);
-                                        if (window.confirm('Delete this video?')) {
-                                          await deleteVideoMutation.mutateAsync({ 
-                                            videoId: video.id, 
-                                            deleteData: { deleted_at: new Date().toISOString(), is_active: false }
-                                          });
-                                        }
-                                      }}
-                                      className="absolute top-2 right-2 z-[100] text-xl hover:scale-110 active:scale-95 transition-transform bg-red-500 hover:bg-red-600 rounded-lg w-9 h-9 flex items-center justify-center shadow-xl border-2 border-white/20"
-                                      title="Delete video"
-                                      style={{ pointerEvents: 'all' }}
-                                    >
-                                      🗑️
-                                    </button>
-                                  )}
-
-                                  <div {...provided.draggableProps}>
-
-
-                                 <div className="p-4 space-y-3">
+                                  <div {...provided.draggableProps} className="p-4 space-y-3">
+                                    {/* Trash button - top right */}
+                                    {currentUser?.role === 'admin' && (
+                                      <button
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          console.log('DELETE clicked for video:', video.id);
+                                          if (window.confirm('Delete this video?')) {
+                                            await deleteVideoMutation.mutateAsync({ 
+                                              videoId: video.id, 
+                                              deleteData: { deleted_at: new Date().toISOString(), is_active: false }
+                                            });
+                                          }
+                                        }}
+                                        className="absolute top-2 right-2 z-[100] text-xl hover:scale-110 active:scale-95 transition-transform bg-red-500 hover:bg-red-600 rounded-lg w-9 h-9 flex items-center justify-center shadow-xl border-2 border-white/20"
+                                        title="Delete video"
+                                        style={{ pointerEvents: 'all' }}
+                                      >
+                                        🗑️
+                                      </button>
+                                    )}
                                    {/* Admin Controls */}
                                    {currentUser?.role === 'admin' && (
                                      <div className="flex justify-between items-center mb-2">
