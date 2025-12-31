@@ -41,7 +41,8 @@ export default function Layout({ children, currentPageName }) {
       });
       return profiles[0] || null;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,  // Don't use stale data for profile checks
+    cacheTime: 0,  // Don't cache profile data
     enabled: isAuthChecked && !!currentUser,
   });
 
