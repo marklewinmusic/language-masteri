@@ -514,16 +514,16 @@ Return JSON only.`,
                     <img 
                       src={getThumbnailUrl(video)} 
                       alt={video.title}
-                      className="w-full h-48 object-cover"
+                      className="w-full h-32 object-cover"
                     />
                   ) : (
-                    <div className="w-full h-48 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
-                      <Video className="w-16 h-16 text-white/40" />
+                    <div className="w-full h-32 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
+                      <Video className="w-12 h-12 text-white/40" />
                     </div>
                   )}
-                  <div className="p-4">
+                  <div className="p-3">
                    <div className="flex items-start justify-between gap-2 mb-2">
-                     <h3 className="text-white font-bold text-lg flex-1">{video.title}</h3>
+                     <h3 className="text-white font-bold text-base flex-1">{video.title}</h3>
                      <div className="flex gap-2">
                        {canEdit && (
                          <button
@@ -578,19 +578,19 @@ Return JSON only.`,
                 <img 
                   src={getThumbnailUrl(video) || `https://i.ytimg.com/vi/${extractYouTubeId(video.video_url) || 'default'}/hqdefault.jpg`}
                   alt={video.title}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-32 object-cover"
                   onError={(e) => {
                     e.target.style.display = 'none';
                     e.target.nextSibling.style.display = 'flex';
                   }}
                 />
-                <div className="w-full h-48 bg-gradient-to-br from-purple-500/20 to-pink-500/20 hidden items-center justify-center">
-                  <Video className="w-16 h-16 text-white/40" />
+                <div className="w-full h-32 bg-gradient-to-br from-purple-500/20 to-pink-500/20 hidden items-center justify-center">
+                  <Video className="w-12 h-12 text-white/40" />
                 </div>
 
-                <div className="p-4">
+                <div className="p-3">
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="text-white font-bold text-lg flex-1">{video.title}</h3>
+                    <h3 className="text-white font-bold text-base flex-1">{video.title}</h3>
                     <div className="flex gap-2">
                       {canEdit && (
                         <button
