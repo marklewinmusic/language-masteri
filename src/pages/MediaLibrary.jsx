@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Plus, Edit, Trash2, Search, Filter, Video, Users, Play, Loader2, ChevronDown, X } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Filter, Video, Users, Play, Loader2, ChevronDown, X, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -45,6 +45,7 @@ export default function MediaLibrary() {
   const [videoPlayer, setVideoPlayer] = useState(null);
   const [showRecommended, setShowRecommended] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
+  const [editingSegment, setEditingSegment] = useState(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -141,6 +142,18 @@ export default function MediaLibrary() {
       toast.success("Video updated!");
     },
   });
+
+  const saveTranscriptEdit = async (segmentIdx, field, value) => {
+    if (!selectedVideo) return;
+    const updatedTranscript = [...transcript];
+    updatedTranscript[segmentIdx] = { ...updatedTranscript[segmentIdx], [field]: value };
+    setTranscript(updatedTranscript);
+    
+    await updateVideoMutation.mutateAsync({
+      id: selectedVideo.id,
+      data: { processed_transcript: updatedTranscript }
+    });
+  };
 
   const deleteVideoMutation = useMutation({
     mutationFn: (id) => base44.entities.MediaLibrary.delete(id),
@@ -1114,53 +1127,79 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                           onClick={() => handleSeekTo(segment.start)}
                           className="flex-shrink-0 w-8 h-8 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 flex items-center justify-center text-xs text-cyan-400 font-mono transition-all cursor-pointer"
                         >
-                          {Math.floor(segment.start / 60)}:{String(Math.floor(segment.start % 60)).padStart(2, '0')}
+                          {editingSegment === idx ? (
+                            <Input
+                              type="number"
+                              value={segment.start}
+                              onChange={(e) => {
+                                const updated = [...transcript];
+                                updated[idx] = { ...segment, start: parseFloat(e.target.value) };
+                                setTranscript(updated);
+                              }}
+                              onBlur={() => saveTranscriptEdit(idx, 'start', segment.start)}
+                              className="w-16 h-6 text-xs bg-cyan-500/30 border-cyan-400 text-cyan-400"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            <>
+                              {Math.floor(segment.start / 60)}:{String(Math.floor(segment.start % 60)).padStart(2, '0')}
+                            </>
+                          )}
                         </button>
                         <div className="flex-1 text-center space-y-0.5">
                           {/* Transliteration */}
                           {segment.transliteration && (
                             <div className="text-cyan-400 font-medium text-lg">
-                              {segment.transliteration.split(/\s+/).map((word, wordIdx) => (
-                                <button
-                                  key={wordIdx}
-                                  onClick={() => handleAddWordFromTranscript(word)}
-                                  className="inline-block mr-1.5 hover:bg-cyan-500/20 px-1 rounded transition-all"
-                                >
-                                  {word}
-                                </button>
-                              ))}
+                              <EditableWord
+                                text={segment.transliteration}
+                                onSave={(newText) => saveTranscriptEdit(idx, 'transliteration', newText)}
+                                className="text-cyan-400 font-medium text-lg"
+                              />
                             </div>
                           )}
                           
                           {/* Translation */}
                           {segment.english && (
                             <div className="text-white/70 text-sm">
-                              {segment.english}
+                              <EditableWord
+                                text={segment.english}
+                                onSave={(newText) => saveTranscriptEdit(idx, 'english', newText)}
+                                className="text-white/70 text-sm"
+                              />
                             </div>
                           )}
                           
                           {/* Hebrew */}
                           {segment.hebrew && (
                             <div className="text-white/90" dir="rtl">
-                              {segment.hebrew}
+                              <EditableWord
+                                text={segment.hebrew}
+                                language="he"
+                                onSave={(newText) => saveTranscriptEdit(idx, 'hebrew', newText)}
+                                className="text-white/90"
+                              />
                             </div>
                           )}
                           
                           {/* Fallback to text if no specific fields */}
                           {!segment.english && !segment.transliteration && !segment.hebrew && segment.text && (
                             <div className="text-white">
-                              {segment.text.split(/\s+/).map((word, wordIdx) => (
-                                <button
-                                  key={wordIdx}
-                                  onClick={() => handleAddWordFromTranscript(word)}
-                                  className="inline-block mr-1.5 hover:text-cyan-400 hover:bg-cyan-500/20 px-1 rounded transition-all"
-                                >
-                                  {word}
-                                </button>
-                              ))}
+                              <EditableWord
+                                text={segment.text}
+                                onSave={(newText) => saveTranscriptEdit(idx, 'text', newText)}
+                                className="text-white"
+                              />
                             </div>
                           )}
                         </div>
+                        {canEdit && (
+                          <button
+                            onClick={() => setEditingSegment(editingSegment === idx ? null : idx)}
+                            className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all"
+                          >
+                            <Pencil className="w-4 h-4 text-white/60" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
