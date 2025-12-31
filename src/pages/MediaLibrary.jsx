@@ -60,7 +60,8 @@ export default function MediaLibrary() {
     suitable_for_speaking: false,
     is_active: true,
     thumbnail_url: "",
-    notes: ""
+    notes: "",
+    default_day: ""
   });
 
   useEffect(() => {
@@ -254,7 +255,8 @@ Return JSON only.`,
       accent_region: "",
       is_active: true,
       thumbnail_url: "",
-      notes: ""
+      notes: "",
+      default_day: ""
     });
   };
 
@@ -266,7 +268,8 @@ Return JSON only.`,
 
     const data = {
       ...formData,
-      duration_minutes: formData.duration_minutes ? parseFloat(formData.duration_minutes) : null
+      duration_minutes: formData.duration_minutes ? parseFloat(formData.duration_minutes) : null,
+      default_day: formData.default_day ? parseInt(formData.default_day) : null
     };
 
     if (editingVideo) {
@@ -290,7 +293,8 @@ Return JSON only.`,
       accent_region: video.accent_region || "",
       is_active: video.is_active !== false,
       thumbnail_url: video.thumbnail_url || "",
-      notes: video.notes || ""
+      notes: video.notes || "",
+      default_day: video.default_day || ""
     });
     setShowAddDialog(true);
   };
@@ -829,13 +833,26 @@ Return JSON only.`,
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label>Duration (minutes) - auto-populated</Label>
                 <Input
                   type="number"
                   value={formData.duration_minutes}
                   onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
+                  className="bg-white/5 border-white/20 text-white"
+                />
+              </div>
+
+              <div>
+                <Label>Default Day (1-100)</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={formData.default_day}
+                  onChange={(e) => setFormData({ ...formData, default_day: e.target.value })}
+                  placeholder="Optional"
                   className="bg-white/5 border-white/20 text-white"
                 />
               </div>
