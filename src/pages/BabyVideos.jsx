@@ -1116,16 +1116,19 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                                  {currentUser?.role === 'admin' && (
                                    <button
                                      onClick={(e) => {
+                                       e.preventDefault();
                                        e.stopPropagation();
                                        if (confirm('Delete this video?')) {
+                                         console.log('Trash button clicked, deleting video:', video.id);
                                          deleteVideoMutation.mutate({ 
                                            videoId: video.id, 
                                            deleteData: { deleted_at: new Date().toISOString(), is_active: false }
                                          });
                                        }
                                      }}
-                                     className="absolute top-3 right-3 z-10 text-2xl hover:scale-110 transition-transform bg-black/30 backdrop-blur-sm rounded-lg w-9 h-9 flex items-center justify-center"
+                                     className="absolute top-3 right-3 z-50 text-2xl hover:scale-110 transition-transform bg-red-500/80 hover:bg-red-500 backdrop-blur-sm rounded-lg w-10 h-10 flex items-center justify-center cursor-pointer shadow-lg"
                                      title="Delete video"
+                                     style={{ pointerEvents: 'auto' }}
                                    >
                                      🗑️
                                    </button>
