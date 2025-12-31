@@ -419,8 +419,20 @@ export default function BabyVideos() {
     refetchOnWindowFocus: false,
   });
 
+  // Check if current user is admin
+  const [currentUser, setCurrentUser] = useState(null);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await base44.auth.me();
+        setCurrentUser(user);
+      } catch (e) {}
+    };
+    fetchUser();
+  }, []);
+
   const { data: customVideos = [] } = useQuery({
-    queryKey: ['customVideos', userProfile?.language],
+    queryKey: ['customVideos', userProfile?.language, currentUser?.role],
     queryFn: async () => {
       const videos = await base44.entities.Video.list();
       // Filter by language and deleted status
@@ -436,18 +448,6 @@ export default function BabyVideos() {
     refetchOnWindowFocus: false,
     enabled: !!userProfile,
   });
-
-  // Check if current user is admin
-  const [currentUser, setCurrentUser] = useState(null);
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const user = await base44.auth.me();
-        setCurrentUser(user);
-      } catch (e) {}
-    };
-    fetchUser();
-  }, []);
 
   const updateCoinsMutation = useMutation({
     mutationFn: (data) => base44.entities.UserCoins.update(userCoins?.id, data),
@@ -1064,7 +1064,10 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                     
                     createVideoMutation.mutate({
                       video_url: customVideoUrl,
-                      title: `YouTube Video ${Date.now()}`
+                      title: `YouTube Video ${Date.now()}`,
+                      youtube_video_id: ytId,
+                      language: userProfile?.language || 'hebrew',
+                      order: customVideos.length
                     });
                   }}
                   disabled={!customVideoUrl.trim() || createVideoMutation.isPending}
