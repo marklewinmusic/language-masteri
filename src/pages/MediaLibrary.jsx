@@ -639,32 +639,31 @@ Return JSON only.`,
                     </div>
                   </div>
                   
-                  <div className="flex gap-2 mb-2 overflow-x-auto whitespace-nowrap">
-                    <span className="text-xs bg-cyan-500/20 text-cyan-400 px-2 py-1 rounded">
+                  <div className="flex gap-2 mb-2 overflow-x-auto whitespace-nowrap items-center">
+                    <span className="text-xs bg-cyan-500/20 text-cyan-400 px-2 py-1 rounded flex-shrink-0">
                       {video.language}
                     </span>
-                    <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded">
+                    <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded flex-shrink-0">
                       {video.difficulty_level}
                     </span>
                     {video.duration_minutes && (
-                      <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded">
+                      <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded flex-shrink-0">
                         {video.duration_minutes} min
                       </span>
                     )}
+                    {video.topics && video.topics.length > 0 && (
+                      <>
+                        {video.topics.slice(0, 2).map((topic, idx) => (
+                          <span key={idx} className="text-xs bg-white/10 text-white/70 px-2 py-1 rounded flex-shrink-0">
+                            {topic}
+                          </span>
+                        ))}
+                        {video.topics.length > 2 && (
+                          <span className="text-xs text-white/40 flex-shrink-0">+{video.topics.length - 2}</span>
+                        )}
+                      </>
+                    )}
                   </div>
-
-                  {video.topics && video.topics.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {video.topics.slice(0, 3).map((topic, idx) => (
-                        <span key={idx} className="text-xs bg-white/10 text-white/70 px-2 py-0.5 rounded">
-                          {topic}
-                        </span>
-                      ))}
-                      {video.topics.length > 3 && (
-                        <span className="text-xs text-white/40">+{video.topics.length - 3}</span>
-                      )}
-                    </div>
-                  )}
 
                   <div className="space-y-2">
                     {canAssign && (
