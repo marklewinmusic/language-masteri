@@ -418,14 +418,19 @@ export default function Home() {
   const isDayUnlocked = (dayNum) => isMasterUser || dayNum <= currentDay;
   const getDayProgress = (dayId) => dayProgress.find(p => p.day_id === dayId);
 
-  const handleAddTask = (dayId) => {
-    const day = days.find(d => d.id === dayId);
+  const handleAddTask = () => {
+    if (!editingDayId || !newTask.name.trim()) return;
+    
+    const day = days.find(d => d.id === editingDayId);
     const updatedSubsections = [...(day.subsections || []), { 
       id: Date.now().toString(), 
-      ...newTask 
+      name: newTask.name,
+      duration: newTask.duration
     }];
-    updateDayMutation.mutate({ id: dayId, data: { subsections: updatedSubsections } });
-    setNewTask({ name: "", duration: "", page: "" });
+    updateDayMutation.mutate({ id: editingDayId, data: { subsections: updatedSubsections } });
+    setNewTask({ name: "", duration: "" });
+    setShowAddTaskDialog(false);
+    setEditingDayId(null);
   };
 
   const handleDeleteTask = (dayId, taskId) => {
