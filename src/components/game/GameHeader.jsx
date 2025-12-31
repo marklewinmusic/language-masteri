@@ -224,8 +224,19 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
                   </div>
                   <div className="border-t border-white/10 mt-2 pt-2">
                     <Button
+                      onClick={() => {
+                        setShowMenu(false);
+                        navigate(createPageUrl("LanguageSelect"));
+                      }}
+                      className="w-full bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 justify-start"
+                      variant="ghost"
+                    >
+                      <Globe className="w-4 h-4 mr-2" />
+                      Start Onboarding
+                    </Button>
+                    <Button
                       onClick={handleLogout}
-                      className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 justify-start"
+                      className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 justify-start mt-1"
                       variant="ghost"
                     >
                       <LogOut className="w-4 h-4 mr-2" />
