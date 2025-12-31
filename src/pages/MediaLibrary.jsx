@@ -388,6 +388,38 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
     setShowTranscript(true);
     setTranscript([]);
     setLoadingTranscript(true);
+    setVideoPlayer(null);
+
+    // Initialize YouTube player
+    const videoId = video.video_id || video.youtube_video_id || extractYouTubeId(video.video_url);
+    
+    if (!videoId) {
+      toast.error("Could not extract video ID");
+      setLoadingTranscript(false);
+      return;
+    }
+
+    // Load YouTube IFrame API
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    }
+
+    // Initialize player when API is ready
+    const initPlayer = () => {
+      const player = new window.YT.Player('youtube-player', {
+        videoId: videoId,
+        playerVars: { enablejsapi: 1 },
+      });
+      setVideoPlayer(player);
+    };
+
+    if (window.YT && window.YT.Player) {
+      initPlayer();
+    } else {
+      window.onYouTubeIframeAPIReady = initPlayer;
+    }
 
     // Check if video has processed transcript first
     if (video.processed_transcript && video.processed_transcript.length > 0) {
@@ -397,14 +429,6 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
     }
 
     // Otherwise try to fetch from YouTube
-    const videoId = video.video_id || video.youtube_video_id || extractYouTubeId(video.video_url);
-    
-    if (!videoId) {
-      toast.error("Could not extract video ID");
-      setLoadingTranscript(false);
-      return;
-    }
-
     try {
       const result = await base44.functions.invoke('youtube-captions-download', { videoId });
       
@@ -438,7 +462,9 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
   };
 
   const handleSeekTo = (seconds) => {
-    // Timestamp display only - YouTube iframe API would be needed for actual seeking
+    if (videoPlayer && videoPlayer.seekTo) {
+      videoPlayer.seekTo(seconds, true);
+    }
   };
 
   const getThumbnailUrl = (video) => {
@@ -1069,15 +1095,7 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
             {/* Video Player */}
             <div className="w-full bg-black flex items-center justify-center" style={{ height: '60vh' }}>
               {(selectedVideo?.video_id || selectedVideo?.youtube_video_id || selectedVideo?.video_url) && (
-                <iframe
-                  ref={setVideoPlayer}
-                  width="100%"
-                  height="100%"
-                  src={`https://www.youtube.com/embed/${selectedVideo?.video_id || selectedVideo?.youtube_video_id || extractYouTubeId(selectedVideo?.video_url)}?enablejsapi=1`}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+                <div id="youtube-player" className="w-full h-full" />
               )}
             </div>
 
@@ -1092,9 +1110,12 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                   {transcript.map((segment, idx) => (
                     <div key={idx} className="bg-white/5 rounded-xl p-3 hover:bg-white/10 transition-all">
                       <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-xs text-cyan-400 font-mono">
+                        <button
+                          onClick={() => handleSeekTo(segment.start)}
+                          className="flex-shrink-0 w-8 h-8 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 flex items-center justify-center text-xs text-cyan-400 font-mono transition-all cursor-pointer"
+                        >
                           {Math.floor(segment.start / 60)}:{String(Math.floor(segment.start % 60)).padStart(2, '0')}
-                        </div>
+                        </button>
                         <div className="flex-1 text-center space-y-0.5">
                           {/* Transliteration */}
                           {segment.transliteration && (
