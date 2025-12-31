@@ -123,6 +123,49 @@ export default function MediaLibrary() {
     },
   });
 
+  const extractYouTubeId = (url) => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+      /youtube\.com\/shorts\/([^&\n?#]+)/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return match[1];
+    }
+    return null;
+  };
+
+  const fetchYouTubeMetadata = async (url) => {
+    const videoId = extractYouTubeId(url);
+    if (!videoId) {
+      toast.error("Invalid YouTube URL");
+      return;
+    }
+
+    setFormData(prev => ({ ...prev, video_id: videoId }));
+
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Extract the title from this YouTube URL: ${url}. Return ONLY the video title as plain text, nothing else.`,
+        add_context_from_internet: true
+      });
+
+      const title = typeof result === 'string' ? result.trim() : result;
+      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+      
+      setFormData(prev => ({
+        ...prev,
+        title: title || prev.title,
+        thumbnail_url: thumbnailUrl
+      }));
+
+      toast.success("Video info loaded!");
+    } catch (e) {
+      toast.error("Could not fetch video details");
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       title: "",
@@ -423,10 +466,41 @@ export default function MediaLibrary() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Title *</Label>
+              <Label>Video URL *</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={formData.video_url}
+                  onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
+                  placeholder="https://youtube.com/watch?v=..."
+                  className="bg-white/5 border-white/20 text-white flex-1"
+                />
+                <Button
+                  type="button"
+                  onClick={() => fetchYouTubeMetadata(formData.video_url)}
+                  disabled={!formData.video_url}
+                  className="bg-cyan-500 hover:bg-cyan-600"
+                >
+                  Load
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <Label>Video ID * (auto-populated)</Label>
+              <Input
+                value={formData.video_id}
+                readOnly
+                placeholder="Auto-populated from URL"
+                className="bg-white/5 border-white/20 text-white/60"
+              />
+            </div>
+
+            <div>
+              <Label>Title * (editable)</Label>
               <Input
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Auto-populated from YouTube"
                 className="bg-white/5 border-white/20 text-white"
               />
             </div>
@@ -463,26 +537,6 @@ export default function MediaLibrary() {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <div>
-              <Label>Video URL *</Label>
-              <Input
-                value={formData.video_url}
-                onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-                placeholder="https://youtube.com/watch?v=..."
-                className="bg-white/5 border-white/20 text-white"
-              />
-            </div>
-
-            <div>
-              <Label>Video ID * (unique identifier)</Label>
-              <Input
-                value={formData.video_id}
-                onChange={(e) => setFormData({ ...formData, video_id: e.target.value })}
-                placeholder="e.g., YouTube ID or custom ID"
-                className="bg-white/5 border-white/20 text-white"
-              />
             </div>
 
             <div>
