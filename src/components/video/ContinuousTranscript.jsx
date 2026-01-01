@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
+import { Play } from "lucide-react";
 
 export default function ContinuousTranscript({ 
   transcript, 
@@ -36,6 +37,26 @@ export default function ContinuousTranscript({
       wordIndex: wordIdx
     }));
   });
+
+  // Group words into 5-second chunks
+  const timeChunks = [];
+  let currentChunk = { time: 0, words: [] };
+  
+  allWords.forEach((wordObj, idx) => {
+    const chunkTime = Math.floor(wordObj.start / 5) * 5;
+    
+    if (chunkTime !== currentChunk.time && currentChunk.words.length > 0) {
+      timeChunks.push(currentChunk);
+      currentChunk = { time: chunkTime, words: [] };
+    }
+    
+    currentChunk.time = chunkTime;
+    currentChunk.words.push({ ...wordObj, globalIdx: idx });
+  });
+  
+  if (currentChunk.words.length > 0) {
+    timeChunks.push(currentChunk);
+  }
 
   const handleWordClick = async (wordObj, idx, e) => {
     // Seek and play/pause behavior
@@ -87,161 +108,195 @@ export default function ContinuousTranscript({
     setEditingWord(null);
   };
 
-  const saveTimestamp = (wordObj) => {
+  const saveChunkTimestamp = (chunkTime) => {
     const newTime = parseFloat(timestampValue);
-    if (isNaN(newTime) || newTime < 0) return;
+    if (isNaN(newTime) || newTime < 0) {
+      setEditingTimestamp(null);
+      return;
+    }
     
-    const segment = transcript[wordObj.segmentIndex];
+    // Find the first word in this chunk
+    const firstWord = allWords.find(w => Math.floor(w.start / 5) * 5 === chunkTime);
+    if (!firstWord) {
+      setEditingTimestamp(null);
+      return;
+    }
+    
+    const segment = transcript[firstWord.segmentIndex];
     const words = segment.transliteration.split(/\s+/).filter(w => w.trim());
-    const nextSegment = transcript[wordObj.segmentIndex + 1];
-    const nextStart = nextSegment?.start || Infinity;
-    const segmentDuration = nextStart - segment.start;
-    const wordDuration = segmentDuration / words.length;
+    const wordDuration = (transcript[firstWord.segmentIndex + 1]?.start || (segment.start + 10)) - segment.start;
     
-    // Calculate what the segment start should be to make this word have the desired timestamp
-    const adjustedSegmentStart = newTime - (wordObj.wordIndex * wordDuration);
+    // Adjust segment start to place first word at new time
+    const adjustedSegmentStart = newTime - (firstWord.wordIndex * (wordDuration / words.length));
     
     if (onEditWord) {
-      onEditWord(wordObj.segmentIndex, 'start', adjustedSegmentStart);
+      onEditWord(firstWord.segmentIndex, 'start', adjustedSegmentStart);
     }
     
     setEditingTimestamp(null);
   };
 
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   return (
-    <div className="max-w-4xl mx-auto bg-white/5 rounded-2xl p-6">
-      <p className="text-lg leading-relaxed text-center" style={{ lineHeight: '1.8' }}>
-        {allWords.map((wordObj, idx) => {
-          const isActive = currentTime >= wordObj.start && 
-                          currentTime < (allWords[idx + 1]?.start || Infinity);
+    <div className="max-w-5xl mx-auto bg-white/5 rounded-2xl p-6">
+      <div className="space-y-3">
+        {timeChunks.map((chunk, chunkIdx) => {
+          const isChunkActive = currentTime >= chunk.time && currentTime < (timeChunks[chunkIdx + 1]?.time || Infinity);
           
-          if (editingWord === idx) {
           return (
-          <span key={idx} className="relative inline-block">
-          <Input
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onBlur={() => saveEdit(wordObj)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') saveEdit(wordObj);
-            if (e.key === 'Escape') setEditingWord(null);
-          }}
-          className="inline-block w-24 h-8 bg-cyan-500/20 border-cyan-400 text-white text-base"
-          autoFocus
-          />
-          <AnimatePresence>
-          {clickedWord === idx && (
-            <motion.div
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 5 }}
-              className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900/95 rounded-md px-2 py-1 shadow-lg z-50 flex items-center gap-1.5"
-            >
-              {isTranslating ? (
-                <p className="text-white/60 text-xs">...</p>
-              ) : (
-                <>
-                  <p className="text-white text-xs font-medium">{translation}</p>
+            <div key={chunk.time} className="flex gap-3 items-start">
+              {/* Timestamp Play Button */}
+              <div className="flex-shrink-0 pt-1">
+                {editingTimestamp === chunk.time ? (
+                  <div className="flex items-center gap-1">
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={timestampValue}
+                      onChange={(e) => setTimestampValue(e.target.value)}
+                      onBlur={() => saveChunkTimestamp(chunk.time)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') saveChunkTimestamp(chunk.time);
+                        if (e.key === 'Escape') setEditingTimestamp(null);
+                      }}
+                      className="w-16 h-7 bg-white/10 border-white/20 text-white text-xs px-1.5"
+                      autoFocus
+                    />
+                  </div>
+                ) : (
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onAddWord(wordObj.text);
+                    onClick={() => onSeekTo(chunk.time, false)}
+                    onDoubleClick={() => {
+                      setEditingTimestamp(chunk.time);
+                      setTimestampValue(chunk.time.toFixed(1));
                     }}
-                    className="text-base hover:scale-110 transition-transform"
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-all text-xs font-mono ${
+                      isChunkActive 
+                        ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-400/50' 
+                        : 'bg-white/10 text-white/60 hover:bg-white/20'
+                    }`}
                   >
-                    🎒
+                    <Play className="w-3 h-3" />
+                    {formatTime(chunk.time)}
                   </button>
-                </>
-              )}
-            </motion.div>
-          )}
-          </AnimatePresence>
-          <span> </span>
-          </span>
+                )}
+              </div>
+
+              {/* Words */}
+              <div className="flex-1 text-lg leading-relaxed" style={{ lineHeight: '1.8' }}>
+                {chunk.words.map((wordObj) => {
+                  const idx = wordObj.globalIdx;
+                  const isActive = currentTime >= wordObj.start && 
+                                  currentTime < (allWords[idx + 1]?.start || Infinity);
+                  
+                  if (editingWord === idx) {
+                    return (
+                      <span key={idx} className="relative inline-block">
+                        <Input
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onBlur={() => saveEdit(wordObj)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveEdit(wordObj);
+                            if (e.key === 'Escape') setEditingWord(null);
+                          }}
+                          className="inline-block w-24 h-8 bg-cyan-500/20 border-cyan-400 text-white text-base"
+                          autoFocus
+                        />
+                        <AnimatePresence>
+                          {clickedWord === idx && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 5 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: 5 }}
+                              className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900/95 rounded-md px-2 py-1 shadow-lg z-50 flex items-center gap-1.5"
+                            >
+                              {isTranslating ? (
+                                <p className="text-white/60 text-xs">...</p>
+                              ) : (
+                                <>
+                                  <p className="text-white text-xs font-medium">{translation}</p>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onAddWord(wordObj.text);
+                                    }}
+                                    className="text-base hover:scale-110 transition-transform"
+                                  >
+                                    🎒
+                                  </button>
+                                </>
+                              )}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                        <span> </span>
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <span key={idx} className="relative inline-block">
+                      <motion.span
+                        onClick={(e) => handleWordClick(wordObj, idx, e)}
+                        onDoubleClick={(e) => {
+                          e.stopPropagation();
+                          setEditingWord(idx);
+                          setEditValue(wordObj.text);
+                        }}
+                        animate={{
+                          color: isActive ? '#22d3ee' : '#ffffff',
+                          backgroundColor: isActive ? 'rgba(34, 211, 238, 0.2)' : 'transparent',
+                          scale: isActive ? 1.1 : 1
+                        }}
+                        className="cursor-pointer hover:text-cyan-300 transition-all px-1 rounded"
+                        style={{ display: 'inline-block' }}
+                      >
+                        {wordObj.text}
+                      </motion.span>
+
+                      <AnimatePresence>
+                        {clickedWord === idx && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 5 }}
+                            className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900/95 rounded-md px-2 py-1 shadow-lg z-50 flex items-center gap-1.5"
+                          >
+                            {isTranslating ? (
+                              <p className="text-white/60 text-xs">...</p>
+                            ) : (
+                              <>
+                                <p className="text-white text-xs font-medium">{translation}</p>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onAddWord(wordObj.text);
+                                    setClickedWord(null);
+                                  }}
+                                  className="text-base hover:scale-110 transition-transform"
+                                >
+                                  🎒
+                                </button>
+                              </>
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                      <span> </span>
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
           );
-          }
-
-          return (
-            <span key={idx} className="relative inline-block">
-              <motion.span
-                onClick={(e) => handleWordClick(wordObj, idx, e)}
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  setEditingWord(idx);
-                  setEditValue(wordObj.text);
-                }}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  setEditingTimestamp(idx);
-                  setTimestampValue(wordObj.start.toFixed(2));
-                }}
-                animate={{
-                  color: isActive ? '#22d3ee' : '#ffffff',
-                  backgroundColor: isActive ? 'rgba(34, 211, 238, 0.2)' : 'transparent',
-                  scale: isActive ? 1.1 : 1
-                }}
-                className="cursor-pointer hover:text-cyan-300 transition-all px-1 rounded"
-                style={{ display: 'inline-block' }}
-              >
-                {wordObj.text}
-              </motion.span>
-
-              <AnimatePresence>
-              {clickedWord === idx && (
-              <motion.div
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 5 }}
-              className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900/95 rounded-md px-2 py-1 shadow-lg z-50 flex items-center gap-1.5"
-              >
-              {isTranslating ? (
-                <p className="text-white/60 text-xs">...</p>
-              ) : (
-                <>
-                  <p className="text-white text-xs font-medium">{translation}</p>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onAddWord(wordObj.text);
-                      setClickedWord(null);
-                    }}
-                    className="text-base hover:scale-110 transition-transform"
-                  >
-                    🎒
-                  </button>
-                </>
-              )}
-              </motion.div>
-              )}
-              {editingTimestamp === idx && (
-              <motion.div
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 5 }}
-              className="absolute -bottom-12 left-1/2 -translate-x-1/2 bg-slate-900/95 rounded-md px-2 py-1 shadow-lg z-50 flex items-center gap-1.5"
-              >
-              <Input
-                type="number"
-                step="0.1"
-                value={timestampValue}
-                onChange={(e) => setTimestampValue(e.target.value)}
-                onBlur={() => saveTimestamp(wordObj)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') saveTimestamp(wordObj);
-                  if (e.key === 'Escape') setEditingTimestamp(null);
-                }}
-                className="w-20 h-6 bg-white/10 border-white/20 text-white text-xs px-1.5"
-                autoFocus
-              />
-              <span className="text-white/60 text-xs">sec</span>
-              </motion.div>
-              )}
-              </AnimatePresence>
-              <span> </span>
-              </span>
-              );
         })}
-      </p>
+      </div>
     </div>
   );
 }
