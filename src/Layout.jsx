@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
+import TranslatorWidget from "@/components/TranslatorWidget";
 
 export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
@@ -126,7 +127,8 @@ export default function Layout({ children, currentPageName }) {
           auth: {currentUser ? 'yes' : 'no'}
         </div>
       )}
-      {children}
-    </>
-  );
-}
+          {children}
+          <TranslatorWidget />
+        </>
+      );
+      }
