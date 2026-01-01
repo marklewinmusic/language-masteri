@@ -439,7 +439,7 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
 
     // Initialize YouTube player
     const videoId = video.video_id || video.youtube_video_id || extractYouTubeId(video.video_url);
-    
+
     if (!videoId) {
       toast.error("Could not extract video ID");
       setLoadingTranscript(false);
@@ -455,17 +455,30 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
 
     // Initialize player when API is ready
     const initPlayer = () => {
+      // Clear any existing player
+      const container = document.getElementById('youtube-player');
+      if (container) {
+        container.innerHTML = '';
+      }
+
       const player = new window.YT.Player('youtube-player', {
         videoId: videoId,
-        playerVars: { enablejsapi: 1 },
+        playerVars: { 
+          enablejsapi: 1,
+          autoplay: 0,
+          controls: 1
+        },
         events: {
-          onReady: () => setVideoPlayer(player)
+          onReady: (event) => {
+            setVideoPlayer(event.target);
+          }
         }
       });
     };
 
     if (window.YT && window.YT.Player) {
-      initPlayer();
+      // Small delay to ensure DOM is ready
+      setTimeout(initPlayer, 100);
     } else {
       window.onYouTubeIframeAPIReady = initPlayer;
     }
