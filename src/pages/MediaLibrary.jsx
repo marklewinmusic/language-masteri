@@ -1246,6 +1246,8 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                   currentTime={currentTime}
                   onSeekTo={handleSeekTo}
                   onAddWord={handleAddWordFromTranscript}
+                  onEditWord={saveTranscriptEdit}
+                  canEdit={canEdit}
                 />
               ) : (
                 <div className="max-w-3xl mx-auto bg-white/5 rounded-xl p-8 text-center">

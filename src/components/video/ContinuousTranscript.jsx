@@ -1,16 +1,21 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
+import { Input } from "@/components/ui/input";
 
 export default function ContinuousTranscript({ 
   transcript, 
   currentTime, 
   onSeekTo, 
-  onAddWord 
+  onAddWord,
+  onEditWord,
+  canEdit
 }) {
   const [clickedWord, setClickedWord] = useState(null);
   const [translation, setTranslation] = useState("");
   const [isTranslating, setIsTranslating] = useState(false);
+  const [editingWord, setEditingWord] = useState(null);
+  const [editValue, setEditValue] = useState("");
 
   // Flatten all words from all segments with their timestamps
   const allWords = transcript.flatMap((segment, segIdx) => {
@@ -24,11 +29,19 @@ export default function ContinuousTranscript({
     return words.map((word, wordIdx) => ({
       text: word,
       start: segment.start + (wordIdx * wordDuration),
-      segmentIndex: segIdx
+      segmentIndex: segIdx,
+      wordIndex: wordIdx
     }));
   });
 
-  const handleWordClick = async (wordObj, idx) => {
+  const handleWordClick = async (wordObj, idx, e) => {
+    if (canEdit && e.ctrlKey) {
+      setEditingWord(idx);
+      setEditValue(wordObj.text);
+      setClickedWord(null);
+      return;
+    }
+
     setClickedWord(idx);
     setIsTranslating(true);
     
@@ -44,6 +57,20 @@ export default function ContinuousTranscript({
     setIsTranslating(false);
   };
 
+  const saveEdit = (wordObj) => {
+    if (editValue.trim() && editValue !== wordObj.text) {
+      const segment = transcript[wordObj.segmentIndex];
+      const words = segment.transliteration.split(/\s+/);
+      words[wordObj.wordIndex] = editValue.trim();
+      const newTransliteration = words.join(' ');
+      
+      if (onEditWord) {
+        onEditWord(wordObj.segmentIndex, 'transliteration', newTransliteration);
+      }
+    }
+    setEditingWord(null);
+  };
+
   return (
     <div className="max-w-4xl mx-auto bg-white/5 rounded-2xl p-8">
       <p className="text-2xl leading-relaxed text-center" style={{ lineHeight: '2.5' }}>
@@ -51,10 +78,29 @@ export default function ContinuousTranscript({
           const isActive = currentTime >= wordObj.start && 
                           currentTime < (allWords[idx + 1]?.start || Infinity);
           
+          if (editingWord === idx) {
+            return (
+              <span key={idx} className="relative inline-block">
+                <Input
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onBlur={() => saveEdit(wordObj)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveEdit(wordObj);
+                    if (e.key === 'Escape') setEditingWord(null);
+                  }}
+                  className="inline-block w-24 h-8 bg-cyan-500/20 border-cyan-400 text-white text-base"
+                  autoFocus
+                />
+                <span> </span>
+              </span>
+            );
+          }
+          
           return (
             <span key={idx} className="relative inline-block">
               <motion.span
-                onClick={() => handleWordClick(wordObj, idx)}
+                onClick={(e) => handleWordClick(wordObj, idx, e)}
                 animate={{
                   color: isActive ? '#22d3ee' : '#ffffff',
                   backgroundColor: isActive ? 'rgba(34, 211, 238, 0.2)' : 'transparent',
@@ -72,22 +118,22 @@ export default function ContinuousTranscript({
                     initial={{ scale: 0, y: 10 }}
                     animate={{ scale: 1, y: 0 }}
                     exit={{ scale: 0, y: 10 }}
-                    className="absolute -top-16 left-1/2 -translate-x-1/2 bg-slate-800 border border-white/20 rounded-lg px-3 py-2 shadow-lg z-50 whitespace-nowrap min-w-[120px]"
+                    className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-800 border border-white/20 rounded-lg px-3 py-2 shadow-lg z-50 whitespace-nowrap flex items-center gap-2"
                   >
                     {isTranslating ? (
                       <p className="text-white/60 text-sm">...</p>
                     ) : (
                       <>
-                        <p className="text-white text-sm mb-2">{translation}</p>
+                        <p className="text-white text-sm">{translation}</p>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             onAddWord(wordObj.text);
                             setClickedWord(null);
                           }}
-                          className="w-full bg-gradient-to-r from-amber-500 to-orange-500 rounded px-2 py-1 text-xs text-white"
+                          className="text-xl hover:scale-110 transition-transform"
                         >
-                          🎒 Add to Backpack
+                          🎒
                         </button>
                       </>
                     )}
