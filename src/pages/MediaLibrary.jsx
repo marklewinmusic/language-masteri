@@ -458,8 +458,10 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
       const player = new window.YT.Player('youtube-player', {
         videoId: videoId,
         playerVars: { enablejsapi: 1 },
+        events: {
+          onReady: () => setVideoPlayer(player)
+        }
       });
-      setVideoPlayer(player);
     };
 
     if (window.YT && window.YT.Player) {
