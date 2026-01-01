@@ -14,6 +14,7 @@ import EditableWord from "../components/learning/EditableWord";
 import ClickableTranscriptText from "../components/learning/ClickableTranscriptText";
 import TranslatorWidget from "../components/TranslatorWidget";
 import MediaLibraryHeader from "../components/MediaLibraryHeader";
+import ContinuousTranscript from "../components/video/ContinuousTranscript";
 
 const topics = [
   "Religion / Spirituality",
@@ -1240,158 +1241,12 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                   <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
                 </div>
               ) : transcript.length > 0 ? (
-                <div className="max-w-3xl mx-auto space-y-2">
-                  {transcript.map((segment, idx) => {
-                    const nextStart = transcript[idx + 1]?.start || Infinity;
-                    const isActive = currentTime >= segment.start && currentTime < nextStart;
-
-                    return (
-                    <div key={idx} className={`rounded-xl p-3 transition-all ${isActive ? 'bg-cyan-500/30 ring-2 ring-cyan-400 scale-105' : 'bg-white/5 hover:bg-white/10'}`}>
-                      <div className="flex items-start gap-3">
-                        {canEdit && (
-                          <button
-                            onClick={() => toggleApproval(idx)}
-                            className={`flex-shrink-0 w-6 h-6 rounded flex items-center justify-center border-2 transition-all ${
-                              segment.approved 
-                                ? 'bg-green-500 border-green-500' 
-                                : 'bg-white/5 border-white/30 hover:border-white/50'
-                            }`}
-                          >
-                            {segment.approved && (
-                              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
-                          </button>
-                        )}
-                        <div className="flex items-center gap-1">
-                          {editingSegment === idx ? (
-                            <Input
-                              type="number"
-                              value={segment.start}
-                              onChange={(e) => {
-                                const updated = [...transcript];
-                                updated[idx] = { ...segment, start: parseFloat(e.target.value) };
-                                setTranscript(updated);
-                              }}
-                              onBlur={() => {
-                                saveTranscriptEdit(idx, 'start', segment.start);
-                                setEditingSegment(null);
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  e.preventDefault();
-                                  saveTranscriptEdit(idx, 'start', segment.start);
-                                  setEditingSegment(null);
-                                }
-                                if (e.key === 'Escape') {
-                                  setEditingSegment(null);
-                                }
-                              }}
-                              className="flex-shrink-0 w-16 h-8 text-xs bg-cyan-500/30 border-cyan-400 text-cyan-400 rounded-lg px-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                              onClick={(e) => e.stopPropagation()}
-                              autoFocus
-                            />
-                          ) : (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSeekTo(segment.start);
-                              }}
-                              className="flex-shrink-0 w-8 h-8 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 flex items-center justify-center text-xs text-cyan-400 font-mono transition-all cursor-pointer"
-                            >
-                              {Math.floor(segment.start / 60)}:{String(Math.floor(segment.start % 60)).padStart(2, '0')}
-                            </button>
-                          )}
-                          {canEdit && (
-                            <button
-                              onClick={() => setEditingSegment(editingSegment === idx ? null : idx)}
-                              className="flex-shrink-0 w-6 h-6 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all"
-                              style={{ transform: 'scaleX(-1)' }}
-                            >
-                              <span className="text-base">✏️</span>
-                            </button>
-                          )}
-                          {canDelete && (
-                            <button
-                              onClick={() => deleteSegment(idx)}
-                              className="flex-shrink-0 w-6 h-6 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all"
-                            >
-                              <span className="text-base" style={{ filter: 'grayscale(100%) brightness(200%)' }}>🗑️</span>
-                            </button>
-                          )}
-                        </div>
-                        <div className="flex-1 text-center space-y-0.5">
-                          {/* Transliteration */}
-                          {segment.transliteration && (
-                            <div className="text-cyan-400 font-medium text-lg flex items-center justify-center gap-2">
-                              {canEdit && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEditingWords(editingWords === idx ? null : idx);
-                                  }}
-                                  className={`flex-shrink-0 w-5 h-5 rounded flex items-center justify-center hover:bg-white/10 transition-all ${editingWords === idx ? 'bg-cyan-500/30 ring-2 ring-cyan-400' : ''}`}
-                                  style={{ transform: 'scaleX(-1)' }}
-                                >
-                                  <span className="text-sm">✏️</span>
-                                </button>
-                              )}
-                              <div className={editingWords === idx ? 'ring-2 ring-cyan-400 rounded px-1' : ''}>
-                                <ClickableTranscriptText
-                                  text={segment.transliteration}
-                                  onSave={(newText) => saveTranscriptEdit(idx, 'transliteration', newText)}
-                                  onAddWord={handleAddWordFromTranscript}
-                                  className="text-cyan-400 font-medium text-lg"
-                                  editable={editingWords === idx}
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Translation */}
-                          {segment.english && (
-                            <div className={`text-white/70 text-sm ${editingWords === idx ? 'ring-2 ring-cyan-400 rounded px-1' : ''}`}>
-                              <ClickableTranscriptText
-                                text={segment.english}
-                                onSave={(newText) => saveTranscriptEdit(idx, 'english', newText)}
-                                onAddWord={handleAddWordFromTranscript}
-                                className="text-white/70 text-sm"
-                                editable={editingWords === idx}
-                              />
-                            </div>
-                          )}
-
-                          {/* Hebrew */}
-                          {segment.hebrew && (
-                            <div className={`text-white/90 ${editingWords === idx ? 'ring-2 ring-cyan-400 rounded px-1' : ''}`} dir="rtl">
-                              <ClickableTranscriptText
-                                text={segment.hebrew}
-                                language="he"
-                                onSave={(newText) => saveTranscriptEdit(idx, 'hebrew', newText)}
-                                onAddWord={handleAddWordFromTranscript}
-                                className="text-white/90"
-                                editable={editingWords === idx}
-                              />
-                            </div>
-                          )}
-                          
-                          {/* Fallback to text if no specific fields */}
-                          {!segment.english && !segment.transliteration && !segment.hebrew && segment.text && (
-                            <div className="text-white">
-                              <EditableWord
-                                text={segment.text}
-                                onSave={(newText) => saveTranscriptEdit(idx, 'text', newText)}
-                                className="text-white"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      </div>
-                      );
-                      })}
-                      </div>
+                <ContinuousTranscript
+                  transcript={transcript}
+                  currentTime={currentTime}
+                  onSeekTo={handleSeekTo}
+                  onAddWord={handleAddWordFromTranscript}
+                />
               ) : (
                 <div className="max-w-3xl mx-auto bg-white/5 rounded-xl p-8 text-center">
                   <p className="text-white/60">No transcript available for this video</p>
