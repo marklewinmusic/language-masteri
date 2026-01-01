@@ -619,10 +619,17 @@ export default function Flashcards() {
                                   e.stopPropagation();
                                   if (!isSaved) {
                                     const currentSaved = currentWord.saved_sentences || [];
+                                    const updatedSentences = [...currentSaved, sentence];
                                     await updateWordMutation.mutateAsync({
                                       id: currentWord.id,
-                                      data: { saved_sentences: [...currentSaved, sentence] }
+                                      data: { saved_sentences: updatedSentences }
                                     });
+                                    // Update local session state
+                                    setSessionWords(prev => prev.map(w => 
+                                      w.id === currentWord.id 
+                                        ? { ...w, saved_sentences: updatedSentences }
+                                        : w
+                                    ));
                                     toast.success("Sentence approved!");
                                   }
                                 }}
