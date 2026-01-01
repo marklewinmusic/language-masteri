@@ -1271,7 +1271,16 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                         <div className="flex-1 text-center space-y-0.5">
                           {/* Transliteration */}
                           {segment.transliteration && (
-                            <div className="text-cyan-400 font-medium text-lg">
+                            <div className="text-cyan-400 font-medium text-lg flex items-center justify-center gap-2">
+                              {canEdit && (
+                                <button
+                                  onClick={() => setEditingSegment(editingSegment === idx ? null : idx)}
+                                  className="flex-shrink-0 w-5 h-5 rounded flex items-center justify-center hover:bg-white/10 transition-all"
+                                  style={{ transform: 'scaleX(-1)' }}
+                                >
+                                  <span className="text-sm">✏️</span>
+                                </button>
+                              )}
                               <EditableWord
                                 text={segment.transliteration}
                                 onSave={(newText) => saveTranscriptEdit(idx, 'transliteration', newText)}
