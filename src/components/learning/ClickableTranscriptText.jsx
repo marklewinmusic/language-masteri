@@ -64,25 +64,27 @@ export default function ClickableTranscriptText({ text, onAddWord, editable, onS
                     const cleanWord = word.replace(/[.,!?;:]/g, '').trim();
                     onAddWord(cleanWord);
                     setAddedWord(idx);
-                    setClickedWord(null);
-                    setTimeout(() => setAddedWord(null), 1500);
+                    setTimeout(() => {
+                      setClickedWord(null);
+                      setAddedWord(null);
+                    }, 1000);
                   }}
-                  className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg px-2 py-1 shadow-lg z-10 flex items-center gap-1 text-sm whitespace-nowrap"
+                  className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg px-2 py-1 shadow-lg z-10 flex items-center gap-1 text-sm whitespace-nowrap"
                 >
-                  <span className="text-lg relative">
-                    🎒
-                    {addedWord === idx && (
-                      <motion.span
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1.2 }}
-                        exit={{ scale: 0 }}
-                        className="absolute inset-0 flex items-center justify-center text-2xl"
-                      >
-                        ✓
-                      </motion.span>
-                    )}
-                  </span>
-                  Add
+                  {addedWord === idx ? (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1.3 }}
+                      className="text-2xl"
+                    >
+                      ✓
+                    </motion.span>
+                  ) : (
+                    <>
+                      <span className="text-lg">🎒</span>
+                      Add
+                    </>
+                  )}
                 </motion.button>
               )}
             </AnimatePresence>
