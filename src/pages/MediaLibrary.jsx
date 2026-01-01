@@ -172,6 +172,18 @@ export default function MediaLibrary() {
     });
   };
 
+  const deleteSegment = async (segmentIdx) => {
+    if (!selectedVideo || !confirm("Delete this segment?")) return;
+    const updatedTranscript = transcript.filter((_, idx) => idx !== segmentIdx);
+    setTranscript(updatedTranscript);
+
+    await updateVideoMutation.mutateAsync({
+      id: selectedVideo.id,
+      data: { processed_transcript: updatedTranscript }
+    });
+    toast.success("Segment deleted");
+  };
+
   const deleteVideoMutation = useMutation({
     mutationFn: (id) => base44.entities.MediaLibrary.delete(id),
     onSuccess: () => {
@@ -1200,6 +1212,14 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                               </svg>
                             )}
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            onClick={() => deleteSegment(idx)}
+                            className="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 hover:border-red-500/50 transition-all"
+                          >
+                            <Trash2 className="w-3 h-3 text-red-400" />
                           </button>
                         )}
                         <div className="flex items-center gap-1">
