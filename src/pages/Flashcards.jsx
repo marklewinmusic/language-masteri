@@ -669,10 +669,65 @@ export default function Flashcards() {
                     })}
                     {exampleSentences.length > 0 && (
                       <Button
-                        onClick={(e) => {
+                        onClick={async (e) => {
                           e.stopPropagation();
-                          setExampleSentences([]);
-                          generateSentences(currentWord);
+                          // Keep only saved sentences
+                          const savedSentences = exampleSentences.filter(sentence =>
+                            (currentWord.saved_sentences || []).some(
+                              s => s.hebrew === sentence.hebrew && s.english === sentence.english
+                            )
+                          );
+                          setExampleSentences(savedSentences);
+                          
+                          // Generate new sentences
+                          setGeneratingSentences(true);
+                          try {
+                            const result = await base44.integrations.Core.InvokeLLM({
+                              prompt: `Generate 3 simple example sentences in Hebrew using the word "${currentWord.word}" (${currentWord.translation}).
+
+Each sentence should:
+- Be short (5-10 words)
+- Use common vocabulary
+- Show natural usage
+- Include the target word
+
+Return JSON with sentences array, each containing:
+- hebrew: the Hebrew sentence WITH nikud vowel points (e.g., הַיּוֹם קָפוּא בַּחוּץ)
+- transliteration: ENGLISH/LATIN alphabet phonetic spelling ONLY - NO HEBREW CHARACTERS (e.g., "Hayom kafu bachuts")
+- english: English translation
+
+CRITICAL REQUIREMENTS: 
+1. hebrew field: Hebrew script with nikud diacritics (ְ ֱ ֲ ֳ ִ ֵ ֶ ַ ָ ֹ ֺ ֻ ּ ֽ)
+2. transliteration field: MUST be Latin/English letters (a-z, A-Z) ONLY - absolutely NO Hebrew characters allowed
+3. english field: English translation
+
+Example:
+- hebrew: "הַיּוֹם קָפוּא בַּחוּץ."
+- transliteration: "Hayom kafu bachuts."
+- english: "Today it is frozen outside."`,
+                              response_json_schema: {
+                                type: "object",
+                                properties: {
+                                  sentences: {
+                                    type: "array",
+                                    items: {
+                                      type: "object",
+                                      properties: {
+                                        hebrew: { type: "string" },
+                                        transliteration: { type: "string" },
+                                        english: { type: "string" }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            });
+                            // Add new sentences to saved ones
+                            setExampleSentences([...savedSentences, ...(result.sentences || [])]);
+                          } catch (e) {
+                            console.error("Failed to generate sentences", e);
+                          }
+                          setGeneratingSentences(false);
                         }}
                         variant="outline"
                         className="w-full bg-white/5 border-white/20 text-white hover:bg-white/10"
