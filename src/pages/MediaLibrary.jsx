@@ -48,6 +48,7 @@ export default function MediaLibrary() {
   const [showRecommended, setShowRecommended] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [editingSegment, setEditingSegment] = useState(null);
+  const [editingWords, setEditingWords] = useState(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -1274,8 +1275,8 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                             <div className="text-cyan-400 font-medium text-lg flex items-center justify-center gap-2">
                               {canEdit && (
                                 <button
-                                  onClick={() => setEditingSegment(editingSegment === idx ? null : idx)}
-                                  className="flex-shrink-0 w-5 h-5 rounded flex items-center justify-center hover:bg-white/10 transition-all"
+                                  onClick={() => setEditingWords(editingWords === idx ? null : idx)}
+                                  className={`flex-shrink-0 w-5 h-5 rounded flex items-center justify-center hover:bg-white/10 transition-all ${editingWords === idx ? 'bg-cyan-500/30' : ''}`}
                                   style={{ transform: 'scaleX(-1)' }}
                                 >
                                   <span className="text-sm">✏️</span>
@@ -1285,10 +1286,11 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                                 text={segment.transliteration}
                                 onSave={(newText) => saveTranscriptEdit(idx, 'transliteration', newText)}
                                 className="text-cyan-400 font-medium text-lg"
+                                editable={editingWords === idx}
                               />
                             </div>
                           )}
-                          
+
                           {/* Translation */}
                           {segment.english && (
                             <div className="text-white/70 text-sm">
@@ -1296,10 +1298,11 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                                 text={segment.english}
                                 onSave={(newText) => saveTranscriptEdit(idx, 'english', newText)}
                                 className="text-white/70 text-sm"
+                                editable={editingWords === idx}
                               />
                             </div>
                           )}
-                          
+
                           {/* Hebrew */}
                           {segment.hebrew && (
                             <div className="text-white/90" dir="rtl">
@@ -1308,6 +1311,7 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                                 language="he"
                                 onSave={(newText) => saveTranscriptEdit(idx, 'hebrew', newText)}
                                 className="text-white/90"
+                                editable={editingWords === idx}
                               />
                             </div>
                           )}
