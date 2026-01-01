@@ -458,56 +458,77 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
       return;
     }
 
+    setLoadingTranscript(true);
     toast.info("Fetching YouTube captions...");
     
     try {
       // Fetch YouTube captions
-      const result = await base44.functions.invoke('youtube-captions-download', { videoId });
+      const result = await base44.functions.invoke('youtubeTranscript', { videoId });
       
       if (!result.data?.transcript || result.data.transcript.length === 0) {
         toast.error("No captions available on YouTube");
+        setLoadingTranscript(false);
         return;
       }
 
       const rawTranscript = result.data.transcript;
-      toast.info("Processing transcript with AI...");
+      toast.info(`Processing ${rawTranscript.length} segments with AI...`);
 
-      // Process each segment through LLM
+      // Process in batches to avoid overwhelming the LLM
       const processedSegments = [];
-      for (const segment of rawTranscript) {
+      const batchSize = 5;
+      
+      for (let i = 0; i < rawTranscript.length; i += batchSize) {
+        const batch = rawTranscript.slice(i, i + batchSize);
+        const batchTexts = batch.map(s => s.text).join(' ');
+        
         try {
           const llmResult = await base44.integrations.Core.InvokeLLM({
-            prompt: `Process this Hebrew text for a language learning app:
+            prompt: `Process these Hebrew captions for a language learning app. Keep the same number of segments.
 
-Input text: "${segment.text}"
-Timestamp: ${segment.start} seconds
+Segments: ${batch.map((s, idx) => `[${idx + 1}] "${s.text}"`).join('\n')}
 
-Return JSON with:
-- hebrew: The text with proper Hebrew script and nikud (vowel points)
-- transliteration: Latin alphabet phonetic transliteration
+For each segment, return:
+- hebrew: Proper Hebrew script with nikud (vowel points)
+- transliteration: Latin alphabet phonetic
 - english: English translation
-- start: use the timestamp ${segment.start}`,
+
+Return a JSON array with ${batch.length} objects.`,
             response_json_schema: {
               type: "object",
               properties: {
-                hebrew: { type: "string" },
-                transliteration: { type: "string" },
-                english: { type: "string" },
-                start: { type: "number" }
+                segments: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      hebrew: { type: "string" },
+                      transliteration: { type: "string" },
+                      english: { type: "string" }
+                    }
+                  }
+                }
               }
             }
           });
 
-          processedSegments.push({
-            text: segment.text,
-            hebrew: llmResult.hebrew,
-            transliteration: llmResult.transliteration,
-            english: llmResult.english,
-            start: segment.start
+          // Merge processed data with timestamps
+          batch.forEach((segment, idx) => {
+            const processed = llmResult.segments?.[idx] || {};
+            processedSegments.push({
+              text: segment.text,
+              hebrew: processed.hebrew || segment.text,
+              transliteration: processed.transliteration || segment.text,
+              english: processed.english || '',
+              start: segment.start
+            });
           });
+
+          toast.info(`Processed ${Math.min(i + batchSize, rawTranscript.length)} / ${rawTranscript.length} segments...`);
         } catch (e) {
-          // If processing fails, keep original
-          processedSegments.push(segment);
+          console.error('Batch processing error:', e);
+          // Keep originals for this batch
+          batch.forEach(segment => processedSegments.push(segment));
         }
       }
 
@@ -518,10 +539,12 @@ Return JSON with:
       });
 
       setTranscript(processedSegments);
+      setLoadingTranscript(false);
       toast.success("Transcript generated and saved!");
     } catch (e) {
-      toast.error("Failed to generate transcript");
+      toast.error(e.response?.data?.error || "Failed to generate transcript");
       console.error(e);
+      setLoadingTranscript(false);
     }
   };
 
@@ -585,17 +608,18 @@ Return JSON with:
       return;
     }
 
-    // Otherwise try to fetch from YouTube
+    // Otherwise try to fetch raw transcript from YouTube
     try {
-      const result = await base44.functions.invoke('youtube-captions-download', { videoId });
+      const result = await base44.functions.invoke('youtubeTranscript', { videoId });
       
       if (result.data?.transcript) {
+        // Show raw transcript (user can generate full version with button)
         setTranscript(result.data.transcript);
       } else {
         toast.error("No transcript available");
       }
     } catch (e) {
-      toast.error("Failed to load transcript");
+      // Silently fail - user can click generate button
     }
     setLoadingTranscript(false);
   };
