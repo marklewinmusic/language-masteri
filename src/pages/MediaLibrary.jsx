@@ -524,6 +524,26 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
     }
   };
 
+  // Space bar to play/pause video
+  useEffect(() => {
+    const handleKeyPress = async (e) => {
+      if (e.code === 'Space' && videoPlayer && !e.target.matches('input, textarea')) {
+        e.preventDefault();
+        const playerState = await videoPlayer.getPlayerState?.();
+        if (playerState === 1) {
+          videoPlayer.pauseVideo();
+        } else {
+          videoPlayer.playVideo();
+        }
+      }
+    };
+
+    if (showTranscript) {
+      window.addEventListener('keydown', handleKeyPress);
+      return () => window.removeEventListener('keydown', handleKeyPress);
+    }
+  }, [videoPlayer, showTranscript]);
+
   const getThumbnailUrl = (video) => {
     // Try thumbnail_url first
     if (video.thumbnail_url && video.thumbnail_url.trim()) {
