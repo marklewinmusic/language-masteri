@@ -15,68 +15,71 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'videoId is required' }, { status: 400 });
     }
 
-    // Fetch transcript using simple HTTP request to YouTube's timedtext API
     try {
-      const url = `https://www.youtube.com/watch?v=${videoId}`;
-      const pageResponse = await fetch(url);
-      const pageHtml = await pageResponse.text();
+      // Use Innertube API (unofficial but reliable)
+      const response = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      });
       
-      // Extract caption track URL from page HTML
-      const captionsRegex = /"captionTracks":\s*(\[.*?\])/;
-      const match = pageHtml.match(captionsRegex);
+      const html = await response.text();
       
+      // Extract ytInitialPlayerResponse
+      const match = html.match(/ytInitialPlayerResponse\s*=\s*({.+?});/);
       if (!match) {
-        return Response.json({ 
-          error: 'No captions available for this video'
-        }, { status: 404 });
+        return Response.json({ error: 'Could not extract player data' }, { status: 404 });
       }
       
-      const captionTracks = JSON.parse(match[1]);
+      const playerResponse = JSON.parse(match[1]);
+      const captions = playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
       
-      // Find English or first available track
-      let track = captionTracks.find(t => t.languageCode === 'en') || captionTracks[0];
-      
-      if (!track || !track.baseUrl) {
-        return Response.json({ 
-          error: 'No caption URL found'
-        }, { status: 404 });
+      if (!captions || captions.length === 0) {
+        return Response.json({ error: 'No captions available' }, { status: 404 });
       }
       
-      // Fetch the actual captions
-      const captionsResponse = await fetch(track.baseUrl);
-      const captionsXml = await captionsResponse.text();
+      // Get first available caption track (prefer Hebrew, then English, then any)
+      const track = captions.find(t => t.languageCode === 'he') || 
+                    captions.find(t => t.languageCode === 'en') || 
+                    captions[0];
       
-      // Parse XML to extract text and timestamps
-      const textRegex = /<text start="([^"]+)" dur="([^"]+)"[^>]*>([^<]*)<\/text>/g;
+      // Fetch caption content
+      const captionResponse = await fetch(track.baseUrl);
+      const captionXml = await captionResponse.text();
+      
+      // Parse captions
       const transcript = [];
-      let match2;
+      const textMatches = captionXml.matchAll(/<text start="([^"]+)" dur="([^"]+)"[^>]*>(.*?)<\/text>/gs);
       
-      while ((match2 = textRegex.exec(captionsXml)) !== null) {
-        const start = parseFloat(match2[1]);
-        const duration = parseFloat(match2[2]);
-        let text = match2[3];
+      for (const match of textMatches) {
+        const start = parseFloat(match[1]);
+        const duration = parseFloat(match[2]);
+        let text = match[3];
         
         // Decode HTML entities
-        text = text.replace(/&amp;/g, '&')
-                   .replace(/&lt;/g, '<')
-                   .replace(/&gt;/g, '>')
-                   .replace(/&quot;/g, '"')
-                   .replace(/&#39;/g, "'");
+        text = text
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/<[^>]+>/g, '') // Remove any HTML tags
+          .trim();
         
-        transcript.push({
-          text: text.trim(),
-          start: start,
-          duration: duration
-        });
+        if (text) {
+          transcript.push({ text, start, duration });
+        }
       }
       
       if (transcript.length === 0) {
-        return Response.json({ 
-          error: 'Could not parse captions'
-        }, { status: 404 });
+        return Response.json({ error: 'Could not parse captions' }, { status: 404 });
       }
 
-      return Response.json({ transcript, source: 'youtube-auto-captions' });
+      return Response.json({ 
+        transcript, 
+        language: track.languageCode,
+        source: 'youtube-captions' 
+      });
       
     } catch (error) {
       console.error('YouTube transcript error:', error);
