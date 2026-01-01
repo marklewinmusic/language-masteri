@@ -546,7 +546,7 @@ export default function Flashcards() {
 
             {/* Example sentences (state 1+) */}
             {revealState >= 1 && (
-              <div className="w-full max-w-md mx-auto mt-6 space-y-3" onClick={(e) => e.stopPropagation()}>
+              <div className="w-full max-w-md mx-auto mt-4 mb-16 space-y-2" onClick={(e) => e.stopPropagation()}>
                 {generatingSentences ? (
                   <div className="text-center text-white/60 py-4">
                     <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
@@ -562,7 +562,7 @@ export default function Flashcards() {
                       return (
                         <div 
                           key={idx} 
-                          className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-4 cursor-pointer"
+                          className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-2 cursor-pointer"
                           onClick={(e) => {
                             e.stopPropagation();
                             setRevealedSentences(prev => 
@@ -572,8 +572,8 @@ export default function Flashcards() {
                             );
                           }}
                         >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex-1 space-y-0.5 text-center" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 space-y-0 text-center" onClick={(e) => e.stopPropagation()}>
                               <div dir="ltr">
                                 <EditableWord
                                   text={sentence.english}
@@ -613,7 +613,7 @@ export default function Flashcards() {
                                 </>
                               )}
                             </div>
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-1">
                               <button
                                 onClick={async (e) => {
                                   e.stopPropagation();
