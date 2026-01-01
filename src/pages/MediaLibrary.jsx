@@ -1215,8 +1215,12 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                 </div>
               ) : transcript.length > 0 ? (
                 <div className="max-w-3xl mx-auto space-y-2">
-                  {transcript.map((segment, idx) => (
-                    <div key={idx} className="bg-white/5 rounded-xl p-3 hover:bg-white/10 transition-all">
+                  {transcript.map((segment, idx) => {
+                    const nextStart = transcript[idx + 1]?.start || Infinity;
+                    const isActive = currentTime >= segment.start && currentTime < nextStart;
+
+                    return (
+                    <div key={idx} className={`rounded-xl p-3 transition-all ${isActive ? 'bg-cyan-500/30 ring-2 ring-cyan-400 scale-105' : 'bg-white/5 hover:bg-white/10'}`}>
                       <div className="flex items-start gap-3">
                         {canEdit && (
                           <button
