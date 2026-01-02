@@ -318,11 +318,9 @@ Make them useful for a Hebrew learner writing a journal.`,
                   );
                 })}
               </div>
-              {usedWords.length === 0 && text.length > 50 && (
-                <p className="text-amber-400 text-xs mt-2">
-                  💭 Try using at least one of today's words ☺️
-                </p>
-              )}
+              <p className={`text-xs mt-3 ${usedWords.length >= 10 ? 'text-green-400' : 'text-amber-400'}`}>
+                {usedWords.length}/10 words used {usedWords.length >= 10 ? '✓' : ''}
+              </p>
             </div>
           )}
 
