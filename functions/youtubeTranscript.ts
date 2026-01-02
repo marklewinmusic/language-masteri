@@ -95,37 +95,56 @@ async function transcribeAudio(videoId) {
     throw new Error('OPENAI_API_KEY not configured');
   }
 
-  // Download audio using yt-dlp
-  console.log('Downloading audio...');
-  const audioPath = `/tmp/${videoId}.mp3`;
+  console.log('Fetching audio stream from YouTube...');
   
-  const dlpProcess = new Deno.Command('yt-dlp', {
-    args: [
-      '-x',
-      '--audio-format', 'mp3',
-      '--audio-quality', '5',
-      '-o', audioPath,
-      `https://www.youtube.com/watch?v=${videoId}`
-    ],
-    stdout: 'piped',
-    stderr: 'piped'
-  });
-
-  const dlpOutput = await dlpProcess.output();
+  // Get video info to find audio URL
+  const infoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+  const pageResponse = await fetch(infoUrl);
+  const html = await pageResponse.text();
   
-  if (!dlpOutput.success) {
-    const error = new TextDecoder().decode(dlpOutput.stderr);
-    throw new Error(`yt-dlp failed: ${error}`);
+  // Extract player response
+  const match = html.match(/ytInitialPlayerResponse\s*=\s*({.+?})\s*;/);
+  if (!match) {
+    throw new Error('Could not extract video info');
+  }
+  
+  const playerResponse = JSON.parse(match[1]);
+  const streamingData = playerResponse?.streamingData;
+  
+  if (!streamingData) {
+    throw new Error('No streaming data available');
+  }
+  
+  // Find audio-only format (lower quality for faster processing)
+  const formats = [...(streamingData.formats || []), ...(streamingData.adaptiveFormats || [])];
+  const audioFormat = formats.find(f => 
+    f.mimeType?.includes('audio') && 
+    (f.audioQuality === 'AUDIO_QUALITY_LOW' || f.audioQuality === 'AUDIO_QUALITY_MEDIUM')
+  ) || formats.find(f => f.mimeType?.includes('audio'));
+  
+  if (!audioFormat || !audioFormat.url) {
+    throw new Error('No audio stream found');
   }
 
-  console.log('Audio downloaded, transcribing with Whisper...');
-
-  // Read audio file
-  const audioData = await Deno.readFile(audioPath);
+  console.log('Downloading audio...');
+  const audioResponse = await fetch(audioFormat.url);
   
+  if (!audioResponse.ok) {
+    throw new Error('Failed to download audio');
+  }
+  
+  const audioBlob = await audioResponse.blob();
+  
+  // Whisper has a 25MB limit, check size
+  if (audioBlob.size > 25 * 1024 * 1024) {
+    throw new Error('Audio file too large (>25MB). Try a shorter video or use manual transcript paste.');
+  }
+
+  console.log(`Audio downloaded (${(audioBlob.size / 1024 / 1024).toFixed(2)}MB), transcribing...`);
+
   // Create form data for Whisper API
   const formData = new FormData();
-  formData.append('file', new Blob([audioData], { type: 'audio/mp3' }), `${videoId}.mp3`);
+  formData.append('file', audioBlob, `${videoId}.webm`);
   formData.append('model', 'whisper-1');
   formData.append('response_format', 'verbose_json');
   formData.append('timestamp_granularities[]', 'segment');
@@ -145,13 +164,6 @@ async function transcribeAudio(videoId) {
   }
 
   const whisperResult = await whisperResponse.json();
-
-  // Clean up temp file
-  try {
-    await Deno.remove(audioPath);
-  } catch (e) {
-    console.log('Failed to remove temp file:', e);
-  }
 
   // Format transcript
   const transcript = whisperResult.segments?.map(seg => ({
