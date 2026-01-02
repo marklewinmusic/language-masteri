@@ -1,43 +1,61 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
+  const startTime = Date.now();
+  console.log('\n=== NEW TRANSCRIPT REQUEST ===');
+  
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     
     if (!user) {
+      console.error('❌ Auth failed - no user');
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    console.log(`✓ User authenticated: ${user.email}`);
 
     const { videoId } = await req.json();
     
     if (!videoId) {
+      console.error('❌ Missing videoId');
       return Response.json({ error: 'videoId is required' }, { status: 400 });
     }
 
-    console.log('Processing video:', videoId);
+    console.log(`📹 Processing video: ${videoId}`);
+    console.log(`🔗 URL: https://youtube.com/watch?v=${videoId}`);
 
     // Step 1: Try to fetch YouTube captions
+    console.log('\n--- STEP 1: Fetching YouTube Captions ---');
     try {
       const captionsResult = await fetchYouTubeCaptions(videoId);
       if (captionsResult && captionsResult.transcript.length > 0) {
-        console.log('Found YouTube captions');
-        return Response.json(captionsResult);
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+        console.log(`✓ SUCCESS: Found ${captionsResult.transcript.length} caption segments in ${elapsed}s`);
+        return Response.json({
+          ...captionsResult,
+          processingTime: elapsed,
+          steps: ['captions_fetched', 'complete']
+        });
       }
     } catch (e) {
-      console.log('YouTube captions failed:', e.message);
+      console.log(`⚠️  YouTube captions unavailable: ${e.message}`);
     }
 
     // Step 2: Fallback to audio transcription with Whisper
-    console.log('Attempting audio transcription...');
-    const transcriptionResult = await transcribeAudio(videoId);
+    console.log('\n--- STEP 2: Audio Transcription Fallback ---');
+    const transcriptionResult = await transcribeAudio(videoId, startTime);
     return Response.json(transcriptionResult);
 
   } catch (error) {
-    console.error('Error:', error);
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+    console.error(`\n❌ FATAL ERROR after ${elapsed}s:`);
+    console.error(`Message: ${error.message}`);
+    console.error(`Stack: ${error.stack}`);
     return Response.json({ 
       error: error.message || 'Failed to process video',
-      details: error.toString()
+      details: error.stack,
+      step: 'fatal_error',
+      processingTime: elapsed
     }, { status: 500 });
   }
 });
