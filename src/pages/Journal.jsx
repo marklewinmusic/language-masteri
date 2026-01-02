@@ -369,68 +369,68 @@ Make them useful for a Hebrew learner writing a journal.`,
                   const isUsed = usedWords.includes(word.id);
                   const isEditing = editingWord === word.id;
                   
-                  if (isEditing) {
-                    return (
-                      <div
-                        key={word.id}
-                        className="px-2 py-1.5 rounded-full bg-cyan-100 border-2 border-cyan-300 flex flex-col items-center"
-                      >
-                        <input
-                          autoFocus
-                          value={editValues.phonetic ?? word.phonetic}
-                          onChange={(e) => setEditValues({ ...editValues, phonetic: e.target.value })}
-                          className="w-16 bg-white border border-cyan-300 text-cyan-700 text-[10px] font-medium px-1 rounded mb-0.5 text-center"
-                          placeholder="Word"
-                        />
-                        <input
-                          value={editValues.translation ?? word.translation}
-                          onChange={(e) => setEditValues({ ...editValues, translation: e.target.value })}
-                          className="w-16 bg-white border border-cyan-300 text-slate-700 text-[9px] px-1 rounded mb-0.5 text-center"
-                          placeholder="Meaning"
-                        />
-                        <div className="flex gap-1">
-                          <button
-                            onClick={() => {
-                              updateWordMutation.mutate({ id: word.id, data: editValues });
-                            }}
-                            className="text-[9px] bg-green-500 text-white px-1.5 py-0.5 rounded-full hover:bg-green-600"
-                          >
-                            ✓
-                          </button>
-                          <button
-                            onClick={() => {
-                              setEditingWord(null);
-                              setEditValues({});
-                            }}
-                            className="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded-full hover:bg-red-600"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  }
-                  
                   return (
                     <div
                       key={word.id}
                       onClick={() => {
-                        setEditingWord(word.id);
-                        setEditValues({
-                          phonetic: word.phonetic,
-                          translation: word.translation,
-                          word: word.word
-                        });
+                        if (isEditing) {
+                          setEditingWord(null);
+                          setEditValues({});
+                        } else {
+                          setEditingWord(word.id);
+                          setEditValues({
+                            phonetic: word.phonetic,
+                            translation: word.translation,
+                            word: word.word
+                          });
+                        }
                       }}
-                      className={`px-3 py-1.5 rounded-full transition-all cursor-pointer flex flex-col items-center min-w-[60px] ${
+                      className={`w-16 h-16 rounded-full transition-all cursor-pointer flex flex-col items-center justify-center relative ${
                         isUsed 
                           ? "bg-green-100 border-2 border-green-400" 
                           : "bg-slate-100 border-2 border-slate-300 hover:bg-slate-200"
                       }`}
                     >
-                      {isUsed && <CheckCircle className="w-3 h-3 text-green-600 mb-0.5" />}
-                      <span className="text-cyan-700 text-[10px] font-bold">{word.phonetic}</span>
-                      <span className="text-slate-600 text-[8px]">{word.translation}</span>
+                      {isUsed && <CheckCircle className="w-3 h-3 text-green-600 absolute top-1 right-1" />}
+                      
+                      {isEditing ? (
+                        <div className="flex flex-col items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            autoFocus
+                            value={editValues.phonetic ?? word.phonetic}
+                            onChange={(e) => setEditValues({ ...editValues, phonetic: e.target.value })}
+                            className="w-14 bg-white border border-cyan-300 text-cyan-700 text-[10px] font-medium px-1 py-0.5 rounded text-center"
+                            placeholder="Word"
+                            onBlur={() => {
+                              updateWordMutation.mutate({ id: word.id, data: editValues });
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                updateWordMutation.mutate({ id: word.id, data: editValues });
+                              }
+                            }}
+                          />
+                          <input
+                            value={editValues.translation ?? word.translation}
+                            onChange={(e) => setEditValues({ ...editValues, translation: e.target.value })}
+                            className="w-14 bg-white border border-cyan-300 text-slate-700 text-[9px] px-1 py-0.5 rounded text-center"
+                            placeholder="Meaning"
+                            onBlur={() => {
+                              updateWordMutation.mutate({ id: word.id, data: editValues });
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                updateWordMutation.mutate({ id: word.id, data: editValues });
+                              }
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center">
+                          <span className="text-cyan-700 text-xs font-bold">{word.phonetic}</span>
+                          {isEditing && <span className="text-slate-600 text-[9px] mt-0.5">{word.translation}</span>}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
