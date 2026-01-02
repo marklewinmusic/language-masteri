@@ -169,14 +169,21 @@ Return just the question.`,
     }
   }, [text]);
 
+  const wordCount = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+
   const handleSave = () => {
     if (!text.trim()) {
       toast.error("Please write something");
       return;
     }
 
-    if (usedWords.length < suggestedVocab.length) {
-      toast.error(`Use all ${suggestedVocab.length} words before saving! (${usedWords.length}/${suggestedVocab.length} used)`);
+    if (wordCount < 250) {
+      toast.error(`Write at least 250 words! (${wordCount}/250)`);
+      return;
+    }
+
+    if (usedWords.length < 10) {
+      toast.error(`Use all 10 level 0 words before saving! (${usedWords.length}/10 used)`);
       return;
     }
 
