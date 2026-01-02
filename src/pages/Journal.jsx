@@ -203,7 +203,7 @@ Return just the question.`,
     }
   };
 
-  const allWordsUsed = usedWords.length === suggestedVocab.length;
+  const allWordsUsed = usedWords.length === 10 && wordCount >= 250;
 
   const getSynonyms = async (word) => {
     if (!word.trim()) return;
