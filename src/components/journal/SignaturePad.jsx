@@ -37,23 +37,43 @@ export default function SignaturePad({ value, onChange, disabled }) {
   };
 
   const startDrawing = (e) => {
+    e.preventDefault();
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    const coords = getCoordinates(e);
+    
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
     
     setIsDrawing(true);
     ctx.beginPath();
-    ctx.moveTo(coords.x, coords.y);
+    ctx.moveTo(x, y);
   };
 
   const draw = (e) => {
     if (!isDrawing) return;
+    e.preventDefault();
     
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    const coords = getCoordinates(e);
     
-    ctx.lineTo(coords.x, coords.y);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
+    
+    ctx.lineTo(x, y);
     ctx.stroke();
   };
 
@@ -97,6 +117,9 @@ export default function SignaturePad({ value, onChange, disabled }) {
         onMouseMove={disabled ? null : draw}
         onMouseUp={disabled ? null : stopDrawing}
         onMouseLeave={disabled ? null : stopDrawing}
+        onTouchStart={disabled ? null : startDrawing}
+        onTouchMove={disabled ? null : draw}
+        onTouchEnd={disabled ? null : stopDrawing}
         className={`border-2 border-dashed rounded-lg bg-white w-full ${
           disabled ? 'opacity-50 cursor-not-allowed border-slate-200' : 'border-slate-300'
         }`}

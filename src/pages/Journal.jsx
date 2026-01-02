@@ -383,11 +383,16 @@ Make them useful for a Hebrew learner writing a journal.`,
             }}
           />
 
-          {/* Suggested Vocab - moved to bottom */}
+          {/* Suggested Vocab - Compact Grid */}
           {suggestedVocab.length > 0 && !showFeedback && (
-            <div className="mb-3 bg-blue-50 border border-blue-300 rounded-lg p-3 ml-20">
-              <p className="text-blue-900 text-xs font-medium mb-2">💡 Use these 10 level 0 words:</p>
-              <div className="flex flex-wrap gap-1.5">
+            <div className="mb-3 bg-blue-50 border border-blue-300 rounded-lg p-2 ml-20">
+              <div className="flex items-center justify-between mb-1.5">
+                <p className="text-blue-900 text-[10px] font-medium">💡 Use 10 level 0 words</p>
+                <p className={`text-[10px] font-bold ${usedWords.length >= 10 ? 'text-green-600' : 'text-amber-600'}`}>
+                  {usedWords.length}/10 {usedWords.length >= 10 ? '✓' : ''}
+                </p>
+              </div>
+              <div className="grid grid-cols-5 gap-1">
                 {suggestedVocab.map((word) => {
                   const isUsed = usedWords.includes(word.id);
                   const isEditing = editingWord === word.id;
@@ -396,27 +401,27 @@ Make them useful for a Hebrew learner writing a journal.`,
                     return (
                       <div
                         key={word.id}
-                        className="px-2 py-1.5 rounded bg-cyan-100 border border-cyan-300"
+                        className="col-span-2 px-1.5 py-1 rounded bg-cyan-100 border border-cyan-300"
                       >
                         <input
                           autoFocus
                           value={editValues.phonetic ?? word.phonetic}
                           onChange={(e) => setEditValues({ ...editValues, phonetic: e.target.value })}
-                          className="w-full bg-white border border-cyan-300 text-cyan-700 text-xs font-medium px-1 rounded mb-1"
+                          className="w-full bg-white border border-cyan-300 text-cyan-700 text-[10px] font-medium px-1 rounded mb-0.5"
                           placeholder="Phonetic"
                         />
                         <input
                           value={editValues.translation ?? word.translation}
                           onChange={(e) => setEditValues({ ...editValues, translation: e.target.value })}
-                          className="w-full bg-white border border-cyan-300 text-slate-700 text-[10px] px-1 rounded mb-1"
+                          className="w-full bg-white border border-cyan-300 text-slate-700 text-[9px] px-1 rounded mb-0.5"
                           placeholder="Translation"
                         />
-                        <div className="flex gap-1 mt-1">
+                        <div className="flex gap-1">
                           <button
                             onClick={() => {
                               updateWordMutation.mutate({ id: word.id, data: editValues });
                             }}
-                            className="text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded hover:bg-green-600"
+                            className="text-[9px] bg-green-500 text-white px-1 py-0.5 rounded hover:bg-green-600 flex-1"
                           >
                             ✓
                           </button>
@@ -425,7 +430,7 @@ Make them useful for a Hebrew learner writing a journal.`,
                               setEditingWord(null);
                               setEditValues({});
                             }}
-                            className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded hover:bg-red-600"
+                            className="text-[9px] bg-red-500 text-white px-1 py-0.5 rounded hover:bg-red-600 flex-1"
                           >
                             ✕
                           </button>
@@ -445,26 +450,23 @@ Make them useful for a Hebrew learner writing a journal.`,
                           word: word.word
                         });
                       }}
-                      className={`px-2 py-1 rounded transition-all cursor-pointer ${
+                      className={`px-1.5 py-1 rounded transition-all cursor-pointer ${
                         isUsed 
                           ? "bg-green-100 border border-green-400" 
                           : "bg-white border border-slate-300 hover:bg-slate-50"
                       }`}
                     >
-                      <div className="flex items-center gap-1">
-                        {isUsed && <CheckCircle className="w-3 h-3 text-green-600" />}
-                        <div className="flex flex-col">
-                          <span className="text-cyan-700 text-xs font-medium">{word.phonetic}</span>
-                          <span className="text-slate-600 text-[10px]">{word.translation}</span>
+                      <div className="flex items-center justify-center gap-0.5">
+                        {isUsed && <CheckCircle className="w-2.5 h-2.5 text-green-600 flex-shrink-0" />}
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-cyan-700 text-[10px] font-medium truncate">{word.phonetic}</span>
+                          <span className="text-slate-600 text-[8px] truncate">{word.translation}</span>
                         </div>
                       </div>
                     </div>
                   );
                 })}
               </div>
-              <p className={`text-[10px] mt-2 font-medium ${usedWords.length >= 10 ? 'text-green-600' : 'text-amber-600'}`}>
-                {usedWords.length}/10 used {usedWords.length >= 10 ? '✓' : ''}
-              </p>
             </div>
           )}
 
