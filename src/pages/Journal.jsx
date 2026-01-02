@@ -283,43 +283,57 @@ Make them useful for a Hebrew learner writing a journal.`,
   const unusedVocab = suggestedVocab.filter(v => !usedWords.includes(v.id));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-yellow-50 to-amber-100">
       <GameHeader profile={userProfile} coins={userCoins?.coins} onBuyCoins={() => {}} />
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         <div className="flex items-center gap-4 mb-8">
-          <Link to={createPageUrl("Home")} className="text-white/60 hover:text-white">
-            <ArrowLeft className="w-6 h-6" />
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-white flex items-center gap-2">
-              <BookOpen className="w-8 h-8" />
-              Daily Journal
-            </h1>
-            <p className="text-white/60">
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-            </p>
-          </div>
+        <Link to={createPageUrl("Home")} className="text-amber-800 hover:text-amber-900">
+          <ArrowLeft className="w-6 h-6" />
+        </Link>
+        <div>
+          <h1 className="text-3xl font-bold text-amber-900 flex items-center gap-2" style={{ fontFamily: 'Georgia, serif' }}>
+            <BookOpen className="w-8 h-8" />
+            Daily Journal
+          </h1>
+          <p className="text-amber-700">
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+          </p>
+        </div>
         </div>
 
-        {/* Today's Entry */}
+        {/* Today's Entry - Notebook Style */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-6 mb-6"
+          className="bg-white rounded-3xl border-2 border-amber-200 shadow-2xl p-8 mb-6 relative"
+          style={{
+            backgroundImage: `repeating-linear-gradient(transparent, transparent 31px, #fbbf24 31px, #fbbf24 32px)`,
+            backgroundSize: '100% 32px',
+            backgroundPosition: '0 48px'
+          }}
         >
+          {/* Red vertical line like notebook paper */}
+          <div className="absolute left-16 top-0 bottom-0 w-0.5 bg-red-400 opacity-40" />
+          
+          {/* Spiral binding holes */}
+          <div className="absolute left-4 top-8 bottom-8 flex flex-col justify-around">
+            {[...Array(12)].map((_, i) => (
+              <div key={i} className="w-3 h-3 rounded-full bg-amber-300 border-2 border-amber-400" />
+            ))}
+          </div>
           {/* Word Count */}
-          <div className="mb-4 flex items-center justify-between bg-white/5 rounded-xl p-3 border border-white/10">
-            <span className="text-white/60 text-sm">Word Count</span>
-            <span className={`font-bold text-lg ${wordCount >= 250 ? 'text-green-400' : 'text-amber-400'}`}>
+          <div className="mb-4 flex items-center justify-between bg-amber-50 rounded-xl p-3 border border-amber-200 ml-20 relative z-10">
+            <span className="text-amber-900 text-sm font-medium">Word Count</span>
+            <span className={`font-bold text-lg ${wordCount >= 250 ? 'text-green-600' : 'text-amber-600'}`}>
               {wordCount} / 250
             </span>
           </div>
 
           {/* Suggested Vocab */}
           {suggestedVocab.length > 0 && !showFeedback && (
-            <div className="mb-6 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-4">
-              <p className="text-white/80 text-sm mb-3">💡 Use these 10 level 0 words from your backpack:</p>
+            <div className="mb-6 bg-blue-50 border-2 border-blue-200 rounded-xl p-4 ml-20 relative z-10">
+              <p className="text-blue-900 text-sm font-medium mb-3">💡 Use these 10 level 0 words from your backpack:</p>
               <div className="flex flex-wrap gap-2">
                 {suggestedVocab.map((word) => {
                   const isUsed = usedWords.includes(word.id);
@@ -329,25 +343,25 @@ Make them useful for a Hebrew learner writing a journal.`,
                     return (
                       <div
                         key={word.id}
-                        className="px-3 py-2 rounded-lg bg-cyan-500/20 border border-cyan-500/50"
+                        className="px-3 py-2 rounded-lg bg-cyan-100 border-2 border-cyan-300"
                       >
                         <input
                           autoFocus
                           value={editValues.phonetic ?? word.phonetic}
                           onChange={(e) => setEditValues({ ...editValues, phonetic: e.target.value })}
-                          className="w-full bg-white/10 text-cyan-400 text-sm font-medium px-1 rounded mb-1"
+                          className="w-full bg-white border border-cyan-300 text-cyan-700 text-sm font-medium px-1 rounded mb-1"
                           placeholder="Phonetic"
                         />
                         <input
                           value={editValues.translation ?? word.translation}
                           onChange={(e) => setEditValues({ ...editValues, translation: e.target.value })}
-                          className="w-full bg-white/10 text-white/80 text-xs px-1 rounded mb-1"
+                          className="w-full bg-white border border-cyan-300 text-slate-700 text-xs px-1 rounded mb-1"
                           placeholder="Translation"
                         />
                         <input
                           value={editValues.word ?? word.word}
                           onChange={(e) => setEditValues({ ...editValues, word: e.target.value })}
-                          className="w-full bg-white/10 text-white/60 text-xs px-1 rounded"
+                          className="w-full bg-white border border-cyan-300 text-slate-600 text-xs px-1 rounded"
                           placeholder="Hebrew"
                         />
                         <div className="flex gap-1 mt-2">
@@ -384,25 +398,25 @@ Make them useful for a Hebrew learner writing a journal.`,
                           word: word.word
                         });
                       }}
-                      className={`px-3 py-2 rounded-lg transition-all cursor-pointer hover:bg-white/20 ${
+                      className={`px-3 py-2 rounded-lg transition-all cursor-pointer ${
                         isUsed 
-                          ? "bg-green-500/20 border border-green-500/50" 
-                          : "bg-white/10 border border-white/20"
+                          ? "bg-green-100 border-2 border-green-400 hover:bg-green-200" 
+                          : "bg-white border-2 border-slate-200 hover:bg-slate-50"
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        {isUsed && <CheckCircle className="w-4 h-4 text-green-400" />}
+                        {isUsed && <CheckCircle className="w-4 h-4 text-green-600" />}
                         <div className="flex flex-col">
-                          <span className="text-cyan-400 text-sm font-medium">{word.phonetic}</span>
-                          <span className="text-white/80 text-xs">{word.translation}</span>
-                          <span className="text-white/60 text-xs">{word.word}</span>
+                          <span className="text-cyan-700 text-sm font-medium">{word.phonetic}</span>
+                          <span className="text-slate-700 text-xs">{word.translation}</span>
+                          <span className="text-slate-600 text-xs">{word.word}</span>
                         </div>
                       </div>
                     </div>
                   );
                 })}
               </div>
-              <p className={`text-xs mt-3 ${usedWords.length >= 10 ? 'text-green-400' : 'text-amber-400'}`}>
+              <p className={`text-xs mt-3 font-medium ${usedWords.length >= 10 ? 'text-green-600' : 'text-amber-600'}`}>
                 {usedWords.length}/10 words used {usedWords.length >= 10 ? '✓' : ''}
               </p>
             </div>
@@ -414,20 +428,20 @@ Make them useful for a Hebrew learner writing a journal.`,
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="mb-6 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/50 rounded-xl p-4"
+                className="mb-6 bg-green-50 border-2 border-green-300 rounded-xl p-4 ml-20 relative z-10"
               >
-                <h3 className="text-white font-bold text-lg mb-2">Great job! 🎉</h3>
-                <p className="text-white/80 mb-2">
+                <h3 className="text-green-800 font-bold text-lg mb-2">Great job! 🎉</h3>
+                <p className="text-green-700 mb-2">
                   You used {usedWords.length} out of {suggestedVocab.length} suggested words today 👏
                 </p>
                 {unusedVocab.length > 0 && (
                   <div>
-                    <p className="text-white/60 text-sm mb-2">Want to try using next time?</p>
+                    <p className="text-green-600 text-sm mb-2">Want to try using next time?</p>
                     <div className="flex flex-wrap gap-2">
                       {unusedVocab.slice(0, 3).map((word) => (
-                        <div key={word.id} className="bg-white/10 px-3 py-1 rounded-lg">
-                          <span className="text-cyan-400 font-bold" dir="rtl">{word.word}</span>
-                          <span className="text-white/60 text-sm ml-2">({word.phonetic})</span>
+                        <div key={word.id} className="bg-white border border-green-200 px-3 py-1 rounded-lg">
+                          <span className="text-cyan-700 font-bold" dir="rtl">{word.word}</span>
+                          <span className="text-slate-600 text-sm ml-2">({word.phonetic})</span>
                         </div>
                       ))}
                     </div>
@@ -436,7 +450,7 @@ Make them useful for a Hebrew learner writing a journal.`,
                 <Button
                   onClick={() => setShowFeedback(false)}
                   variant="outline"
-                  className="mt-3 border-white/20 text-white"
+                  className="mt-3 border-green-400 text-green-700 hover:bg-green-100"
                   size="sm"
                 >
                   Continue Editing
@@ -452,16 +466,16 @@ Make them useful for a Hebrew learner writing a journal.`,
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="mb-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-xl p-4"
+                className="mb-4 bg-cyan-50 border-2 border-cyan-300 rounded-xl p-4 ml-20 relative z-10"
               >
                 <div className="flex items-start gap-3">
-                  <Sparkles className="w-5 h-5 text-cyan-400 mt-1 flex-shrink-0" />
+                  <Sparkles className="w-5 h-5 text-cyan-600 mt-1 flex-shrink-0" />
                   <div className="flex-1">
-                    <p className="text-white/80">{aiQuestion}</p>
+                    <p className="text-cyan-900">{aiQuestion}</p>
                   </div>
                   <button
                     onClick={() => setAiQuestion("")}
-                    className="text-white/40 hover:text-white/60"
+                    className="text-slate-400 hover:text-slate-600"
                   >
                     ✕
                   </button>
@@ -477,15 +491,15 @@ Make them useful for a Hebrew learner writing a journal.`,
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="mb-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl p-4"
+                className="mb-4 bg-amber-50 border-2 border-amber-300 rounded-xl p-4 ml-20 relative z-10"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-white/80 font-medium">
+                  <h4 className="text-amber-900 font-medium">
                     💡 Synonyms for "{selectedWord}"
                   </h4>
                   <button
                     onClick={() => setSynonyms(null)}
-                    className="text-white/40 hover:text-white/60"
+                    className="text-slate-400 hover:text-slate-600"
                   >
                     ✕
                   </button>
@@ -495,11 +509,11 @@ Make them useful for a Hebrew learner writing a journal.`,
                     <button
                       key={i}
                       onClick={() => insertSynonym(syn.hebrew)}
-                      className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg p-3 text-left transition-all"
+                      className="bg-white hover:bg-amber-50 border-2 border-amber-200 rounded-lg p-3 text-left transition-all"
                     >
-                      <div className="text-cyan-400 font-bold text-lg" dir="rtl">{syn.hebrew}</div>
-                      <div className="text-white/60 text-sm">{syn.transliteration}</div>
-                      <div className="text-white/50 text-xs">{syn.meaning}</div>
+                      <div className="text-cyan-700 font-bold text-lg" dir="rtl">{syn.hebrew}</div>
+                      <div className="text-slate-600 text-sm">{syn.transliteration}</div>
+                      <div className="text-slate-500 text-xs">{syn.meaning}</div>
                     </button>
                   ))}
                 </div>
@@ -512,7 +526,12 @@ Make them useful for a Hebrew learner writing a journal.`,
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Write about your day... What did you do? How do you feel? Try using some of the suggested words above..."
-            className="bg-white/5 border-white/20 text-white min-h-[250px] mb-4 text-lg leading-relaxed"
+            className="bg-transparent border-none text-slate-800 min-h-[250px] mb-4 text-lg leading-[32px] ml-20 relative z-10 focus:outline-none resize-none"
+            style={{ 
+              fontFamily: 'Georgia, serif',
+              lineHeight: '32px',
+              paddingTop: '0px'
+            }}
             onSelect={(e) => {
               const selected = e.target.value.substring(e.target.selectionStart, e.target.selectionEnd).trim();
               if (selected && selected.split(/\s+/).length === 1) {
@@ -522,7 +541,7 @@ Make them useful for a Hebrew learner writing a journal.`,
           />
 
           {/* Privacy Toggle */}
-          <div className="mb-4 flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl p-3">
+          <div className="mb-4 flex items-center gap-3 bg-blue-50 border-2 border-blue-200 rounded-xl p-3 ml-20 relative z-10">
             <input
               type="checkbox"
               id="isPublic"
@@ -530,17 +549,17 @@ Make them useful for a Hebrew learner writing a journal.`,
               onChange={(e) => setIsPublic(e.target.checked)}
               className="w-4 h-4"
             />
-            <label htmlFor="isPublic" className="text-white/80 text-sm cursor-pointer flex-1">
+            <label htmlFor="isPublic" className="text-blue-900 text-sm cursor-pointer flex-1">
               I don't mind if others see my journal entry, it will motivate them to write as well
             </label>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 ml-20 relative z-10">
             <Button
               onClick={() => getSynonyms(selectedWord)}
               disabled={loadingSynonyms || !selectedWord}
               variant="outline"
-              className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
+              className="border-2 border-amber-400 text-amber-700 hover:bg-amber-50"
             >
               {loadingSynonyms ? (
                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Loading...</>
@@ -553,8 +572,8 @@ Make them useful for a Hebrew learner writing a journal.`,
               disabled={createEntryMutation.isPending || updateEntryMutation.isPending || !text.trim() || !allWordsUsed}
               className={`flex-1 font-bold py-6 ${
                 allWordsUsed 
-                  ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white" 
-                  : "bg-gray-500/20 text-gray-400 cursor-not-allowed"
+                  ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700" 
+                  : "bg-slate-300 text-slate-500 cursor-not-allowed"
               }`}
             >
               {allWordsUsed ? (
@@ -565,7 +584,7 @@ Make them useful for a Hebrew learner writing a journal.`,
             </Button>
           </div>
 
-          <p className="text-white/40 text-xs mt-3 text-center">
+          <p className="text-slate-600 text-xs mt-3 text-center ml-20 relative z-10">
             {allWordsUsed 
               ? (todayEntry ? "You can edit today's entry anytime" : "You can write only one entry per day")
               : `⚠️ You must write 250 words and use all 10 level 0 words to save your journal`
@@ -578,14 +597,14 @@ Make them useful for a Hebrew learner writing a journal.`,
           <div className="mb-6">
             <button
               onClick={() => setShowPublicFeed(!showPublicFeed)}
-              className="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl p-4 mb-3 flex items-center justify-between hover:bg-purple-500/30 transition-all"
+              className="w-full bg-purple-100 border-2 border-purple-300 rounded-xl p-4 mb-3 flex items-center justify-between hover:bg-purple-200 transition-all"
             >
               <div className="flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-purple-400" />
-                <h3 className="text-white font-medium">Coach Mark's Hebrew Journal</h3>
-                <span className="text-purple-400 text-sm">({publicEntries.length} entries)</span>
+                <BookOpen className="w-5 h-5 text-purple-700" />
+                <h3 className="text-purple-900 font-medium">Coach Mark's Hebrew Journal</h3>
+                <span className="text-purple-700 text-sm">({publicEntries.length} entries)</span>
               </div>
-              <span className="text-white/60">{showPublicFeed ? '▼' : '▶'}</span>
+              <span className="text-purple-700">{showPublicFeed ? '▼' : '▶'}</span>
             </button>
 
             {showPublicFeed && (
@@ -596,12 +615,12 @@ Make them useful for a Hebrew learner writing a journal.`,
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
-                    className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-xl rounded-2xl border border-purple-500/30 p-4"
+                    className="bg-white rounded-2xl border-2 border-purple-200 p-4 shadow-md"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-purple-400 font-medium">{entry.author_name || "Anonymous"}</span>
-                        <span className="text-white/40 text-xs">
+                        <span className="text-purple-700 font-medium">{entry.author_name || "Anonymous"}</span>
+                        <span className="text-slate-500 text-xs">
                           {new Date(entry.date).toLocaleDateString('en-US', { 
                             month: 'short', 
                             day: 'numeric' 
@@ -609,12 +628,12 @@ Make them useful for a Hebrew learner writing a journal.`,
                         </span>
                       </div>
                       {entry.used_vocab_ids?.length > 0 && (
-                        <span className="text-green-400 text-xs">
+                        <span className="text-green-600 text-xs">
                           ✓ {entry.used_vocab_ids.length} words
                         </span>
                       )}
                     </div>
-                    <p className="text-white/80 whitespace-pre-wrap line-clamp-4">{entry.text}</p>
+                    <p className="text-slate-700 whitespace-pre-wrap line-clamp-4" style={{ fontFamily: 'Georgia, serif' }}>{entry.text}</p>
                   </motion.div>
                 ))}
               </div>
@@ -625,7 +644,7 @@ Make them useful for a Hebrew learner writing a journal.`,
         {/* Previous Entries */}
         {entries.filter(e => e.date !== today).length > 0 && (
           <div className="space-y-3">
-            <h3 className="text-white/60 text-sm font-medium">My Previous Entries</h3>
+            <h3 className="text-amber-800 text-sm font-medium">My Previous Entries</h3>
             {entries
               .filter(e => e.date !== today)
               .slice(0, 10)
@@ -635,10 +654,10 @@ Make them useful for a Hebrew learner writing a journal.`,
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.05 }}
-                  className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-4"
+                  className="bg-white rounded-2xl border-2 border-amber-200 p-4 shadow-md"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-white font-medium">
+                    <span className="text-amber-900 font-medium">
                       {new Date(entry.date).toLocaleDateString('en-US', { 
                         weekday: 'long', 
                         month: 'short', 
@@ -647,7 +666,7 @@ Make them useful for a Hebrew learner writing a journal.`,
                     </span>
                     <div className="flex items-center gap-2">
                       {entry.used_vocab_ids?.length > 0 && (
-                        <span className="text-green-400 text-xs">
+                        <span className="text-green-600 text-xs">
                           ✓ {entry.used_vocab_ids.length} words used
                         </span>
                       )}
@@ -658,17 +677,17 @@ Make them useful for a Hebrew learner writing a journal.`,
                             data: { is_public: !entry.is_public, author_name: userProfile?.avatar_name || "Anonymous" }
                           });
                         }}
-                        className={`text-xs px-2 py-1 rounded ${
+                        className={`text-xs px-2 py-1 rounded border-2 ${
                           entry.is_public 
-                            ? 'bg-purple-500/30 text-purple-400 hover:bg-purple-500/50' 
-                            : 'bg-white/10 text-white/60 hover:bg-white/20'
+                            ? 'bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200' 
+                            : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
                         }`}
                       >
                         {entry.is_public ? '📢 Public' : '🔒 Private'}
                       </button>
                     </div>
                   </div>
-                  <p className="text-white/80 whitespace-pre-wrap line-clamp-3">{entry.text}</p>
+                  <p className="text-slate-700 whitespace-pre-wrap line-clamp-3" style={{ fontFamily: 'Georgia, serif' }}>{entry.text}</p>
                 </motion.div>
               ))}
           </div>
