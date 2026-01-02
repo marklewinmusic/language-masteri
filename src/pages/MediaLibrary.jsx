@@ -556,27 +556,58 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
       }
 
       setLoadingTranscript(true);
-      toast.info("Fetching YouTube captions...");
 
-      // Fetch YouTube captions
-      const result = await base44.functions.invoke('youtubeTranscript', { videoId });
+      // Show initial status
+      const statusToast = toast.loading("Step 1/5: Fetching YouTube data...", { duration: Infinity });
 
-      console.log('Function response:', result);
+      try {
+        // Fetch YouTube captions with timeout
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout after 60 seconds')), 60000)
+        );
 
-      if (!result || !result.data) {
-        toast.error("No response from function");
-        setLoadingTranscript(false);
-        return;
-      }
+        const resultPromise = base44.functions.invoke('youtubeTranscript', { videoId });
+        const result = await Promise.race([resultPromise, timeoutPromise]);
 
-      if (!result.data.transcript || result.data.transcript.length === 0) {
-        toast.error(result.data.error || "No captions available");
-        setLoadingTranscript(false);
-        return;
-      }
+        console.log('Function response:', result);
 
-      const rawTranscript = result.data.transcript;
-      toast.info(`Processing ${rawTranscript.length} segments...`);
+        if (!result || !result.data) {
+          toast.dismiss(statusToast);
+          toast.error("No response from transcription service");
+          setLoadingTranscript(false);
+          return;
+        }
+
+        // Show step progress
+        if (result.data.steps) {
+          const stepLabels = {
+            'page_fetched': 'Step 2/5: Extracting audio stream...',
+            'audio_extracted': 'Step 3/5: Downloading audio...',
+            'audio_downloaded': 'Step 4/5: Transcribing with AI...',
+            'whisper_transcribed': 'Step 5/5: Processing transcript...',
+            'complete': 'Complete!'
+          };
+          toast.dismiss(statusToast);
+          toast.success(`Complete in ${result.data.processingTime}s!`);
+        }
+
+        if (!result.data.transcript || result.data.transcript.length === 0) {
+          toast.dismiss(statusToast);
+          const errorMsg = result.data.error || "No transcript available";
+          toast.error(errorMsg, { 
+            duration: 6000,
+            description: result.data.details ? "Check browser console for details" : undefined
+          });
+          if (result.data.details) {
+            console.error("Transcript error details:", result.data.details);
+          }
+          setLoadingTranscript(false);
+          return;
+        }
+
+        toast.dismiss(statusToast);
+        const rawTranscript = result.data.transcript;
+        toast.info(`Processing ${rawTranscript.length} segments...`);
 
       // Process in batches
       const processedSegments = [];
@@ -639,13 +670,26 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
 
       setTranscript(processedSegments);
       toast.success("Transcript generated!");
-    } catch (e) {
+      } catch (timeoutError) {
+        toast.dismiss(statusToast);
+        console.error('Timeout or fetch error:', timeoutError);
+        toast.error("Request timeout - this video may be too long or restricted", {
+          duration: 8000,
+          description: "Try pasting the transcript manually or use a shorter video"
+        });
+        setLoadingTranscript(false);
+      }
+      } catch (e) {
       console.error('Full error:', e);
-      toast.error(e.message || "Failed to generate transcript");
-    } finally {
+      toast.error(e.message || "Failed to generate transcript", {
+        duration: 6000,
+        description: "Check console for details or try manual paste"
+      });
+      console.error("Error details:", e);
+      } finally {
       setLoadingTranscript(false);
-    }
-  };
+      }
+      };
 
   const handleVideoClick = async (video) => {
     setSelectedVideo(video);

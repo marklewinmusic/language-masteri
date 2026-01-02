@@ -89,67 +89,88 @@ async function fetchYouTubeCaptions(videoId) {
   };
 }
 
-async function transcribeAudio(videoId) {
+async function transcribeAudio(videoId, startTime) {
+  const stepStart = Date.now();
+  
+  console.log('🔑 Checking OpenAI API key...');
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   if (!apiKey) {
-    throw new Error('OPENAI_API_KEY not configured');
+    throw new Error('OPENAI_API_KEY not configured - please set it in environment variables');
   }
+  console.log('✓ API key found');
 
-  console.log('Fetching audio stream from YouTube...');
-  
-  // Get video info to find audio URL
+  console.log('\n--- STEP 2.1: Fetch YouTube Page ---');
   const infoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+  console.log(`Fetching: ${infoUrl}`);
+  
   const pageResponse = await fetch(infoUrl);
+  if (!pageResponse.ok) {
+    throw new Error(`YouTube page fetch failed with status ${pageResponse.status}`);
+  }
+  console.log(`✓ Page fetched (${pageResponse.status})`);
+  
   const html = await pageResponse.text();
+  console.log(`✓ HTML received (${(html.length / 1024).toFixed(2)}KB)`);
   
   // Extract player response
+  console.log('\n--- STEP 2.2: Extract Audio URL ---');
   const match = html.match(/ytInitialPlayerResponse\s*=\s*({.+?})\s*;/);
   if (!match) {
-    throw new Error('Could not extract video info');
+    throw new Error('Could not extract video info - video may be restricted or unavailable');
   }
+  console.log('✓ Found player response');
   
   const playerResponse = JSON.parse(match[1]);
   const streamingData = playerResponse?.streamingData;
   
   if (!streamingData) {
-    throw new Error('No streaming data available');
+    const reason = playerResponse?.playabilityStatus?.reason || 'Unknown';
+    throw new Error(`No streaming data available. Reason: ${reason}`);
   }
+  console.log('✓ Streaming data available');
   
-  // Find audio-only format (lower quality for faster processing)
+  // Find audio-only format
   const formats = [...(streamingData.formats || []), ...(streamingData.adaptiveFormats || [])];
+  console.log(`Found ${formats.length} total formats`);
+  
   const audioFormat = formats.find(f => 
     f.mimeType?.includes('audio') && 
     (f.audioQuality === 'AUDIO_QUALITY_LOW' || f.audioQuality === 'AUDIO_QUALITY_MEDIUM')
   ) || formats.find(f => f.mimeType?.includes('audio'));
   
   if (!audioFormat || !audioFormat.url) {
-    throw new Error('No audio stream found');
+    throw new Error('No audio stream found - video may be age-restricted or require login');
   }
+  
+  console.log(`✓ Selected audio format: ${audioFormat.mimeType}, quality: ${audioFormat.audioQuality || 'unknown'}`);
 
-  console.log('Downloading audio...');
+  console.log('\n--- STEP 2.3: Download Audio ---');
+  console.log('Downloading audio stream...');
   const audioResponse = await fetch(audioFormat.url);
   
   if (!audioResponse.ok) {
-    throw new Error('Failed to download audio');
+    throw new Error(`Audio download failed with status ${audioResponse.status}`);
   }
   
   const audioBlob = await audioResponse.blob();
+  const sizeMB = (audioBlob.size / 1024 / 1024).toFixed(2);
+  console.log(`✓ Audio downloaded: ${sizeMB}MB`);
   
-  // Whisper has a 25MB limit, check size
+  // Whisper has a 25MB limit
   if (audioBlob.size > 25 * 1024 * 1024) {
-    throw new Error('Audio file too large (>25MB). Try a shorter video or use manual transcript paste.');
+    throw new Error(`Audio file too large (${sizeMB}MB > 25MB limit). Try a shorter video or use manual transcript paste.`);
   }
 
-  console.log(`Audio downloaded (${(audioBlob.size / 1024 / 1024).toFixed(2)}MB), transcribing...`);
-
-  // Create form data for Whisper API
+  console.log('\n--- STEP 2.4: Send to Whisper API ---');
   const formData = new FormData();
   formData.append('file', audioBlob, `${videoId}.webm`);
   formData.append('model', 'whisper-1');
   formData.append('response_format', 'verbose_json');
   formData.append('timestamp_granularities[]', 'segment');
 
-  // Call Whisper API
+  console.log(`Sending ${sizeMB}MB to Whisper API...`);
+  const whisperStart = Date.now();
+  
   const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
     method: 'POST',
     headers: {
@@ -158,12 +179,21 @@ async function transcribeAudio(videoId) {
     body: formData
   });
 
+  const whisperTime = ((Date.now() - whisperStart) / 1000).toFixed(2);
+  
   if (!whisperResponse.ok) {
-    const error = await whisperResponse.text();
-    throw new Error(`Whisper API failed: ${error}`);
+    const errorText = await whisperResponse.text();
+    console.error(`❌ Whisper API failed (${whisperResponse.status}) after ${whisperTime}s:`);
+    console.error(errorText);
+    throw new Error(`Whisper API failed (${whisperResponse.status}): ${errorText}`);
   }
+  
+  console.log(`✓ Whisper responded in ${whisperTime}s`);
 
+  console.log('\n--- STEP 2.5: Parse Response ---');
   const whisperResult = await whisperResponse.json();
+  console.log(`✓ Detected language: ${whisperResult.language || 'unknown'}`);
+  console.log(`✓ Found ${whisperResult.segments?.length || 0} segments`);
 
   // Format transcript
   const transcript = whisperResult.segments?.map(seg => ({
@@ -172,10 +202,15 @@ async function transcribeAudio(videoId) {
     duration: seg.end - seg.start
   })) || [];
 
+  const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
+  console.log(`\n✓ SUCCESS: Complete pipeline in ${totalTime}s`);
+
   return {
     transcript,
     language: whisperResult.language || 'unknown',
-    source: 'audio_transcription'
+    source: 'audio_transcription',
+    processingTime: totalTime,
+    steps: ['page_fetched', 'audio_extracted', 'audio_downloaded', 'whisper_transcribed', 'complete']
   };
 }
 
