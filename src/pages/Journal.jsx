@@ -8,8 +8,9 @@ import { ArrowLeft, BookOpen, Sparkles, Loader2, CheckCircle } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import GameHeader from "../components/game/GameHeader";
 import TranslatorWidget from "../components/TranslatorWidget";
+import SignaturePad from "../components/journal/SignaturePad";
+import JournalLeaderboard from "../components/journal/JournalLeaderboard";
 
 export default function Journal() {
   const queryClient = useQueryClient();
@@ -26,6 +27,7 @@ export default function Journal() {
   const [editValues, setEditValues] = useState({});
   const [isPublic, setIsPublic] = useState(false);
   const [showPublicFeed, setShowPublicFeed] = useState(false);
+  const [signature, setSignature] = useState("");
   const today = new Date().toISOString().split('T')[0];
 
   const { data: userProfile } = useQuery({
@@ -106,6 +108,7 @@ export default function Journal() {
       setQuestionsAsked(todayEntry.ai_questions_asked || []);
       setUsedWords(todayEntry.used_vocab_ids || []);
       setIsPublic(todayEntry.is_public || false);
+      setSignature(todayEntry.signature_data || "");
     }
   }, [todayEntry]);
 
@@ -211,6 +214,22 @@ Return just the question.`,
       return;
     }
 
+    // Calculate consecutive days
+    let consecutiveDays = 1;
+    if (entries.length > 0) {
+      const sortedEntries = [...entries].sort((a, b) => new Date(b.date) - new Date(a.date));
+      for (let i = 0; i < sortedEntries.length - 1; i++) {
+        const current = new Date(sortedEntries[i].date);
+        const next = new Date(sortedEntries[i + 1].date);
+        const dayDiff = Math.floor((current - next) / (1000 * 60 * 60 * 24));
+        if (dayDiff === 1) {
+          consecutiveDays++;
+        } else {
+          break;
+        }
+      }
+    }
+
     const entryData = {
       date: today,
       text,
@@ -219,7 +238,9 @@ Return just the question.`,
       ai_questions_asked: questionsAsked,
       last_edited_at: new Date().toISOString(),
       is_public: isPublic,
-      author_name: userProfile?.avatar_name || "Anonymous"
+      author_name: userProfile?.avatar_name || "Anonymous",
+      signature_data: signature,
+      consecutive_days: consecutiveDays
     };
 
     if (todayEntry) {
@@ -284,21 +305,25 @@ Make them useful for a Hebrew learner writing a journal.`,
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-
       <div className="max-w-4xl mx-auto px-4 py-6">
-        <div className="flex items-center gap-4 mb-8">
-        <Link to={createPageUrl("Home")} className="text-white/60 hover:text-white">
-          <ArrowLeft className="w-6 h-6" />
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-2" style={{ fontFamily: 'Georgia, serif' }}>
-            <BookOpen className="w-8 h-8" />
-            Daily Journal
-          </h1>
-          <p className="text-white/60">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-          </p>
+        <div className="flex items-center gap-4 mb-6">
+          <Link to={createPageUrl("Home")} className="text-white/60 hover:text-white">
+            <ArrowLeft className="w-6 h-6" />
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold text-white flex items-center gap-2" style={{ fontFamily: 'Georgia, serif' }}>
+              <BookOpen className="w-8 h-8" />
+              Daily Journal
+            </h1>
+            <p className="text-white/60">
+              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+            </p>
+          </div>
         </div>
+
+        {/* Leaderboard */}
+        <div className="mb-6">
+          <JournalLeaderboard entries={entries} />
         </div>
 
         {/* Today's Entry - Notebook Style */}
@@ -331,18 +356,38 @@ Make them useful for a Hebrew learner writing a journal.`,
           {/* Content layer - above lines */}
           <div className="relative" style={{ zIndex: 2 }}>
           {/* Word Count */}
-          <div className="mb-4 flex items-center justify-between bg-amber-50 rounded-xl p-3 border border-amber-200 ml-20 relative z-10">
-            <span className="text-amber-900 text-sm font-medium">Word Count</span>
-            <span className={`font-bold text-lg ${wordCount >= 250 ? 'text-green-600' : 'text-amber-600'}`}>
+          <div className="mb-6 flex items-center justify-between bg-amber-50 rounded-lg p-2 border border-amber-200 ml-20">
+            <span className="text-amber-900 text-xs font-medium">Word Count</span>
+            <span className={`font-bold text-sm ${wordCount >= 250 ? 'text-green-600' : 'text-amber-600'}`}>
               {wordCount} / 250
             </span>
           </div>
 
-          {/* Suggested Vocab */}
+          {/* Text Editor */}
+          <Textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Write about your day..."
+            className="bg-transparent border-none text-slate-800 min-h-[350px] mb-6 text-base ml-20 focus:outline-none resize-none"
+            style={{ 
+              fontFamily: 'Georgia, serif',
+              lineHeight: '32px',
+              paddingTop: '16px',
+              backgroundImage: 'none'
+            }}
+            onSelect={(e) => {
+              const selected = e.target.value.substring(e.target.selectionStart, e.target.selectionEnd).trim();
+              if (selected && selected.split(/\s+/).length === 1) {
+                setSelectedWord(selected);
+              }
+            }}
+          />
+
+          {/* Suggested Vocab - moved to bottom */}
           {suggestedVocab.length > 0 && !showFeedback && (
-            <div className="mb-6 bg-blue-50 border-2 border-blue-200 rounded-xl p-4 ml-20 relative z-10">
-              <p className="text-blue-900 text-sm font-medium mb-3">💡 Use these 10 level 0 words from your backpack:</p>
-              <div className="flex flex-wrap gap-2">
+            <div className="mb-3 bg-blue-50 border border-blue-300 rounded-lg p-3 ml-20">
+              <p className="text-blue-900 text-xs font-medium mb-2">💡 Use these 10 level 0 words:</p>
+              <div className="flex flex-wrap gap-1.5">
                 {suggestedVocab.map((word) => {
                   const isUsed = usedWords.includes(word.id);
                   const isEditing = editingWord === word.id;
@@ -351,33 +396,27 @@ Make them useful for a Hebrew learner writing a journal.`,
                     return (
                       <div
                         key={word.id}
-                        className="px-3 py-2 rounded-lg bg-cyan-100 border-2 border-cyan-300"
+                        className="px-2 py-1.5 rounded bg-cyan-100 border border-cyan-300"
                       >
                         <input
                           autoFocus
                           value={editValues.phonetic ?? word.phonetic}
                           onChange={(e) => setEditValues({ ...editValues, phonetic: e.target.value })}
-                          className="w-full bg-white border border-cyan-300 text-cyan-700 text-sm font-medium px-1 rounded mb-1"
+                          className="w-full bg-white border border-cyan-300 text-cyan-700 text-xs font-medium px-1 rounded mb-1"
                           placeholder="Phonetic"
                         />
                         <input
                           value={editValues.translation ?? word.translation}
                           onChange={(e) => setEditValues({ ...editValues, translation: e.target.value })}
-                          className="w-full bg-white border border-cyan-300 text-slate-700 text-xs px-1 rounded mb-1"
+                          className="w-full bg-white border border-cyan-300 text-slate-700 text-[10px] px-1 rounded mb-1"
                           placeholder="Translation"
                         />
-                        <input
-                          value={editValues.word ?? word.word}
-                          onChange={(e) => setEditValues({ ...editValues, word: e.target.value })}
-                          className="w-full bg-white border border-cyan-300 text-slate-600 text-xs px-1 rounded"
-                          placeholder="Hebrew"
-                        />
-                        <div className="flex gap-1 mt-2">
+                        <div className="flex gap-1 mt-1">
                           <button
                             onClick={() => {
                               updateWordMutation.mutate({ id: word.id, data: editValues });
                             }}
-                            className="text-xs bg-green-500/30 px-2 py-1 rounded hover:bg-green-500/50"
+                            className="text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded hover:bg-green-600"
                           >
                             ✓
                           </button>
@@ -386,7 +425,7 @@ Make them useful for a Hebrew learner writing a journal.`,
                               setEditingWord(null);
                               setEditValues({});
                             }}
-                            className="text-xs bg-red-500/30 px-2 py-1 rounded hover:bg-red-500/50"
+                            className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded hover:bg-red-600"
                           >
                             ✕
                           </button>
@@ -406,198 +445,80 @@ Make them useful for a Hebrew learner writing a journal.`,
                           word: word.word
                         });
                       }}
-                      className={`px-3 py-2 rounded-lg transition-all cursor-pointer ${
+                      className={`px-2 py-1 rounded transition-all cursor-pointer ${
                         isUsed 
-                          ? "bg-green-100 border-2 border-green-400 hover:bg-green-200" 
-                          : "bg-white border-2 border-slate-200 hover:bg-slate-50"
+                          ? "bg-green-100 border border-green-400" 
+                          : "bg-white border border-slate-300 hover:bg-slate-50"
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        {isUsed && <CheckCircle className="w-4 h-4 text-green-600" />}
+                      <div className="flex items-center gap-1">
+                        {isUsed && <CheckCircle className="w-3 h-3 text-green-600" />}
                         <div className="flex flex-col">
-                          <span className="text-cyan-700 text-sm font-medium">{word.phonetic}</span>
-                          <span className="text-slate-700 text-xs">{word.translation}</span>
-                          <span className="text-slate-600 text-xs">{word.word}</span>
+                          <span className="text-cyan-700 text-xs font-medium">{word.phonetic}</span>
+                          <span className="text-slate-600 text-[10px]">{word.translation}</span>
                         </div>
                       </div>
                     </div>
                   );
                 })}
               </div>
-              <p className={`text-xs mt-3 font-medium ${usedWords.length >= 10 ? 'text-green-600' : 'text-amber-600'}`}>
-                {usedWords.length}/10 words used {usedWords.length >= 10 ? '✓' : ''}
+              <p className={`text-[10px] mt-2 font-medium ${usedWords.length >= 10 ? 'text-green-600' : 'text-amber-600'}`}>
+                {usedWords.length}/10 used {usedWords.length >= 10 ? '✓' : ''}
               </p>
             </div>
           )}
 
-          {/* Feedback after save */}
-          <AnimatePresence>
-            {showFeedback && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="mb-6 bg-green-50 border-2 border-green-300 rounded-xl p-4 ml-20 relative z-10"
-              >
-                <h3 className="text-green-800 font-bold text-lg mb-2">Great job! 🎉</h3>
-                <p className="text-green-700 mb-2">
-                  You used {usedWords.length} out of {suggestedVocab.length} suggested words today 👏
-                </p>
-                {unusedVocab.length > 0 && (
-                  <div>
-                    <p className="text-green-600 text-sm mb-2">Want to try using next time?</p>
-                    <div className="flex flex-wrap gap-2">
-                      {unusedVocab.slice(0, 3).map((word) => (
-                        <div key={word.id} className="bg-white border border-green-200 px-3 py-1 rounded-lg">
-                          <span className="text-cyan-700 font-bold" dir="rtl">{word.word}</span>
-                          <span className="text-slate-600 text-sm ml-2">({word.phonetic})</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <Button
-                  onClick={() => setShowFeedback(false)}
-                  variant="outline"
-                  className="mt-3 border-green-400 text-green-700 hover:bg-green-100"
-                  size="sm"
-                >
-                  Continue Editing
-                </Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* AI Question */}
-          <AnimatePresence>
-            {aiQuestion && !showFeedback && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="mb-4 bg-cyan-50 border-2 border-cyan-300 rounded-xl p-4 ml-20 relative z-10"
-              >
-                <div className="flex items-start gap-3">
-                  <Sparkles className="w-5 h-5 text-cyan-600 mt-1 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-cyan-900">{aiQuestion}</p>
-                  </div>
-                  <button
-                    onClick={() => setAiQuestion("")}
-                    className="text-slate-400 hover:text-slate-600"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Synonyms Panel */}
-          <AnimatePresence>
-            {synonyms && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="mb-4 bg-amber-50 border-2 border-amber-300 rounded-xl p-4 ml-20 relative z-10"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-amber-900 font-medium">
-                    💡 Synonyms for "{selectedWord}"
-                  </h4>
-                  <button
-                    onClick={() => setSynonyms(null)}
-                    className="text-slate-400 hover:text-slate-600"
-                  >
-                    ✕
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {synonyms.map((syn, i) => (
-                    <button
-                      key={i}
-                      onClick={() => insertSynonym(syn.hebrew)}
-                      className="bg-white hover:bg-amber-50 border-2 border-amber-200 rounded-lg p-3 text-left transition-all"
-                    >
-                      <div className="text-cyan-700 font-bold text-lg" dir="rtl">{syn.hebrew}</div>
-                      <div className="text-slate-600 text-sm">{syn.transliteration}</div>
-                      <div className="text-slate-500 text-xs">{syn.meaning}</div>
-                    </button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Text Editor */}
-          <Textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Write about your day... What did you do? How do you feel? Try using some of the suggested words above..."
-            className="bg-transparent border-none text-slate-800 min-h-[250px] mb-4 text-lg leading-[32px] ml-20 relative z-10 focus:outline-none resize-none"
-            style={{ 
-              fontFamily: 'Georgia, serif',
-              lineHeight: '32px',
-              paddingTop: '0px'
-            }}
-            onSelect={(e) => {
-              const selected = e.target.value.substring(e.target.selectionStart, e.target.selectionEnd).trim();
-              if (selected && selected.split(/\s+/).length === 1) {
-                setSelectedWord(selected);
-              }
-            }}
-          />
+          {/* Signature */}
+          <div className="mb-3 ml-20">
+            <SignaturePad value={signature} onChange={setSignature} />
+          </div>
 
           {/* Privacy Toggle */}
-          <div className="mb-4 flex items-center gap-3 bg-blue-50 border-2 border-blue-200 rounded-xl p-3 ml-20 relative z-10">
+          <div className="mb-3 flex items-center gap-2 bg-blue-50 border border-blue-300 rounded-lg p-2 ml-20">
             <input
               type="checkbox"
               id="isPublic"
               checked={isPublic}
               onChange={(e) => setIsPublic(e.target.checked)}
-              className="w-4 h-4"
+              className="w-3 h-3"
             />
-            <label htmlFor="isPublic" className="text-blue-900 text-sm cursor-pointer flex-1">
+            <label htmlFor="isPublic" className="text-blue-900 text-xs cursor-pointer flex-1">
               I don't mind if others see my journal entry, it will motivate them to write as well
             </label>
           </div>
 
-          <div className="flex gap-3 ml-20 relative z-10">
+          {/* Action Buttons */}
+          <div className="flex gap-2 ml-20">
             <Button
               onClick={() => getSynonyms(selectedWord)}
               disabled={loadingSynonyms || !selectedWord}
-              variant="outline"
-              className="border-2 border-amber-400 text-amber-700 hover:bg-amber-50"
+              size="sm"
+              className="bg-amber-500 hover:bg-amber-600 text-white border-0"
             >
-              {loadingSynonyms ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Loading...</>
-              ) : (
-                <>💡 Get Synonyms</>
-              )}
+              {loadingSynonyms ? <Loader2 className="w-3 h-3 animate-spin" /> : "💡"}
             </Button>
             <Button
               onClick={handleSave}
               disabled={createEntryMutation.isPending || updateEntryMutation.isPending || !text.trim() || !allWordsUsed}
-              className={`flex-1 font-bold py-6 ${
+              className={`flex-1 font-bold text-sm py-3 ${
                 allWordsUsed 
                   ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700" 
                   : "bg-slate-300 text-slate-500 cursor-not-allowed"
               }`}
             >
               {allWordsUsed ? (
-                <>{todayEntry ? "Update Today's Journal" : "Save Journal Entry"} 📖</>
+                <>{todayEntry ? "Update" : "Save"} 📖</>
               ) : (
-                <>To submit, write 250 words including 10 of the Level 0-4 words above ({wordCount}/250, {usedWords.length}/10) 🔒</>
+                <>Write 250 words + 10 words ({wordCount}/250, {usedWords.length}/10) 🔒</>
               )}
             </Button>
           </div>
 
-          <p className="text-slate-600 text-xs mt-3 text-center ml-20 relative z-10">
-            {allWordsUsed 
-              ? (todayEntry ? "You can edit today's entry anytime" : "You can write only one entry per day")
-              : `⚠️ You must write 250 words and use all 10 level 0 words to save your journal`
-            }
-          </p>
+          {!allWordsUsed && (
+            <p className="text-slate-600 text-[10px] mt-2 text-center ml-20">
+              ⚠️ Use all 10 level 0 words above to submit
+            </p>
+          )}
           </div>
         </motion.div>
 

@@ -16,6 +16,7 @@ import TranslatorWidget from "../components/TranslatorWidget";
 import ActivityCard from "../components/game/ActivityCard";
 import BabyGame from "../components/game/BabyGame";
 import AvatarMenu from "../components/game/AvatarMenu";
+import JournalLeaderboard from "../components/journal/JournalLeaderboard";
 
 
 
@@ -155,6 +156,14 @@ export default function Home() {
   const { data: activityProgress = [] } = useQuery({
     queryKey: ['activityProgress'],
     queryFn: () => base44.entities.ActivityProgress.list(),
+    staleTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
+
+  const { data: journalEntries = [] } = useQuery({
+    queryKey: ['journalEntries'],
+    queryFn: () => base44.entities.JournalEntry.list('-date'),
     staleTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -495,6 +504,11 @@ export default function Home() {
 
       {/* Quick Navigation */}
       <div className="max-w-4xl mx-auto px-4 pt-4">
+        {/* Journal Leaderboard */}
+        <div className="mb-6">
+          <JournalLeaderboard entries={journalEntries} />
+        </div>
+
         <div className="grid grid-cols-3 gap-2">
           <Link to={createPageUrl("Home")}>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
