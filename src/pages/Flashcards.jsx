@@ -16,6 +16,7 @@ import TranslatorWidget from "../components/TranslatorWidget";
 export default function Flashcards() {
   const queryClient = useQueryClient();
   const [selectedLevel, setSelectedLevel] = useState(null);
+  const [viewMode, setViewMode] = useState("flashcards"); // "flashcards" or "list"
 
   React.useEffect(() => {
     document.title = "Flashcards - Lashon Languages";
@@ -103,6 +104,7 @@ export default function Flashcards() {
     setCurrentIndex(0);
     setRevealState(0);
     setSelectedLevel(level);
+    setViewMode("flashcards");
     setExampleSentences([]);
   };
 
@@ -362,19 +364,72 @@ export default function Flashcards() {
             })}
           </div>
 
-          <Button
-            onClick={() => setSelectedLevel(null)}
-            variant="ghost"
-            size="sm"
-            className="text-white hover:text-red-400"
-          >
-            ✕ Exit
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => setViewMode(viewMode === "flashcards" ? "list" : "flashcards")}
+              variant="ghost"
+              size="sm"
+              className="text-white hover:text-cyan-400"
+            >
+              {viewMode === "flashcards" ? "📋 View All" : "🎴 Flashcards"}
+            </Button>
+            <Button
+              onClick={() => setSelectedLevel(null)}
+              variant="ghost"
+              size="sm"
+              className="text-white hover:text-red-400"
+            >
+              ✕ Exit
+            </Button>
+          </div>
         </div>
       </div>
 
+      {/* List view mode */}
+      {viewMode === "list" && (
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Level {selectedLevel} - All Words ({sessionWords.length})
+            </h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {sessionWords.map((word, idx) => (
+                <motion.div
+                  key={word.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.02 }}
+                  className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-4 space-y-2"
+                >
+                  {word.image_url && (
+                    <img src={word.image_url} alt={word.word} className="w-full h-32 object-cover rounded-xl mb-2" />
+                  )}
+                  <p className="text-white font-bold text-xl text-center">{word.translation}</p>
+                  <div className="text-center space-y-1">
+                    <p className="text-cyan-400 text-lg">{word.phonetic}</p>
+                    <p className="text-white/80" dir="rtl" lang="he">{word.word}</p>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      setCurrentIndex(idx);
+                      setRevealState(0);
+                      setViewMode("flashcards");
+                    }}
+                    size="sm"
+                    className="w-full bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/50"
+                  >
+                    Study Card
+                  </Button>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main card area */}
-      <div className="flex-1 flex items-center justify-center p-4 py-8">
+      {viewMode === "flashcards" && (
+        <div className="flex-1 flex items-center justify-center p-4 py-8">
         <AnimatePresence mode="wait">
           <motion.div
             key={`${currentWord?.id}-${revealState}`}
@@ -809,6 +864,7 @@ Example:
           </motion.div>
         </AnimatePresence>
       </div>
+      )}
 
       {/* Image regeneration dialog */}
       <Dialog open={imageRegenDialog} onOpenChange={setImageRegenDialog}>
