@@ -54,6 +54,8 @@ export default function MediaLibrary() {
   const [editingWords, setEditingWords] = useState(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [pastedTranscript, setPastedTranscript] = useState("");
+  const [mediaType, setMediaType] = useState("video");
+  const [uploadingAudio, setUploadingAudio] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -401,6 +403,7 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
 
   const handleEdit = (video) => {
     setEditingVideo(video);
+    setMediaType(video.video_url?.endsWith('.mp3') || video.video_url?.includes('audio') ? "audio" : "video");
     setFormData({
       title: video.title,
       language: video.language,
@@ -418,6 +421,32 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
       transcript_phonetics: video.transcript_phonetics || ""
     });
     setShowAddDialog(true);
+  };
+
+  const handleAudioUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.includes('audio') && !file.name.endsWith('.mp3')) {
+      toast.error("Please upload an MP3 audio file");
+      return;
+    }
+
+    setUploadingAudio(true);
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file });
+      setFormData(prev => ({
+        ...prev,
+        video_url: result.file_url,
+        video_id: `audio_${Date.now()}`,
+        thumbnail_url: ""
+      }));
+      toast.success("Audio uploaded!");
+    } catch (e) {
+      toast.error("Failed to upload audio");
+    } finally {
+      setUploadingAudio(false);
+    }
   };
 
 
@@ -885,11 +914,11 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
           </div>
           {canEdit && (
             <Button
-              onClick={() => { resetForm(); setEditingVideo(null); setShowAddDialog(true); }}
+              onClick={() => { resetForm(); setEditingVideo(null); setMediaType("video"); setShowAddDialog(true); }}
               className="bg-gradient-to-r from-cyan-500 to-blue-500"
             >
               <Plus className="w-5 h-5 mr-2" />
-              Add Video
+              Add Media
             </Button>
           )}
         </div>
@@ -1267,28 +1296,66 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="bg-slate-900 border-white/20 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingVideo ? "Edit Video" : "Add Video to Library"}</DialogTitle>
+            <DialogTitle>{editingVideo ? "Edit Media" : "Add Media to Library"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label>Video URL *</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={formData.video_url}
-                  onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-                  placeholder="https://youtube.com/watch?v=..."
-                  className="bg-white/5 border-white/20 text-white flex-1"
-                />
+            {!editingVideo && (
+              <div className="flex gap-2 mb-4">
                 <Button
                   type="button"
-                  onClick={() => fetchYouTubeMetadata(formData.video_url)}
-                  disabled={!formData.video_url}
-                  className="bg-cyan-500 hover:bg-cyan-600"
+                  onClick={() => setMediaType("video")}
+                  className={mediaType === "video" ? "bg-cyan-500" : "bg-white/10"}
                 >
-                  Load
+                  📹 Video
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setMediaType("audio")}
+                  className={mediaType === "audio" ? "bg-cyan-500" : "bg-white/10"}
+                >
+                  🎵 Audio
                 </Button>
               </div>
-            </div>
+            )}
+
+            {mediaType === "video" ? (
+              <div>
+                <Label>Video URL *</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={formData.video_url}
+                    onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
+                    placeholder="https://youtube.com/watch?v=..."
+                    className="bg-white/5 border-white/20 text-white flex-1"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => fetchYouTubeMetadata(formData.video_url)}
+                    disabled={!formData.video_url}
+                    className="bg-cyan-500 hover:bg-cyan-600"
+                  >
+                    Load
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <Label>Upload MP3 Audio *</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept="audio/mp3,audio/mpeg,.mp3"
+                    onChange={handleAudioUpload}
+                    className="bg-white/5 border-white/20 text-white flex-1"
+                    disabled={uploadingAudio}
+                  />
+                  {uploadingAudio && <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />}
+                </div>
+                {formData.video_url && (
+                  <p className="text-xs text-green-400 mt-1">✓ Audio uploaded</p>
+                )}
+              </div>
+            )}
 
             <div>
               <Label>Video ID * (auto-populated)</Label>
