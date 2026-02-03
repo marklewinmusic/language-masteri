@@ -125,20 +125,16 @@ export default function VideoTranscript({ videoId, videoUrl, iframeId, onPauseVi
       }
 
       // Call backend function to list available captions
-      const listResponse = await fetch('/api/youtube/captions/list', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          youtube_url: videoUrl,
-          preferred_langs: ['he', 'iw', 'en']
-        })
+      const listResult = await base44.functions.invoke('youtubeCaptionsList', {
+        youtube_url: videoUrl,
+        preferred_langs: ['he', 'iw', 'en']
       });
 
-      if (!listResponse.ok) {
-        throw new Error('Failed to fetch caption tracks');
+      if (!listResult || listResult.error) {
+        throw new Error(listResult?.error || 'Failed to fetch caption tracks');
       }
 
-      const { video_id, tracks } = await listResponse.json();
+      const { video_id, tracks } = listResult;
 
       if (!tracks || tracks.length === 0) {
         // No captions available - update status and allow manual input
@@ -162,20 +158,16 @@ export default function VideoTranscript({ videoId, videoUrl, iframeId, onPauseVi
       const selectedTrack = tracks[0];
 
       // Download the caption track
-      const downloadResponse = await fetch('/api/youtube/captions/download', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          video_id: ytId,
-          track_id: selectedTrack.track_id
-        })
+      const downloadResult = await base44.functions.invoke('youtubeCaptionsDownload', {
+        video_id: ytId,
+        track_id: selectedTrack.track_id
       });
 
-      if (!downloadResponse.ok) {
-        throw new Error('Failed to download captions');
+      if (!downloadResult || downloadResult.error) {
+        throw new Error(downloadResult?.error || 'Failed to download captions');
       }
 
-      const { transcript_text, format } = await downloadResponse.json();
+      const { transcript_text, format } = downloadResult;
 
       // Save to database
       await base44.entities.Video.update(id, {
