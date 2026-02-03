@@ -42,8 +42,17 @@ export default function LanguageSelect() {
     },
     onSuccess: async () => {
       const currentUser = await base44.auth.me();
+      const profiles = await base44.entities.UserProfile.filter({ created_by: currentUser.email });
+      if (profiles[0]) {
+        await base44.entities.UserProfile.update(profiles[0].id, {
+          is_new_user: false,
+          onboarding_completed_at: new Date().toISOString(),
+          avatar_id: "default",
+          avatar_name: "Student"
+        });
+      }
       await queryClient.invalidateQueries({ queryKey: ['userProfile', currentUser?.email] });
-      navigate(createPageUrl("AvatarSelect"));
+      navigate(createPageUrl("Home"));
     },
   });
 
