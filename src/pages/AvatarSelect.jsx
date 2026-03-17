@@ -204,8 +204,8 @@ Examples: Penny, Bucks, Clever, Lucky, Earnie`,
 
   const handleAvatarSelection = (imageUrl) => {
     setSelectedAvatarImage(imageUrl);
-    setSelectedAvatar({ ...selectedAvatar, imageUrl, status: "ready" });
-    setStep(4); // Go to naming
+    setSelectedAvatar(prev => ({ ...prev, imageUrl, status: "ready" }));
+    setStep(4);
   };
 
   const handleFinish = () => {
