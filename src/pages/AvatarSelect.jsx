@@ -147,24 +147,16 @@ export default function AvatarSelect() {
     setStep(2);
   };
 
+  const buildDescription = () =>
+    `A ${selectedAvatar.label} with ${selectedTraits.join(", ")}, wearing ${selectedAccessories.join(", ")}, with a ${selectedVibe} vibe. ${extraDetails}`;
+
   const handleDescriptionDone = async () => {
-    if (selectedTraits.length < 1) {
-      toast.error("Pick at least 1 trait");
-      return;
-    }
-    if (selectedAccessories.length < 1) {
-      toast.error("Pick at least 1 accessory");
-      return;
-    }
-    if (!selectedVibe) {
-      toast.error("Pick a vibe");
-      return;
-    }
-    
+    if (selectedTraits.length < 1) return toast.error("Pick at least 1 trait");
+    if (selectedAccessories.length < 1) return toast.error("Pick at least 1 accessory");
+    if (!selectedVibe) return toast.error("Pick a vibe");
+
     setGeneratingNames(true);
-    
-    const avatarTypeName = selectedAvatar.label;
-    const description = `A ${avatarTypeName} with ${selectedTraits.join(", ")}, wearing ${selectedAccessories.join(", ")}, with a ${selectedVibe} vibe. ${extraDetails}`;
+    const description = buildDescription();
     
     try {
       const result = await base44.integrations.Core.InvokeLLM({
