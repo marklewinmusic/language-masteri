@@ -83,12 +83,12 @@ const customizationOptions = {
 export default function AvatarSelect() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(1); // 1: type, 2: describe, 3: choose image, 4: name
+  const [selectedAvatar, setSelectedAvatar] = useState(null);
 
   useEffect(() => {
     document.title = "Create Avatar - Lashon Languages";
-  }, []); // 1: type, 2: describe, 3: choose image, 4: name
-  const [selectedAvatar, setSelectedAvatar] = useState(null);
+  }, []);
   const [selectedTraits, setSelectedTraits] = useState([]);
   const [selectedAccessories, setSelectedAccessories] = useState([]);
   const [selectedVibe, setSelectedVibe] = useState("");
