@@ -232,66 +232,8 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
           </AnimatePresence>
         </div>
 
-        {/* Session Timer */}
+        {/* Stats + Timer */}
         <div className="flex items-center gap-2">
-          {sessionActive ? (
-            <div className="flex items-center gap-2">
-              <motion.button
-                onClick={togglePause}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl border cursor-pointer ${
-                  profile.session_paused 
-                    ? 'bg-yellow-500/20 border-yellow-500/50' 
-                    : timeRemaining < 300 
-                      ? 'bg-red-500/20 border-red-500/50' 
-                      : 'bg-cyan-500/20 border-cyan-500/50'
-                }`}
-                title={profile.session_paused ? "Click to resume" : "Click to pause"}
-              >
-                <Clock className={`w-5 h-5 ${
-                  profile.session_paused 
-                    ? 'text-yellow-400' 
-                    : timeRemaining < 300 
-                      ? 'text-red-400' 
-                      : 'text-cyan-400'
-                }`} />
-                <span className={`font-bold ${
-                  profile.session_paused 
-                    ? 'text-yellow-400' 
-                    : timeRemaining < 300 
-                      ? 'text-red-400' 
-                      : 'text-cyan-400'
-                }`}>
-                  {formatTime(timeRemaining)} {profile.session_paused && '⏸️'}
-                </span>
-              </motion.button>
-              <Button
-                onClick={endSession}
-                variant="outline"
-                size="sm"
-                className="bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30"
-              >
-                End
-              </Button>
-            </div>
-          ) : (
-            <Button
-              onClick={() => startSession(30)}
-              variant="outline"
-              size="sm"
-              className="bg-cyan-500/20 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/30"
-            >
-              <Clock className="w-4 h-4 mr-1" />
-              Start
-            </Button>
-          )}
-        </div>
-
-
-
-        {/* Stats */}
-        <div className="flex items-center gap-4">
           {/* Streak */}
           <motion.div
             whileHover={{ scale: 1.05 }}
@@ -303,43 +245,62 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
 
           {/* Flashcards */}
           <Link to={createPageUrl("Flashcards")}>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="flex items-center gap-1.5 bg-blue-500 rounded-lg px-2.5 py-1.5"
-            >
+            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-1.5 bg-blue-500 rounded-lg px-2.5 py-1.5">
               <span className="text-base">🧠</span>
             </motion.div>
           </Link>
 
           {/* Backpack */}
           <Link to={createPageUrl("Backpack")}>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="flex items-center gap-1.5 bg-amber-500 rounded-lg px-2.5 py-1.5"
-            >
+            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-1.5 bg-amber-500 rounded-lg px-2.5 py-1.5">
               <span className="text-base">🎒</span>
             </motion.div>
           </Link>
 
           {/* Songs */}
           <Link to={createPageUrl("Songs")}>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="flex items-center gap-1.5 bg-pink-500 rounded-lg px-2.5 py-1.5"
-            >
+            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-1.5 bg-pink-500 rounded-lg px-2.5 py-1.5">
               <span className="text-base">🎵</span>
             </motion.div>
           </Link>
 
           {/* Journal */}
           <Link to={createPageUrl("Journal")}>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="flex items-center gap-1.5 bg-purple-500 rounded-lg px-2.5 py-1.5"
-            >
+            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-1.5 bg-purple-500 rounded-lg px-2.5 py-1.5">
               <span className="text-base">📓</span>
             </motion.div>
           </Link>
+
+          {/* Timer */}
+          {sessionActive ? (
+            <motion.button
+              onClick={togglePause}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onDoubleClick={endSession}
+              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 ${
+                profile.session_paused
+                  ? 'bg-yellow-500'
+                  : timeRemaining < 300
+                    ? 'bg-red-500'
+                    : 'bg-cyan-600'
+              }`}
+              title="Click to pause/resume • Double-click to end"
+            >
+              <Clock className="w-4 h-4 text-white" />
+              <span className="text-white font-bold text-sm">{formatTime(timeRemaining)}{profile.session_paused ? '⏸' : ''}</span>
+            </motion.button>
+          ) : (
+            <motion.button
+              onClick={() => startSession(30)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center gap-1.5 bg-cyan-600 rounded-lg px-2.5 py-1.5"
+            >
+              <Clock className="w-4 h-4 text-white" />
+              <span className="text-white font-bold text-sm">Start</span>
+            </motion.button>
+          )}
         </div>
       </div>
     </div>
