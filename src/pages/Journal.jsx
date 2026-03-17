@@ -356,13 +356,6 @@ Make them useful for a Hebrew learner writing a journal.`,
           </div>
         </div>
 
-        {/* Leaderboard - Lazy loaded */}
-        <Suspense fallback={<div className="mb-6 h-32 bg-white/5 rounded-2xl animate-pulse" />}>
-          <div className="mb-6">
-            <JournalLeaderboard entries={entries} />
-          </div>
-        </Suspense>
-
         {/* Today's Entry - Clean Style */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

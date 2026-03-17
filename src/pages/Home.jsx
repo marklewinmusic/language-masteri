@@ -504,11 +504,6 @@ export default function Home() {
 
       {/* Quick Navigation */}
       <div className="max-w-4xl mx-auto px-4 pt-4">
-        {/* Journal Leaderboard */}
-        <div className="mb-6">
-          <JournalLeaderboard entries={journalEntries} />
-        </div>
-
         <div className="grid grid-cols-3 gap-2">
           <Link to={createPageUrl("Home")}>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
