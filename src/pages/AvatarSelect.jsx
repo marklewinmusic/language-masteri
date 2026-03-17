@@ -116,29 +116,23 @@ export default function AvatarSelect() {
   const createProfileMutation = useMutation({
     mutationFn: async (profileData) => {
       const currentUser = await base44.auth.me();
-      const existingProfiles = await base44.entities.UserProfile.filter({ created_by: currentUser.email });
-      if (existingProfiles.length > 0) {
-        return await base44.entities.UserProfile.update(existingProfiles[0].id, profileData);
+      const existing = await base44.entities.UserProfile.filter({ created_by: currentUser.email });
+      if (existing.length > 0) {
+        return await base44.entities.UserProfile.update(existing[0].id, profileData);
       }
       return await base44.entities.UserProfile.create(profileData);
     },
     onSuccess: async (data, variables) => {
       const currentUser = await base44.auth.me();
       await queryClient.invalidateQueries({ queryKey: ['userProfile', currentUser?.email] });
-
-      // Notify admin of new user
       try {
-        const currentUser = await base44.auth.me();
         await base44.functions.invoke('notifyNewUser', {
           userEmail: currentUser?.email,
           userName: currentUser?.full_name,
           language: variables.language || profile?.language,
           avatarName: variables.avatar_name
         });
-      } catch (e) {
-        console.error('Failed to notify admin:', e);
-      }
-
+      } catch (e) {}
       navigate(createPageUrl("Home"));
       toast.success("Welcome! Let's start learning! 🌱");
     },
