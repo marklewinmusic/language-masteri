@@ -463,14 +463,11 @@ Examples: Penny, Bucks, Clever, Lucky, Earnie`,
                       onClick={() => setStep(2)}
                       variant="outline"
                       className="flex-1 py-6 text-lg border-white/30 bg-white/10 text-black font-semibold hover:bg-white/20"
-                    >
+                      >
                       Edit description
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        const description = `${selectedAvatar.label}: ${selectedTraits.join(", ")}, ${selectedAccessories.join(", ")}, ${selectedVibe} vibe. ${extraDetails}`;
-                        generateAvatarOptions(description);
-                      }}
+                      </Button>
+                      <Button
+                      onClick={() => generateAvatarOptions(buildDescription())}
                       variant="outline"
                       className="flex-1 py-6 text-lg border-white/30 bg-white/10 text-black font-semibold hover:bg-white/20"
                     >
