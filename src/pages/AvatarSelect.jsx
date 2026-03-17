@@ -209,13 +209,7 @@ Examples: Penny, Bucks, Clever, Lucky, Earnie`,
   };
 
   const handleFinish = () => {
-    if (!avatarName.trim()) {
-      toast.error("Please name your avatar");
-      return;
-    }
-    
-    const description = `${selectedAvatar.label}: ${selectedTraits.join(", ")}, ${selectedAccessories.join(", ")}, ${selectedVibe} vibe. ${extraDetails}`;
-    
+    if (!avatarName.trim()) return toast.error("Please name your avatar");
     createProfileMutation.mutate({
       avatar_id: selectedAvatar.id,
       avatar_type: selectedAvatar.type,
