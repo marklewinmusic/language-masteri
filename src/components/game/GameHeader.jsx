@@ -179,7 +179,7 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="absolute top-full left-0 mt-2 z-50 bg-slate-900 border border-white/20 rounded-xl shadow-2xl overflow-hidden min-w-[200px]"
+                className="absolute bottom-full left-0 mb-2 z-50 bg-slate-900 border border-white/20 rounded-xl shadow-2xl overflow-hidden min-w-[200px]"
               >
                 <div className="p-2">
                   <div className="px-3 py-2 text-white/60 text-xs font-medium border-b border-white/10">
