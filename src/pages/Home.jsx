@@ -101,9 +101,12 @@ export default function Home() {
     refetchOnMount: false,
   });
 
+  const profileLoaded = !!userProfile;
+
   const { data: lessonProgress = [] } = useQuery({
     queryKey: ['lessonProgress'],
     queryFn: () => base44.entities.LessonProgress.list(),
+    enabled: profileLoaded,
     staleTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -112,6 +115,7 @@ export default function Home() {
   const { data: songProgress = [] } = useQuery({
     queryKey: ['songProgress'],
     queryFn: () => base44.entities.SongProgress.list(),
+    enabled: profileLoaded,
     staleTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -120,6 +124,7 @@ export default function Home() {
   const { data: songs = [] } = useQuery({
     queryKey: ['songs'],
     queryFn: () => base44.entities.Song.list(),
+    enabled: profileLoaded,
     staleTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -128,6 +133,7 @@ export default function Home() {
   const { data: todoProgress = [] } = useQuery({
     queryKey: ['todoProgress'],
     queryFn: () => base44.entities.TodoProgress.list(),
+    enabled: profileLoaded,
     staleTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -139,7 +145,7 @@ export default function Home() {
       if (!userProfile?.language) return [];
       return base44.entities.Day.filter({ language: userProfile.language });
     },
-    enabled: !!userProfile && !!userProfile.language,
+    enabled: profileLoaded && !!userProfile.language,
     staleTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -148,6 +154,7 @@ export default function Home() {
   const { data: dayProgress = [] } = useQuery({
     queryKey: ['dayProgress'],
     queryFn: () => base44.entities.DayProgress.list(),
+    enabled: profileLoaded,
     staleTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -156,6 +163,7 @@ export default function Home() {
   const { data: activityProgress = [] } = useQuery({
     queryKey: ['activityProgress'],
     queryFn: () => base44.entities.ActivityProgress.list(),
+    enabled: profileLoaded,
     staleTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -164,6 +172,7 @@ export default function Home() {
   const { data: journalEntries = [] } = useQuery({
     queryKey: ['journalEntries'],
     queryFn: () => base44.entities.JournalEntry.list('-date'),
+    enabled: profileLoaded,
     staleTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
