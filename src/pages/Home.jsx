@@ -431,7 +431,7 @@ export default function Home() {
   const currentDay = userProfile?.current_day || 1;
   const sortedDays = [...days].sort((a, b) => a.day_number - b.day_number);
 
-  const isDayUnlocked = (dayNum) => isMasterUser || dayNum <= currentDay;
+  const isDayUnlocked = (dayNum) => isMasterUser || dayNum <= 3 || dayNum <= currentDay;
   const getDayProgress = (dayId) => dayProgress.find(p => p.day_id === dayId);
 
   const handleAddTask = (dayId) => {
@@ -773,7 +773,7 @@ export default function Home() {
                     </Button>
                     )}
                     </div>
-                    ) : sortedDays.slice((currentWeek - 1) * 7, currentWeek * 7).map((day, idx) => {
+                    ) : sortedDays.slice(0, 3).map((day, idx) => {
               const unlocked = isDayUnlocked(day.day_number);
               const progress = getDayProgress(day.id);
               const isExpanded = expandedDay === day.day_number;
@@ -990,24 +990,16 @@ export default function Home() {
                 );
                 })}
 
-                {sortedDays.length > 7 && (
-                  <div className="flex justify-center gap-3 mt-6">
-                    {currentWeek > 1 && (
-                      <Button
-                        onClick={() => setCurrentWeek(prev => prev - 1)}
-                        className="bg-white/10 border border-white/20 text-white hover:bg-white/20"
-                      >
-                        Show Last 7 Days
-                      </Button>
-                    )}
-                    {sortedDays.length > currentWeek * 7 && (
-                      <Button
-                        onClick={() => setCurrentWeek(prev => prev + 1)}
-                        className="bg-white/10 border border-white/20 text-white hover:bg-white/20"
-                      >
-                        Days {currentWeek * 7 + 1}-{Math.min((currentWeek + 1) * 7, sortedDays.length)}: Week {currentWeek + 1}
-                      </Button>
-                    )}
+                {sortedDays.length > 0 && (
+                  <div className="flex flex-col items-center gap-1 mt-2 text-white/30">
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span className="text-lg">•</span>
+                      <span className="text-lg">•</span>
+                      <span className="text-lg">•</span>
+                    </div>
+                    <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white/40 text-sm font-medium">
+                      🔒 Day 100
+                    </div>
                   </div>
                 )}
                 </div>
