@@ -988,14 +988,11 @@ export default function Home() {
                 })}
 
                 {sortedDays.length > 0 && (
-                  <div className="flex flex-col items-center gap-1 mt-2 text-white/30">
-                    <div className="flex flex-col items-center gap-0.5">
-                      <span className="text-lg">•</span>
-                      <span className="text-lg">•</span>
-                      <span className="text-lg">•</span>
-                    </div>
-                    <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white/40 text-sm font-medium">
-                      🔒 Day 100
+                  <div className="flex items-center gap-3 mt-3 px-2">
+                    <span className="text-white/30 text-lg font-bold tracking-widest">• • •</span>
+                    <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white/40 text-sm font-medium flex items-center gap-2">
+                      <Lock className="w-3 h-3" />
+                      Day 100
                     </div>
                   </div>
                 )}

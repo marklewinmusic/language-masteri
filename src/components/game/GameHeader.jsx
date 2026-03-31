@@ -156,21 +156,29 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
     return null;
   }
 
+  const navItems = [
+    { to: "Home", emoji: "🏠", label: "Home" },
+    { to: "Flashcards", emoji: "🎒", label: "Words" },
+    { to: "Songs", emoji: "🎵", label: "Songs" },
+    { to: "BabyVideos", emoji: "📺", label: "Videos" },
+    { to: "Journal", emoji: "📓", label: "Journal" },
+  ];
+
   return (
-    <div className="bg-gradient-to-r from-slate-900/95 via-purple-900/95 to-slate-900/95 backdrop-blur-xl border-b border-white/10 px-4 py-3">
+    <div style={{ background: 'linear-gradient(to right, #2d2a1e, #3a3520, #2d2a1e)', borderBottom: '1px solid #c9a84c40' }} className="backdrop-blur-xl px-4 py-2">
       <div className="flex items-center justify-between max-w-7xl mx-auto">
-        {/* Menu Button */}
-        <div className="relative">
+
+        {/* Left: Language selector */}
+        <div className="relative flex-shrink-0">
           <motion.button
             onClick={() => setShowMenu(!showMenu)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="relative flex items-center gap-3 cursor-pointer"
+            className="flex items-center gap-2 cursor-pointer px-3 py-1.5 rounded-lg"
+            style={{ background: '#c9a84c20', border: '1px solid #c9a84c50' }}
           >
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">{languageFlags[profile?.language] || '🌍'}</span>
-              <p className="text-white font-bold">{languageNames[profile?.language] || 'Language'}</p>
-            </div>
+            <span className="text-xl">{languageFlags[profile?.language] || '🌍'}</span>
+            <span className="font-semibold text-sm" style={{ color: '#c9a84c' }}>{languageNames[profile?.language] || 'Language'}</span>
           </motion.button>
 
           <AnimatePresence>
@@ -179,10 +187,11 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="absolute bottom-full left-0 mb-2 z-50 bg-slate-900 border border-white/20 rounded-xl shadow-2xl overflow-hidden min-w-[200px]"
+                className="absolute top-full left-0 mt-2 z-50 rounded-xl shadow-2xl overflow-hidden min-w-[200px]"
+                style={{ background: '#1e1c12', border: '1px solid #c9a84c40' }}
               >
                 <div className="p-2">
-                  <div className="px-3 py-2 text-white/60 text-xs font-medium border-b border-white/10">
+                  <div className="px-3 py-2 text-xs font-medium border-b" style={{ color: '#c9a84c80', borderColor: '#c9a84c20' }}>
                     Learning Language
                   </div>
                   <div className="space-y-1 mt-2">
@@ -191,27 +200,20 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
                         key={lang}
                         onClick={() => changeLanguageMutation.mutate(lang)}
                         disabled={changeLanguageMutation.isPending}
-                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
-                          profile?.language === lang
-                            ? 'bg-cyan-500/20 text-cyan-400'
-                            : 'text-white hover:bg-white/10'
-                        }`}
+                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-all`}
+                        style={profile?.language === lang ? { background: '#c9a84c20', color: '#c9a84c' } : { color: '#d4c9a0' }}
                       >
                         <span className="text-xl">{languageFlags[lang]}</span>
                         <span className="text-sm font-medium">{languageNames[lang]}</span>
-                        {profile?.language === lang && (
-                          <span className="ml-auto text-xs">✓</span>
-                        )}
+                        {profile?.language === lang && <span className="ml-auto text-xs">✓</span>}
                       </button>
                     ))}
                   </div>
-                  <div className="border-t border-white/10 mt-2 pt-2">
+                  <div className="mt-2 pt-2" style={{ borderTop: '1px solid #c9a84c20' }}>
                     <Button
-                      onClick={() => {
-                        setShowMenu(false);
-                        navigate(createPageUrl("LanguageSelect"));
-                      }}
-                      className="w-full bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 justify-start"
+                      onClick={() => { setShowMenu(false); navigate(createPageUrl("LanguageSelect")); }}
+                      className="w-full justify-start text-sm mb-1"
+                      style={{ background: '#c9a84c15', color: '#c9a84c' }}
                       variant="ghost"
                     >
                       <Globe className="w-4 h-4 mr-2" />
@@ -219,7 +221,8 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
                     </Button>
                     <Button
                       onClick={handleLogout}
-                      className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 justify-start mt-1"
+                      className="w-full justify-start text-sm"
+                      style={{ background: '#ff444415', color: '#ff6b6b' }}
                       variant="ghost"
                     >
                       <LogOut className="w-4 h-4 mr-2" />
@@ -232,44 +235,36 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
           </AnimatePresence>
         </div>
 
-        {/* Stats + Timer */}
-        <div className="flex items-center gap-2">
+        {/* Center: Brand name */}
+        <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none">
+          <p className="font-bold text-base tracking-widest uppercase" style={{ color: '#c9a84c', fontFamily: 'Georgia, serif', letterSpacing: '0.15em' }}>Language Masteri</p>
+        </div>
+
+        {/* Right: Nav buttons + streak + timer */}
+        <div className="flex items-center gap-1 flex-shrink-0">
           {/* Streak */}
           <motion.div
             whileHover={{ scale: 1.05 }}
-            className="flex items-center gap-2 bg-orange-500/20 border border-orange-500/50 rounded-xl px-3 py-2"
+            className="flex flex-col items-center px-2 py-1 rounded-lg"
+            style={{ background: '#c9a84c15', border: '1px solid #c9a84c30' }}
           >
-            <Flame className="w-5 h-5 text-orange-400" />
-            <span className="font-bold text-orange-400">{profile?.daily_streak || 0}</span>
+            <Flame className="w-4 h-4" style={{ color: '#c9a84c' }} />
+            <span className="text-xs font-bold" style={{ color: '#c9a84c' }}>{profile?.daily_streak || 0}</span>
           </motion.div>
 
-          {/* Backpack / Flashcards */}
-          <Link to={createPageUrl("Flashcards")}>
-            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-1.5 bg-amber-500 rounded-lg px-2.5 py-1.5">
-              <span className="text-base">🎒</span>
-            </motion.div>
-          </Link>
-
-          {/* Songs */}
-          <Link to={createPageUrl("Songs")}>
-            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-1.5 bg-pink-500 rounded-lg px-2.5 py-1.5">
-              <span className="text-base">🎵</span>
-            </motion.div>
-          </Link>
-
-          {/* Videos */}
-          <Link to={createPageUrl("BabyVideos")}>
-            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-1.5 bg-blue-500 rounded-lg px-2.5 py-1.5">
-              <span className="text-base">📺</span>
-            </motion.div>
-          </Link>
-
-          {/* Journal */}
-          <Link to={createPageUrl("Journal")}>
-            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-1.5 bg-purple-500 rounded-lg px-2.5 py-1.5">
-              <span className="text-base">📓</span>
-            </motion.div>
-          </Link>
+          {/* Nav items */}
+          {navItems.map(({ to, emoji, label }) => (
+            <Link key={to} to={createPageUrl(to)}>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="flex flex-col items-center px-2 py-1 rounded-lg transition-all"
+                style={{ background: '#4a6741' + '30', border: '1px solid #4a674150' }}
+              >
+                <span className="text-sm">{emoji}</span>
+                <span className="text-xs" style={{ color: '#a8c4a0' }}>{label}</span>
+              </motion.div>
+            </Link>
+          ))}
 
           {/* Timer */}
           {sessionActive ? (
@@ -278,27 +273,23 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onDoubleClick={endSession}
-              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 ${
-                profile.session_paused
-                  ? 'bg-yellow-500'
-                  : timeRemaining < 300
-                    ? 'bg-red-500'
-                    : 'bg-cyan-600'
-              }`}
+              className="flex flex-col items-center px-2 py-1 rounded-lg"
+              style={{ background: profile.session_paused ? '#b8860b' : timeRemaining < 300 ? '#8b1a1a' : '#2d5a3d', border: '1px solid #c9a84c50' }}
               title="Click to pause/resume • Double-click to end"
             >
               <Clock className="w-4 h-4 text-white" />
-              <span className="text-white font-bold text-sm">{formatTime(timeRemaining)}{profile.session_paused ? '⏸' : ''}</span>
+              <span className="text-white font-bold text-xs">{formatTime(timeRemaining)}</span>
             </motion.button>
           ) : (
             <motion.button
               onClick={() => startSession(30)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-1.5 bg-cyan-600 rounded-lg px-2.5 py-1.5"
+              className="flex flex-col items-center px-2 py-1 rounded-lg"
+              style={{ background: '#2d5a3d', border: '1px solid #4a6741' }}
             >
               <Clock className="w-4 h-4 text-white" />
-              <span className="text-white font-bold text-sm">Start</span>
+              <span className="text-white font-bold text-xs">Timer</span>
             </motion.button>
           )}
         </div>
