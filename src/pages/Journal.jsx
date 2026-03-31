@@ -346,11 +346,11 @@ Make them useful for a Hebrew learner writing a journal.`,
             <ArrowLeft className="w-6 h-6" />
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-white flex items-center gap-2" style={{ fontFamily: 'Georgia, serif' }}>
+            <h1 className="text-3xl font-bold flex items-center gap-2" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>
               <BookOpen className="w-8 h-8" />
               Daily Journal
             </h1>
-            <p className="text-white/60">
+            <p style={{ color: '#6b7c5a' }}>
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
             </p>
           </div>

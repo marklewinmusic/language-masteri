@@ -919,8 +919,8 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-white mb-2">Media Library</h1>
-            <p className="text-white/60">Central repository for all learning videos</p>
+            <h1 className="text-4xl font-bold mb-2" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Media Library</h1>
+            <p style={{ color: '#6b7c5a' }}>Central repository for all learning videos</p>
           </div>
           {canEdit && (
             <Button

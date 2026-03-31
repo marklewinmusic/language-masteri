@@ -292,8 +292,8 @@ export default function Flashcards() {
       <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 50%, #eae6da 100%)' }}>
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-white mb-2">Flashcards</h1>
-            <p className="text-white/60">Pick a level to start learning</p>
+            <h1 className="text-3xl font-bold mb-2" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Flashcards</h1>
+            <p style={{ color: '#6b7c5a' }}>Pick a level to start learning</p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -307,17 +307,17 @@ export default function Flashcards() {
                   onClick={() => count > 0 && startSession(level)}
                   className={`relative p-6 rounded-3xl border-2 transition-all ${
                     count > 0
-                      ? 'border-white/20 bg-white/5 hover:border-cyan-400/50 cursor-pointer'
-                      : 'border-white/10 bg-white/5 opacity-50 cursor-not-allowed'
+                      ? 'border-stone-300 bg-white/60 hover:border-amber-500/50 cursor-pointer'
+                      : 'border-stone-200 bg-white/30 opacity-50 cursor-not-allowed'
                   }`}
                 >
                   <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-4 mx-auto shadow-lg`}>
                     <span className="text-3xl font-bold text-white">{level}</span>
                   </div>
-                  <h3 className="text-white font-bold text-xl mb-1">{label}</h3>
-                  <p className="text-white/60 text-sm mb-2">{subtitle}</p>
-                  <div className="bg-white/10 rounded-xl px-3 py-1 inline-block">
-                    <span className="text-white font-medium">{count} words</span>
+                  <h3 className="font-bold text-xl mb-1" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>{label}</h3>
+                  <p className="text-sm mb-2" style={{ color: '#6b7c5a' }}>{subtitle}</p>
+                  <div className="rounded-xl px-3 py-1 inline-block" style={{ background: '#e8e4d8' }}>
+                    <span className="font-medium" style={{ color: '#5a6b3a' }}>{count} words</span>
                   </div>
                 </motion.button>
               );

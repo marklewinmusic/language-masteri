@@ -16,7 +16,7 @@ export default function MediaLibraryHeader() {
       <div className="flex items-center justify-between max-w-7xl mx-auto">
         <div className="flex items-center gap-4">
           <Link to={createPageUrl("Home")}>
-            <Button variant="ghost" className="text-white hover:bg-white/10">
+            <Button variant="ghost" style={{ color: '#f5f0e8' }} className="hover:bg-white/10">
               <Home className="w-5 h-5 mr-2" />
               Home
             </Button>

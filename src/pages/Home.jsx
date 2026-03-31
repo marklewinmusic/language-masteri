@@ -720,8 +720,8 @@ export default function Home() {
           <div className="space-y-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-2xl font-bold text-white">Days</h2>
-                <p className="text-white/60">Day {currentDay} of 100</p>
+                <h2 className="text-2xl font-bold" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Days</h2>
+                <p style={{ color: '#6b7c5a' }}>Day {currentDay} of 100</p>
               </div>
               {isMasterUser && (
                 <div className="flex gap-2">
