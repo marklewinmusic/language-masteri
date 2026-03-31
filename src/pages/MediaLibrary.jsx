@@ -1343,6 +1343,13 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                 >
                   🎵 Audio
                 </Button>
+                <Button
+                  type="button"
+                  onClick={() => setMediaType("song")}
+                  className={mediaType === "song" ? "bg-cyan-500" : "bg-white/10"}
+                >
+                  🎶 Song
+                </Button>
               </div>
             )}
 
@@ -1366,7 +1373,7 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                   </Button>
                 </div>
               </div>
-            ) : (
+            ) : mediaType === "audio" ? (
               <div>
                 <Label>Upload MP3 Audio *</Label>
                 <div className="flex items-center gap-2">
@@ -1382,6 +1389,24 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                 {formData.video_url && (
                   <p className="text-xs text-green-400 mt-1">✓ Audio uploaded</p>
                 )}
+              </div>
+            ) : (
+              <div>
+                <Label>Upload Song (MP3) *</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept="audio/mp3,audio/mpeg,audio/wav,audio/ogg,.mp3,.wav,.ogg"
+                    onChange={handleAudioUpload}
+                    className="bg-white/5 border-white/20 text-white flex-1"
+                    disabled={uploadingAudio}
+                  />
+                  {uploadingAudio && <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />}
+                </div>
+                {formData.video_url && (
+                  <p className="text-xs text-green-400 mt-1">✓ Song uploaded</p>
+                )}
+                <p className="text-xs text-white/50 mt-2">Supported: MP3, WAV, OGG</p>
               </div>
             )}
 
