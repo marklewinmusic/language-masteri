@@ -165,7 +165,7 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
     { to: "Home", emoji: "🏠", label: "Home" },
     { to: "Flashcards", emoji: "🎒", label: "Words" },
     { to: "Songs", emoji: "🎵", label: "Songs" },
-    { to: "BabyVideos", emoji: "📺", label: "Videos" },
+    { to: "MediaLibrary", emoji: "📺", label: "Videos" },
     { to: "Journal", emoji: "📓", label: "Journal" },
     ...(currentUser?.role === 'admin' || currentUser?.role === 'coach' ? [
       { to: "ManageCoaches", emoji: "👥", label: "Coaches" },
