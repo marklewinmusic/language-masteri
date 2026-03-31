@@ -339,7 +339,7 @@ Make them useful for a Hebrew learner writing a journal.`,
   };
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #0b1a12 0%, #0e2218 50%, #12271a 100%)' }}>
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 50%, #eae6da 100%)' }}>
       <div className="max-w-4xl mx-auto px-4 py-6">
         <div className="flex items-center gap-4 mb-6">
           <Link to={createPageUrl("Home")} className="text-white/60 hover:text-white">

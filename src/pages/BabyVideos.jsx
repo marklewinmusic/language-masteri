@@ -797,7 +797,7 @@ Create about 15-20 conversational lines that naturally introduce and use these v
   };
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #0b1a12 0%, #0e2218 50%, #12271a 100%)' }}>
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 50%, #eae6da 100%)' }}>
       <GameHeader profile={userProfile} coins={userCoins?.coins} onBuyCoins={() => {}} />
 
       <div className="max-w-4xl mx-auto px-4 py-6">

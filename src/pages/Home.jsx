@@ -494,19 +494,12 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #0b1a12 0%, #0e2218 30%, #12271a 60%, #0f1e14 100%)' }}>
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 40%, #eae6da 100%)' }}>
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        {/* Warm sunrise top-left */}
-        <div className="absolute -top-20 -left-20 w-[500px] h-[500px] rounded-full blur-3xl" style={{ background: 'radial-gradient(circle, #c9a84c22 0%, transparent 70%)' }} />
-        {/* Lush forest center-right */}
-        <div className="absolute top-1/3 right-0 w-96 h-96 rounded-full blur-3xl" style={{ background: 'radial-gradient(circle, #3a7d4420 0%, transparent 70%)' }} />
-        {/* Sky-water teal bottom-left */}
-        <div className="absolute bottom-0 left-1/4 w-80 h-80 rounded-full blur-3xl" style={{ background: 'radial-gradient(circle, #2a6e6e18 0%, transparent 70%)' }} />
-        {/* Warm earth bottom-right */}
-        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 rounded-full blur-3xl" style={{ background: 'radial-gradient(circle, #a0622a15 0%, transparent 70%)' }} />
-        {/* Soft moss mid */}
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" style={{ background: 'radial-gradient(circle, #4a8c5030 0%, transparent 60%)' }} />
+        <div className="absolute -top-20 -left-20 w-[500px] h-[500px] rounded-full blur-3xl" style={{ background: 'radial-gradient(circle, #b8a88018 0%, transparent 70%)' }} />
+        <div className="absolute top-1/3 right-0 w-96 h-96 rounded-full blur-3xl" style={{ background: 'radial-gradient(circle, #8a9a7815 0%, transparent 70%)' }} />
+        <div className="absolute bottom-0 left-1/4 w-80 h-80 rounded-full blur-3xl" style={{ background: 'radial-gradient(circle, #c8b89010 0%, transparent 70%)' }} />
       </div>
 
 
