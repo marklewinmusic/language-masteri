@@ -933,6 +933,13 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
           )}
         </div>
 
+        {/* Filter Buttons */}
+        <div className="flex gap-2 p-1 rounded-lg mb-6" style={{ background: '#ffffff18', border: '1px solid #ffffff20', width: 'fit-content' }}>
+          <button onClick={() => setFilterLanguage('all')} className={`px-3 py-1.5 rounded text-sm font-semibold transition-all ${filterLanguage === 'all' && filterDifficulty === 'all' && filterTopic === 'all' ? 'bg-white/20' : 'text-white/60 hover:text-white/80'}`} style={{ color: filterLanguage === 'all' && filterDifficulty === 'all' && filterTopic === 'all' ? '#3d4a2e' : undefined }}>All</button>
+          <button onClick={() => { setFilterLanguage('hebrew'); setFilterDifficulty('all'); setFilterTopic('all'); }} className={`px-3 py-1.5 rounded text-sm font-semibold transition-all ${filterLanguage === 'hebrew' && filterDifficulty === 'all' && filterTopic === 'all' ? 'bg-white/20' : 'text-white/60 hover:text-white/80'}`} style={{ color: filterLanguage === 'hebrew' && filterDifficulty === 'all' && filterTopic === 'all' ? '#3d4a2e' : undefined }}>📹 Videos</button>
+          <button onClick={() => { setFilterLanguage('all'); setFilterDifficulty('all'); setFilterTopic('all'); }} className={`px-3 py-1.5 rounded text-sm font-semibold transition-all text-white/60 hover:text-white/80`}>🎧 Audio Training</button>
+        </div>
+
         {/* Filters */}
         <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
