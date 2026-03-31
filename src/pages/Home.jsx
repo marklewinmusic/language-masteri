@@ -59,6 +59,12 @@ export default function Home() {
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [selectedCoach, setSelectedCoach] = useState("");
   const [selectedStudent, setSelectedStudent] = useState("");
+  const [expandedDay, setExpandedDay] = useState(null);
+  const [newTask, setNewTask] = useState({ name: "", duration: "", page: "" });
+  const [editingTask, setEditingTask] = useState(null);
+  const [editingTaskData, setEditingTaskData] = useState({ name: "", duration: "", page: "" });
+  const [currentWeek, setCurrentWeek] = useState(1);
+  const [addingTaskToDayId, setAddingTaskToDayId] = useState(null);
 
 
   // Get current user
@@ -426,13 +432,6 @@ export default function Home() {
   };
 
 
-
-  const [expandedDay, setExpandedDay] = useState(null);
-  const [newTask, setNewTask] = useState({ name: "", duration: "", page: "" });
-  const [editingTask, setEditingTask] = useState(null); // { dayId, taskId }
-  const [editingTaskData, setEditingTaskData] = useState({ name: "", duration: "", page: "" });
-  const [currentWeek, setCurrentWeek] = useState(1);
-  const [addingTaskToDayId, setAddingTaskToDayId] = useState(null);
 
   const currentDay = userProfile?.current_day || 1;
   const sortedDays = [...days].sort((a, b) => a.day_number - b.day_number);
