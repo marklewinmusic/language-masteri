@@ -257,6 +257,13 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
             </motion.div>
           </Link>
 
+          {/* Videos */}
+          <Link to={createPageUrl("BabyVideos")}>
+            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-1.5 bg-blue-500 rounded-lg px-2.5 py-1.5">
+              <span className="text-base">📺</span>
+            </motion.div>
+          </Link>
+
           {/* Journal */}
           <Link to={createPageUrl("Journal")}>
             <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-1.5 bg-purple-500 rounded-lg px-2.5 py-1.5">
