@@ -918,27 +918,29 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
       <MediaLibraryHeader />
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold mb-2" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Media Library</h1>
+          <h1 className="text-4xl font-bold" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Media Library</h1>
+        </div>
+
+        {/* Filter Buttons and Actions */}
+        <div className="flex items-center justify-between gap-4 mb-6">
           <div className="flex gap-2 p-1 rounded-lg" style={{ background: '#ffffff18', border: '1px solid #ffffff20', width: 'fit-content' }}>
-            <button className="px-3 py-1.5 rounded text-sm font-semibold bg-white/20" style={{ color: '#3d4a2e' }}>🎵 Songs</button>
+            <button onClick={() => setFilterLanguage('all')} className={`px-3 py-1.5 rounded text-sm font-semibold transition-all ${filterLanguage === 'all' && filterDifficulty === 'all' && filterTopic === 'all' ? 'bg-white/20' : 'text-white/60 hover:text-white/80'}`} style={{ color: filterLanguage === 'all' && filterDifficulty === 'all' && filterTopic === 'all' ? '#3d4a2e' : undefined }}>All</button>
+            <button onClick={() => { setFilterLanguage('hebrew'); setFilterDifficulty('all'); setFilterTopic('all'); }} className={`px-3 py-1.5 rounded text-sm font-semibold transition-all ${filterLanguage === 'hebrew' && filterDifficulty === 'all' && filterTopic === 'all' ? 'bg-white/20' : 'text-white/60 hover:text-white/80'}`} style={{ color: filterLanguage === 'hebrew' && filterDifficulty === 'all' && filterTopic === 'all' ? '#3d4a2e' : undefined }}>📹 Videos</button>
+            <button onClick={() => { setFilterLanguage('all'); setFilterDifficulty('all'); setFilterTopic('all'); }} className={`px-3 py-1.5 rounded text-sm font-semibold transition-all text-white/60 hover:text-white/80`}>🎧 Audio Training</button>
+          </div>
+          <div className="flex gap-2 p-1 rounded-lg" style={{ background: '#ffffff18', border: '1px solid #ffffff20' }}>
+            <button className="px-3 py-1.5 rounded text-sm font-semibold" style={{ color: '#6b7c5a' }}>🎵 Songs</button>
             {canEdit && (
               <Button
                 onClick={() => { resetForm(); setEditingVideo(null); setMediaType("video"); setShowAddDialog(true); }}
-                className="px-3 py-1.5"
-                style={{ background: '#ffffff18', border: '1px solid #ffffff20', color: '#6b7c5a' }}
+                className="px-3 py-1.5 text-sm"
+                style={{ background: 'transparent', border: 'none', color: '#6b7c5a' }}
               >
                 <Plus className="w-4 h-4 mr-1" />
                 Add Media
               </Button>
             )}
           </div>
-        </div>
-
-        {/* Filter Buttons */}
-        <div className="flex gap-2 p-1 rounded-lg mb-6" style={{ background: '#ffffff18', border: '1px solid #ffffff20', width: 'fit-content' }}>
-          <button onClick={() => setFilterLanguage('all')} className={`px-3 py-1.5 rounded text-sm font-semibold transition-all ${filterLanguage === 'all' && filterDifficulty === 'all' && filterTopic === 'all' ? 'bg-white/20' : 'text-white/60 hover:text-white/80'}`} style={{ color: filterLanguage === 'all' && filterDifficulty === 'all' && filterTopic === 'all' ? '#3d4a2e' : undefined }}>All</button>
-          <button onClick={() => { setFilterLanguage('hebrew'); setFilterDifficulty('all'); setFilterTopic('all'); }} className={`px-3 py-1.5 rounded text-sm font-semibold transition-all ${filterLanguage === 'hebrew' && filterDifficulty === 'all' && filterTopic === 'all' ? 'bg-white/20' : 'text-white/60 hover:text-white/80'}`} style={{ color: filterLanguage === 'hebrew' && filterDifficulty === 'all' && filterTopic === 'all' ? '#3d4a2e' : undefined }}>📹 Videos</button>
-          <button onClick={() => { setFilterLanguage('all'); setFilterDifficulty('all'); setFilterTopic('all'); }} className={`px-3 py-1.5 rounded text-sm font-semibold transition-all text-white/60 hover:text-white/80`}>🎧 Audio Training</button>
         </div>
 
         {/* Filters */}
