@@ -626,8 +626,7 @@ export default function Home() {
                   { name: 'New', count: wordRatings.filter(w => w.times_practiced === 0).length, icon: '✨', color: '#8a9a6a' },
                   { name: 'Level 1', count: wordRatings.filter(w => w.times_practiced > 0 && w.times_practiced < 3).length, icon: '🌱', color: '#6b7c5a' },
                   { name: 'Level 2', count: wordRatings.filter(w => w.times_practiced >= 3 && w.times_practiced < 5).length, icon: '🌿', color: '#5a6b5a' },
-                  { name: 'Level 3', count: fluentWords.filter(w => w.times_practiced >= 5 && w.times_practiced < 10).length, icon: '⭐', color: '#3d4a2e' },
-                  { name: 'Mastered', count: wordRatings.filter(w => w.times_practiced >= 10).length, icon: '✓', color: '#4a7c4a' },
+                  { name: 'Masteri', count: wordRatings.filter(w => w.times_practiced >= 5).length, icon: '✓', color: '#4a7c4a' },
                 ].map((level) => (
                   <Link key={level.name} to={createPageUrl("Backpack")} className="no-underline">
                     <motion.div
