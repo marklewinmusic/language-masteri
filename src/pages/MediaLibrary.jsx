@@ -914,7 +914,7 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
 
   return (
     <>
-    <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
+    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #0d1a0f 0%, #0f1f14 50%, #121a0e 100%)' }}>
       <MediaLibraryHeader />
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-8">

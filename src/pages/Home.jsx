@@ -494,11 +494,13 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
+    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #0d1a0f 0%, #0f1f14 40%, #121a0e 70%, #0d1509 100%)' }}>
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-yellow-900/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-green-900/10 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-0 w-full h-full" style={{ background: 'radial-gradient(ellipse at 20% 20%, #1a3a1a40 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, #2d4a1a30 0%, transparent 60%), radial-gradient(ellipse at 50% 50%, #0a2a1520 0%, transparent 70%)' }} />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl" style={{ background: '#4a7c3f18' }} />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl" style={{ background: '#c9a84c14' }} />
+        <div className="absolute top-3/4 left-1/2 w-64 h-64 rounded-full blur-3xl" style={{ background: '#2d6a2d12' }} />
       </div>
 
 
