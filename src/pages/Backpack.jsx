@@ -274,15 +274,15 @@ export default function Backpack() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 50%, #eae6da 100%)' }}>
       <GameHeader profile={userProfile} coins={0} onBuyCoins={() => {}} />
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         <div className="flex items-center gap-4 mb-4">
-          <Link to={createPageUrl("Home")} className="text-white/60 hover:text-white">
+          <Link to={createPageUrl("Home")} className="text-stone-400 hover:text-stone-700">
             <ArrowLeft className="w-6 h-6" />
           </Link>
-          <h1 className="text-3xl font-bold text-white">🎒 My Backpack</h1>
+          <h1 className="text-3xl font-bold" style={{ color: '#3a4a3a', fontFamily: 'Cormorant Garamond, serif', fontWeight: 400 }}>🎒 My Backpack</h1>
         </div>
 
         {/* Quick Actions - Top */}
@@ -321,8 +321,8 @@ export default function Backpack() {
               onClick={() => setActiveTab(tab.id)}
               className={`px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all ${
                 activeTab === tab.id
-                  ? `bg-${tab.color}-500/20 text-${tab.color}-400 border border-${tab.color}-500/50`
-                  : "bg-white/5 text-white/60 hover:bg-white/10"
+                  ? "bg-stone-700 text-stone-100 border border-stone-600"
+                  : "bg-white/60 text-stone-500 hover:bg-white/80 border border-stone-200"
               }`}
             >
               {tab.label}
@@ -337,8 +337,8 @@ export default function Backpack() {
               onClick={() => setShowAllEnglish(!showAllEnglish)}
               className={`px-4 py-2 rounded-xl font-medium transition-all ${
                 showAllEnglish 
-                  ? "bg-green-500/20 text-green-400 border border-green-500/50" 
-                  : "bg-white/5 text-white/60 hover:bg-white/10"
+                  ? "bg-stone-600 text-stone-100 border border-stone-500" 
+                  : "bg-white/60 text-stone-500 hover:bg-white/80 border border-stone-200"
               }`}
             >
               {showAllEnglish ? "✓ Show English" : "Show English"}
@@ -350,7 +350,7 @@ export default function Backpack() {
         <div>
           {getDisplayWords().length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-white/40 text-lg">
+              <p className="text-stone-400 text-lg">
                 {activeTab.startsWith("level") && "No words at this level yet!"}
                 {activeTab === "pictures" && "No mnemonic pictures yet. Generate some while learning!"}
               </p>
@@ -367,7 +367,7 @@ export default function Backpack() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     onClick={() => setExpandedId(expandedId === word.id ? null : word.id)}
-                    className="bg-white/5 border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-cyan-400/50 transition-all flex flex-col"
+                    className="bg-white/70 border border-stone-200 rounded-xl overflow-hidden cursor-pointer hover:border-stone-400 transition-all flex flex-col"
                   >
                     <div className="h-32 overflow-hidden">
                       <img src={word.image_url} alt={word.phonetic} className="w-full h-full object-cover" />
@@ -461,7 +461,7 @@ export default function Backpack() {
                     key={word.id}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-white/5 border border-white/10 rounded-lg overflow-hidden"
+                    className="bg-white/70 border border-stone-200 rounded-lg overflow-hidden"
                   >
                     <div className="relative">
                       <div
@@ -555,9 +555,9 @@ export default function Backpack() {
                           key={num}
                           onClick={(e) => handleRateWord(word.id, num, e)}
                           className={`flex-1 h-6 rounded text-xs font-bold transition-all ${
-                            word.times_practiced === num
-                              ? num === 5 ? "bg-green-500 text-white" : "bg-cyan-500 text-white"
-                              : "bg-white/10 text-white/40 hover:bg-white/20"
+                          word.times_practiced === num
+                            ? num === 5 ? "bg-green-600 text-white" : "bg-stone-600 text-white"
+                            : "bg-stone-100 text-stone-400 hover:bg-stone-200"
                           }`}
                         >
                           {num}
@@ -576,7 +576,7 @@ export default function Backpack() {
 
       {/* Word Sentences Dialog */}
       <Dialog open={!!selectedWord} onOpenChange={() => setSelectedWord(null)}>
-        <DialogContent className="bg-slate-900 border-white/20 text-white max-w-sm max-h-[80vh] overflow-y-auto">
+        <DialogContent className="bg-stone-50 border-stone-200 text-stone-800 max-w-sm max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <span className="text-cyan-400">{selectedWord?.phonetic || selectedWord?.word}</span>
@@ -591,9 +591,9 @@ export default function Backpack() {
             </div>
           ) : sentences ? (
             <div className="space-y-4">
-              <p className="text-white/60 text-sm">Tap words to add to New Words:</p>
+              <p className="text-stone-500 text-sm">Tap words to add to New Words:</p>
               {sentences.map((sentence, idx) => (
-                <div key={idx} className="bg-white/5 border border-white/10 rounded-xl p-3">
+                <div key={idx} className="bg-white/60 border border-stone-200 rounded-xl p-3">
                   <div className="flex flex-wrap gap-x-1 gap-y-2 mb-2">
                                             {sentence.transliterated.split(' ').map((word, widx) => {
                                               const wordInfo = sentence.words?.find(w => 
@@ -621,7 +621,7 @@ export default function Backpack() {
                                               );
                                             })}
                                           </div>
-                  <p className="text-white/50 text-sm mt-1">{sentence.english}</p>
+                  <p className="text-stone-400 text-sm mt-1">{sentence.english}</p>
                 </div>
               ))}
               
@@ -645,7 +645,7 @@ export default function Backpack() {
 
       {/* New Word Rating Dialog */}
       <Dialog open={!!activeNewWord} onOpenChange={() => setActiveNewWord(null)}>
-        <DialogContent className="bg-slate-900 border-white/20 text-white max-w-md max-h-[80vh] overflow-y-auto">
+        <DialogContent className="bg-stone-50 border-stone-200 text-stone-800 max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-center">
               <span className="text-white/70 text-lg block" dir="rtl">{activeNewWord?.hebrew}</span>
@@ -655,7 +655,7 @@ export default function Backpack() {
           </DialogHeader>
           
           {/* Mnemonic section - First */}
-          <p className="text-white/60 text-sm mb-2">Describe your own picture to remember this word:</p>
+          <p className="text-stone-500 text-sm mb-2">Describe your own picture to remember this word:</p>
 
           {/* Custom input */}
           <div className="mb-3">
@@ -663,7 +663,7 @@ export default function Backpack() {
               value={newWordCustomMnemonic}
               onChange={(e) => setNewWordCustomMnemonic(e.target.value)}
               placeholder="e.g. A dog eating an apple..."
-              className="bg-white/5 border-white/20 text-white text-sm resize-none h-16 w-full"
+              className="bg-white/60 border-stone-200 text-stone-800 text-sm resize-none h-16 w-full"
             />
             {generatingImage && (
               <div className="flex items-center justify-center gap-2 mt-2 text-white/60 text-sm">
@@ -701,7 +701,7 @@ export default function Backpack() {
           )}
 
           {/* Rating - After picture */}
-          <p className="text-white/60 text-sm mb-2 text-center">How well do you know this word?</p>
+          <p className="text-stone-500 text-sm mb-2 text-center">How well do you know this word?</p>
           <div className="flex gap-2 justify-center mb-4">
             {[1, 2, 3, 4, 5].map((num) => (
               <motion.button
@@ -710,8 +710,8 @@ export default function Backpack() {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handleNewWordRate(num)}
                 className={`w-12 h-12 rounded-xl font-bold ${
-                  num === 5 ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
-                  : "bg-white/20 text-white/80 hover:bg-white/30"
+                  num === 5 ? "bg-green-600 text-white"
+                  : "bg-stone-200 text-stone-700 hover:bg-stone-300"
                 }`}
               >
                 {num}{num === 5 && "⭐"}

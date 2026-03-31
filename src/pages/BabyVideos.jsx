@@ -803,14 +803,14 @@ Create about 15-20 conversational lines that naturally introduce and use these v
       <div className="max-w-4xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Link to={createPageUrl("Home")} className="text-white/60 hover:text-white">
+            <Link to={createPageUrl("Home")} style={{ color: '#5a6b3a' }} className="hover:opacity-70">
               <ArrowLeft className="w-6 h-6" />
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-white">
+              <h1 className="text-3xl font-bold" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>
                 📺 {userProfile?.language === 'hebrew' ? 'Hebrew TV' : 'Videos'}
               </h1>
-              <p className="text-white/60">Watch videos & rate words you learn</p>
+              <p style={{ color: '#6b7c5a' }}>Watch videos & rate words you learn</p>
               {managingUserEmail && currentUser?.role === 'admin' && (
                 <p className="text-amber-400 text-sm font-medium mt-1">
                   👤 Managing videos for: {managingUserEmail}
@@ -1115,7 +1115,7 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                   {/* Add Custom Video Section - hide in single video mode */}
                   {!singleVideoMode && (
                     <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/20 p-6">
-                      <p className="text-white/60 mb-3 text-center">🎬 Add a YouTube video</p>
+                      <p className="mb-3 text-center" style={{ color: '#6b7c5a' }}>🎬 Add a YouTube video</p>
                       <div className="flex gap-2">
                         <input
                           type="text"
@@ -1156,7 +1156,7 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                   {/* Custom Videos - 3-per-row grid */}
                   {customVideos.length > 0 && !singleVideoMode && (
                     <div className="mb-6">
-                      <h2 className="text-white/80 text-lg font-bold mb-4">Your Videos</h2>
+                      <h2 className="text-lg font-bold mb-4" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Your Videos</h2>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {customVideos.map((video) => {
                           const ytId = extractYouTubeId(video.video_url);
@@ -1280,7 +1280,7 @@ Create about 15-20 conversational lines that naturally introduce and use these v
                   onClick={() => setRecommendedExpanded(!recommendedExpanded)}
                   className="w-full flex items-center justify-between p-4 text-left hover:bg-white/5 transition-all"
                 >
-                  <h2 className="text-white font-medium">Recommended Videos ({level1Videos.length})</h2>
+                  <h2 className="font-medium" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Recommended Videos ({level1Videos.length})</h2>
                   <ChevronDown className={`w-5 h-5 text-white/60 transition-transform ${recommendedExpanded ? 'rotate-180' : ''}`} />
                 </button>
 

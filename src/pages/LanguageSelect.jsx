@@ -74,20 +74,21 @@ export default function LanguageSelect() {
 
   if (showComingSoon) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 100%)' }}>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-3xl p-8 text-center"
+          className="max-w-md w-full bg-white/70 backdrop-blur-xl border-2 border-stone-200 rounded-3xl p-8 text-center"
         >
           <div className="text-6xl mb-6">🚧</div>
-          <h2 className="text-3xl font-bold text-white mb-3">Coming Soon!</h2>
-          <p className="text-white/80 text-lg mb-8">
+          <h2 className="text-3xl font-bold mb-3" style={{ color: '#4a5c4a', fontFamily: 'Cormorant Garamond, serif' }}>Coming Soon!</h2>
+          <p className="text-stone-600 text-lg mb-8">
             This language is not available yet. We're working hard to bring it to you soon!
           </p>
           <Button
             onClick={() => setShowComingSoon(false)}
-            className="w-full py-4 text-lg font-bold bg-white text-purple-600 hover:bg-white/90"
+            className="w-full py-4 text-lg font-bold"
+            style={{ background: '#5a6b5a', color: '#f5f0e8' }}
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Go Back
@@ -98,17 +99,17 @@ export default function LanguageSelect() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 100%)' }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-2xl w-full"
       >
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+          <h1 className="text-4xl md:text-5xl font-bold mb-3" style={{ color: '#3a4a3a', fontFamily: 'Cormorant Garamond, serif', fontWeight: 300 }}>
             Choose your language
           </h1>
-          <p className="text-xl text-white/90">
+          <p className="text-lg" style={{ color: '#6b7c6b', fontFamily: 'Jost, sans-serif' }}>
             Start your learning journey
           </p>
         </div>
@@ -120,18 +121,18 @@ export default function LanguageSelect() {
               onClick={() => handleSelect(lang)}
               whileHover={{ scale: lang.active ? 1.05 : 1 }}
               whileTap={{ scale: lang.active ? 0.95 : 1 }}
-              className={`relative p-8 rounded-3xl backdrop-blur-sm border-2 transition-all ${
+              className={`relative p-8 rounded-3xl border-2 transition-all bg-white/60 backdrop-blur-sm ${
                 selectedLanguage === lang.id
-                  ? 'bg-white/20 border-white/60'
+                  ? 'border-stone-500 shadow-lg'
                   : lang.active
-                  ? 'bg-white/10 border-white/20 hover:border-white/40'
-                  : 'bg-white/5 border-white/10 opacity-50 cursor-pointer'
+                  ? 'border-stone-200 hover:border-stone-400'
+                  : 'border-stone-100 opacity-50 cursor-pointer'
               }`}
             >
               <div className="text-7xl mb-3">{lang.emoji}</div>
-              <p className="text-white font-semibold text-lg">{lang.name}</p>
+              <p className="font-semibold text-lg" style={{ color: '#3a4a3a', fontFamily: 'Jost, sans-serif' }}>{lang.name}</p>
               {!lang.active && (
-                <p className="text-white/60 text-xs mt-1">Coming Soon</p>
+                <p className="text-stone-400 text-xs mt-1">Coming Soon</p>
               )}
             </motion.button>
           ))}
@@ -140,7 +141,8 @@ export default function LanguageSelect() {
         <Button
           onClick={handleContinue}
           disabled={!selectedLanguage || selectLanguageMutation.isPending}
-          className="w-full py-6 text-lg font-bold bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white shadow-lg disabled:opacity-50"
+          className="w-full py-6 text-lg font-bold shadow-lg disabled:opacity-50"
+          style={{ background: '#5a6b5a', color: '#f5f0e8', fontFamily: 'Jost, sans-serif' }}
         >
           {selectLanguageMutation.isPending ? "Starting..." : "Continue"}
         </Button>

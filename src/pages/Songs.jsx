@@ -238,18 +238,18 @@ export default function Songs() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 50%, #eae6da 100%)' }}>
       <GameHeader profile={userProfile} coins={userCoins?.coins} onBuyCoins={() => {}} />
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Link to={createPageUrl("Home")} className="text-white/60 hover:text-white">
+            <Link to={createPageUrl("Home")} className="text-stone-400 hover:text-stone-700">
               <ArrowLeft className="w-6 h-6" />
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-white">🎵 Learn Hebrew Songs</h1>
-              <p className="text-white/60">Watch, listen, and add vocab to your backpack</p>
+              <h1 className="text-3xl font-bold" style={{ color: '#3a4a3a', fontFamily: 'Cormorant Garamond, serif', fontWeight: 400 }}>🎵 Learn Hebrew Songs</h1>
+              <p style={{ color: '#7a8a72', fontFamily: 'Jost, sans-serif' }}>Watch, listen, and add vocab to your backpack</p>
             </div>
           </div>
           {isAdmin && (
@@ -260,18 +260,18 @@ export default function Songs() {
         </div>
 
         {addingSong && (
-          <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/20 p-6 mb-6">
-            <h3 className="text-white font-bold mb-4">Add New Song</h3>
+          <div className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200 p-6 mb-6">
+            <h3 className="font-bold mb-4" style={{ color: '#3a4a3a', fontFamily: 'Jost, sans-serif' }}>Add New Song</h3>
             
             <div className="space-y-4">
               <div>
-                <label className="text-white/60 text-sm mb-2 block">YouTube URL</label>
+                <label className="text-stone-500 text-sm mb-2 block">YouTube URL</label>
                 <div className="flex gap-2">
                   <Input
                     value={newSongUrl}
                     onChange={(e) => setNewSongUrl(e.target.value)}
                     placeholder="Paste YouTube URL..."
-                    className="bg-white/5 border-white/20 text-white flex-1"
+                    className="bg-white/50 border-stone-200 text-stone-800 flex-1"
                   />
                   <Button onClick={handleAddSong} disabled={!newSongUrl.trim()}>
                     Add Video
@@ -286,7 +286,7 @@ export default function Songs() {
               </div>
 
               <div>
-                <label className="text-white/60 text-sm mb-2 block">Upload Audio File (MP3, WAV)</label>
+                <label className="text-stone-500 text-sm mb-2 block">Upload Audio File (MP3, WAV)</label>
                 <label className="block">
                   <input
                     type="file"
@@ -315,8 +315,8 @@ export default function Songs() {
 
         {songs.length === 0 ? (
           <div className="text-center py-12">
-            <Music className="w-16 h-16 text-white/40 mx-auto mb-4" />
-            <p className="text-white/60">No songs yet! Come back soon.</p>
+            <Music className="w-16 h-16 text-stone-300 mx-auto mb-4" />
+            <p className="text-stone-400">No songs yet! Come back soon.</p>
           </div>
         ) : (
           <DragDropContext onDragEnd={handleDragEnd}>
@@ -337,14 +337,14 @@ export default function Songs() {
                           <div
                             ref={provided.innerRef}
                             {...provided.draggableProps}
-                            className={`bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden ${
+                            className={`bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200 overflow-hidden ${
                               snapshot.isDragging ? 'shadow-2xl scale-105' : ''
                             }`}
                           >
                             <div className="flex gap-4 p-4">
                               {isAdmin && (
                                 <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing flex items-center">
-                                  <GripVertical className="w-5 h-5 text-white/40" />
+                                  <GripVertical className="w-5 h-5 text-stone-400" />
                                 </div>
                               )}
                               <div
@@ -387,7 +387,7 @@ export default function Songs() {
                                       <h3 className="text-white font-bold">{song.title}</h3>
                                     )}
                                   </div>
-                                  <p className="text-white/60 text-sm mt-1">
+                                  <p className="text-stone-500 text-sm mt-1">
                                     Level {song.level} • {hasVideo ? '📺 Video' : '🎵 Audio'} • {song.transcript?.length || 0} words
                                   </p>
                                   {isCompleted && (
@@ -396,7 +396,7 @@ export default function Songs() {
                                     </span>
                                   )}
                                 </div>
-                                <ChevronRight className={`w-5 h-5 text-white/40 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                                <ChevronRight className={`w-5 h-5 text-stone-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                               </div>
                               {isAdmin && (
                                 <button
@@ -412,7 +412,7 @@ export default function Songs() {
                               <motion.div
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: "auto" }}
-                                className="p-4 bg-slate-800/50 border-t border-white/20 space-y-4"
+                                className="p-4 bg-stone-50/80 border-t border-stone-200 space-y-4"
                               >
                                 {hasVideo && ytId && (
                                   <div className="aspect-video bg-black rounded-xl overflow-hidden">
@@ -430,7 +430,7 @@ export default function Songs() {
                                 )}
 
                                 {hasAudio && !hasVideo && (
-                                  <div className="bg-white/5 rounded-xl p-4">
+                                  <div className="bg-white/60 rounded-xl p-4">
                                     <audio id={`audio-player-${song.id}`} controls className="w-full">
                                       <source src={song.audio_url} type="audio/mpeg" />
                                       Your browser does not support the audio element.
@@ -440,7 +440,7 @@ export default function Songs() {
 
                                 {song.transcript && song.transcript.length > 0 && song.transcript[0].start_ms !== undefined ? (
                                   <div className="mt-4">
-                                    <p className="text-white/60 text-sm mb-3">🎤 Karaoke Lyrics - Click line to jump</p>
+                                    <p className="text-stone-500 text-sm mb-3">🎤 Karaoke Lyrics - Click line to jump</p>
                                     <KaraokeTranscript
                                       lines={song.transcript.map((line, idx) => ({
                                         id: `line_${idx}`,

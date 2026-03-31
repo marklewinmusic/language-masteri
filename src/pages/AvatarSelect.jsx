@@ -32,8 +32,8 @@ export default function AvatarSelect() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center">
-      <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 100%)' }}>
+      <div className="w-10 h-10 border-4 border-stone-300 border-t-stone-600 rounded-full animate-spin" />
     </div>
   );
 }
