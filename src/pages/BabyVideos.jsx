@@ -375,7 +375,7 @@ export default function BabyVideos() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState("videos");
+  const [activeTab, setActiveTab] = useState(new URLSearchParams(window.location.search).get('tab') === 'songs' ? 'songs' : 'videos');
   const [expandedVideoId, setExpandedVideoId] = useState(null);
   const [showVocabForVideo, setShowVocabForVideo] = useState(null);
   const [selectedVideo, setSelectedVideo] = useState(null);
