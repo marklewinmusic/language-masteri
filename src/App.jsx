@@ -49,7 +49,9 @@ const AuthenticatedApp = () => {
           <MainPage />
         </LayoutWrapper>
       } />
-      {Object.entries(Pages).map(([path, Page]) => (
+      {Object.entries(Pages)
+        .filter(([path]) => path !== mainPageKey)
+        .map(([path, Page]) => (
         <Route
           key={path}
           path={`/${path}`}
