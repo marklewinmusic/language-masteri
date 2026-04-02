@@ -854,7 +854,9 @@ export default function BabyVideos() {
       const rawTranscript = result?.data?.transcript;
 
       if (!rawTranscript || rawTranscript.length === 0) {
-        toast.error("No transcript available for this video");
+        toast.error(result?.data?.error || "No captions available for this video");
+        // Set empty array so we show the "no transcript" message instead of re-loading
+        setFullTranscripts(prev => ({ ...prev, [video.id]: [] }));
         setLoadingTranscript(null);
         return;
       }
@@ -1578,7 +1580,7 @@ export default function BabyVideos() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {level1Videos.map((video) => {
                         const isExpanded = expandedVideoId == video.id || expandedVideoId === video.id;
-                        const hasTranscript = fullTranscripts[video.id];
+                        const hasTranscript = video.id in fullTranscripts;
                         const isLoading = loadingTranscript === video.id;
                         const showingVocab = showVocabForVideo === video.id;
 
@@ -1675,7 +1677,13 @@ export default function BabyVideos() {
                                     </div>
                                   )}
 
-                                  {hasTranscript && (
+                                  {hasTranscript && fullTranscripts[video.id].length === 0 && (
+                                    <div className="bg-white/5 rounded-xl p-3 text-center">
+                                      <p className="text-white/50 text-xs">No captions available for this video</p>
+                                    </div>
+                                  )}
+
+                                  {hasTranscript && fullTranscripts[video.id].length > 0 && (
                                     <div className="space-y-1 max-h-64 overflow-y-auto bg-white/5 rounded-xl p-2">
                                       <p className="text-white/50 text-xs font-medium mb-1">📝 Transcript</p>
                                       {fullTranscripts[video.id].map((line, idx) => {

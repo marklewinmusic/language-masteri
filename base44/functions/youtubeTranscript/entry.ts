@@ -43,6 +43,15 @@ Deno.serve(async (req) => {
 
     // Step 2: Fallback to audio transcription with Whisper
     console.log('\n--- STEP 2: Audio Transcription Fallback ---');
+    const apiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!apiKey) {
+      console.log('⚠️  No OPENAI_API_KEY - captions unavailable for this video');
+      return Response.json({ 
+        error: 'No captions found for this video and no Whisper fallback configured.',
+        transcript: [],
+        source: 'none'
+      }, { status: 200 });
+    }
     const transcriptionResult = await transcribeAudio(videoId, startTime);
     return Response.json(transcriptionResult);
 
@@ -61,44 +70,78 @@ Deno.serve(async (req) => {
 });
 
 async function fetchYouTubeCaptions(videoId) {
-  // Fetch video page
-  const pageResponse = await fetch(`https://www.youtube.com/watch?v=${videoId}`);
-  const html = await pageResponse.text();
+  // Fetch video page with browser-like headers to avoid bot detection
+  const pageResponse = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    }
+  });
 
-  // Extract ytInitialPlayerResponse
-  const match = html.match(/ytInitialPlayerResponse\s*=\s*({.+?})\s*;/);
-  if (!match) {
-    throw new Error('Could not find player response');
+  if (!pageResponse.ok) {
+    throw new Error(`YouTube page returned ${pageResponse.status}`);
   }
 
-  const playerResponse = JSON.parse(match[1]);
+  const html = await pageResponse.text();
+  console.log(`✓ YouTube page fetched (${(html.length / 1024).toFixed(1)}KB)`);
+
+  // Try multiple patterns for extracting player response
+  let playerResponse = null;
+  const patterns = [
+    /ytInitialPlayerResponse\s*=\s*({.+?})\s*;/s,
+    /ytInitialPlayerResponse\s*=\s*({[\s\S]+?})\s*(?:;|\n)/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = html.match(pattern);
+    if (match) {
+      try {
+        playerResponse = JSON.parse(match[1]);
+        break;
+      } catch (e) {
+        console.log(`Pattern failed to parse: ${e.message}`);
+      }
+    }
+  }
+
+  if (!playerResponse) {
+    throw new Error('Could not find or parse player response');
+  }
+
   const captionTracks = playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+  console.log(`Caption tracks found: ${captionTracks?.length || 0}`);
 
   if (!captionTracks || captionTracks.length === 0) {
-    throw new Error('No captions available');
+    throw new Error('No captions available for this video');
   }
 
-  // Find Hebrew or English captions
+  // Prefer Hebrew, then any available language
   let selectedTrack = captionTracks.find(t => t.languageCode === 'he' || t.languageCode === 'iw');
-  if (!selectedTrack) {
-    selectedTrack = captionTracks.find(t => t.languageCode === 'en');
-  }
-  if (!selectedTrack) {
-    selectedTrack = captionTracks[0];
-  }
+  if (!selectedTrack) selectedTrack = captionTracks.find(t => t.languageCode === 'en');
+  if (!selectedTrack) selectedTrack = captionTracks[0];
+
+  console.log(`✓ Selected caption track: ${selectedTrack.languageCode} (${selectedTrack.name?.simpleText || 'unknown'})`);
 
   // Fetch caption XML
   const captionResponse = await fetch(selectedTrack.baseUrl);
+  if (!captionResponse.ok) throw new Error(`Caption fetch failed: ${captionResponse.status}`);
   const captionXml = await captionResponse.text();
+  console.log(`✓ Caption XML fetched (${(captionXml.length / 1024).toFixed(1)}KB)`);
 
-  // Parse XML
-  const textMatches = [...captionXml.matchAll(/<text start="([^"]+)" dur="([^"]+)"[^>]*>([^<]+)<\/text>/g)];
-  
-  const transcript = textMatches.map(match => ({
-    text: decodeHtmlEntities(match[3]),
-    start: parseFloat(match[1]),
-    duration: parseFloat(match[2])
-  }));
+  // Parse XML - handle both with and without dur attribute
+  const textMatches = [...captionXml.matchAll(/<text start="([^"]+)"(?:\s+dur="([^"]+)")?[^>]*>([\s\S]*?)<\/text>/g)];
+  console.log(`✓ Parsed ${textMatches.length} caption segments`);
+
+  if (textMatches.length === 0) {
+    throw new Error('Could not parse caption XML');
+  }
+
+  const transcript = textMatches.map(m => ({
+    text: decodeHtmlEntities(m[3].replace(/<[^>]+>/g, '')).trim(),
+    start: parseFloat(m[1]),
+    duration: m[2] ? parseFloat(m[2]) : 3
+  })).filter(t => t.text.length > 0);
 
   return {
     transcript,
