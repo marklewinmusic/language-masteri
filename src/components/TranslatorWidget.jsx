@@ -61,41 +61,40 @@ export default function TranslatorWidget() {
       const targetLangName = learningLanguage.charAt(0).toUpperCase() + learningLanguage.slice(1);
 
       const prompt = isEnglish
-        ? `You are an expert English→${targetLangName} translator for a language-learning app.
-Output MUST be valid JSON only.
+        ? `You are a professional linguist and certified ${targetLangName} language expert with deep knowledge of modern Israeli Hebrew grammar, morphology, and everyday usage.
+
+TASK: Translate the English input into ${targetLangName} with maximum accuracy.
+
+Rules:
+- Use the most natural, modern everyday ${targetLangName} equivalent — not archaic or overly formal forms
+- For Hebrew: ALWAYS include full nikud (vowel diacritics) on every word
+- Transliteration: use consistent scheme: sh=ש, kh=ח/כ, tz=צ, ts=ת+ס only when needed, r=ר, a=patach/kamatz, e=segol/tzere, i=khirik, o=holam, u=shuruk. NO capitals mid-word.
+- Detect part of speech. If VERB: identify binyan (פָּעַל, פִּיעֵל, הִפְעִיל, etc.), 3-letter root, and produce ACCURATE conjugations for all 7 persons in past/present/future
+- For each conjugation: provide the native script WITH nikud AND the transliteration
+- "grammar_rule": explain the binyan pattern and any irregularities (2-3 sentences)
+- "alternatives": include genuinely different valid translations if they exist (not synonyms)
+- "notes": mention register (formal/informal), regional usage, or important nuances
+
 Input: "${inputText}"
 
-Detect if this word is a VERB. If it is a verb, set "is_verb" to true and provide full conjugations.
+Output JSON only, no markdown.`
+        : `You are a professional linguist and certified ${targetLangName} language expert specializing in reading transliterated Hebrew and reconstructing correct grammatical forms.
 
-Provide:
-- "english": English meaning
-- "target_language": ${targetLangName} with nikud
-- "transliteration": Latin phonetic
-- "alternatives": array (may be empty)
-- "notes": grammar note or empty string
-- "is_verb": boolean
-- "infinitive": infinitive form transliteration (if verb, else null)
-- "infinitive_hebrew": infinitive in Hebrew with nikud (if verb, else null)
-- "root": Hebrew root letters (if verb, else null)
-- "grammar_rule": short grammar rule explanation (if verb, else null)
-- "conjugations": object with "past", "present", "future" tenses, each containing keys: i, you_m, you_f, he, she, we, they — each being {transliteration, native} (if verb, else null)`
-        : `You are an expert transliterated-${targetLangName}→English interpreter for a language-learning app.
-Input is ${targetLangName} written in Latin letters, possibly with inconsistent spelling.
+TASK: The user typed Hebrew in Latin letters (transliteration). Identify the word, provide the correct Hebrew spelling with nikud, translate it accurately to English.
+
+Rules:
+- Normalize spelling variants: ch→kh, ts→tz, w→v, ee→i, oo→u, double letters simplified unless phonemically necessary
+- Reconstruct the CORRECT Hebrew spelling WITH full nikud (vowel diacritics)
+- Provide the most natural English translation — not word-for-word but meaning-accurate
+- Detect part of speech. If VERB: identify the conjugated form the user typed (e.g. "isakti" = past 1st person singular of לְהִתְעַסֵּק), give the infinitive, identify binyan and root, then produce ACCURATE conjugations for ALL 7 persons in past/present/future
+- For each conjugation: native Hebrew WITH nikud AND transliteration
+- "grammar_rule": explain the binyan, what tense/person the input was, and any irregular patterns (2-3 sentences)
+- "infinitive": the canonical infinitive transliteration
+- "infinitive_hebrew": the infinitive in Hebrew WITH nikud
+
 Input: "${inputText}"
 
-Detect if this word is a VERB. If it is a verb, set "is_verb" to true and provide full conjugations.
-
-Provide:
-- "english": English meaning
-- "target_language": reconstructed ${targetLangName} with nikud
-- "transliteration": normalized transliteration
-- "alternatives": array (may be empty)
-- "is_verb": boolean
-- "infinitive": infinitive form transliteration (if verb, else null)
-- "infinitive_hebrew": infinitive in Hebrew with nikud (if verb, else null)
-- "root": Hebrew root letters (if verb, else null)
-- "grammar_rule": short grammar rule explanation (if verb, else null)
-- "conjugations": object with "past", "present", "future" tenses, each containing keys: i, you_m, you_f, he, she, we, they — each being {transliteration, native} (if verb, else null)`;
+Output JSON only, no markdown.`;
 
       const schema = {
         type: "object",
@@ -114,7 +113,7 @@ Provide:
         }
       };
 
-      const result = await base44.integrations.Core.InvokeLLM({ prompt, response_json_schema: schema });
+      const result = await base44.integrations.Core.InvokeLLM({ prompt, response_json_schema: schema, model: "claude_sonnet_4_6" });
       result.hebrew = result.target_language;
       setTranslation(result);
     } catch (e) {
