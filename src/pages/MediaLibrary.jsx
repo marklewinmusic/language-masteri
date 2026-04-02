@@ -56,6 +56,7 @@ export default function MediaLibrary() {
   const [pastedTranscript, setPastedTranscript] = useState("");
   const [mediaType, setMediaType] = useState("video");
   const [uploadingAudio, setUploadingAudio] = useState(false);
+  const [activeMediaTab, setActiveMediaTab] = useState("videos");
 
   const [formData, setFormData] = useState({
     title: "",
@@ -922,25 +923,16 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
         </div>
 
         {/* Filter Buttons and Actions */}
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <div className="flex gap-2 p-1 rounded-lg" style={{ background: '#ffffff18', border: '1px solid #ffffff20', width: 'fit-content' }}>
-            <button onClick={() => setFilterLanguage('all')} className={`px-3 py-1.5 rounded text-sm font-semibold transition-all ${filterLanguage === 'all' && filterDifficulty === 'all' && filterTopic === 'all' ? 'bg-white/20' : 'text-white/60 hover:text-white/80'}`} style={{ color: filterLanguage === 'all' && filterDifficulty === 'all' && filterTopic === 'all' ? '#3d4a2e' : undefined }}>All</button>
-            <button onClick={() => { setFilterLanguage('hebrew'); setFilterDifficulty('all'); setFilterTopic('all'); }} className={`px-3 py-1.5 rounded text-sm font-semibold transition-all ${filterLanguage === 'hebrew' && filterDifficulty === 'all' && filterTopic === 'all' ? 'bg-white/20' : 'text-white/60 hover:text-white/80'}`} style={{ color: filterLanguage === 'hebrew' && filterDifficulty === 'all' && filterTopic === 'all' ? '#3d4a2e' : undefined }}>📹 Videos</button>
-            <button onClick={() => { setFilterLanguage('all'); setFilterDifficulty('all'); setFilterTopic('all'); }} className={`px-3 py-1.5 rounded text-sm font-semibold transition-all text-white/60 hover:text-white/80`}>🎧 Audio Training</button>
-          </div>
-          <div className="flex gap-2 p-1 rounded-lg" style={{ background: '#ffffff18', border: '1px solid #ffffff20' }}>
-            <button className="px-3 py-1.5 rounded text-sm font-semibold" style={{ color: '#6b7c5a' }}>🎵 Songs</button>
-            {canEdit && (
-              <Button
-                onClick={() => { resetForm(); setEditingVideo(null); setMediaType("video"); setShowAddDialog(true); }}
-                className="px-3 py-1.5 text-sm"
-                style={{ background: 'transparent', border: 'none', color: '#6b7c5a' }}
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Add Media
-              </Button>
-            )}
-          </div>
+        <div className="flex items-center gap-2 mb-6 p-1 rounded-xl flex-wrap" style={{ background: '#ffffff18', border: '1px solid #ffffff20' }}>
+          <button onClick={() => setActiveMediaTab('videos')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${activeMediaTab === 'videos' ? 'text-stone-800' : 'text-stone-500 hover:text-stone-700'}`} style={activeMediaTab === 'videos' ? { background: '#ffffff80' } : {}}>📹 Videos</button>
+          <button onClick={() => setActiveMediaTab('songs')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${activeMediaTab === 'songs' ? 'text-stone-800' : 'text-stone-500 hover:text-stone-700'}`} style={activeMediaTab === 'songs' ? { background: '#ffffff80' } : {}}>🎵 Songs</button>
+          <button onClick={() => setActiveMediaTab('audio')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${activeMediaTab === 'audio' ? 'text-stone-800' : 'text-stone-500 hover:text-stone-700'}`} style={activeMediaTab === 'audio' ? { background: '#ffffff80' } : {}}>🎧 Audio Training</button>
+          <button onClick={() => setActiveMediaTab('grammar')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${activeMediaTab === 'grammar' ? 'text-stone-800' : 'text-stone-500 hover:text-stone-700'}`} style={activeMediaTab === 'grammar' ? { background: '#ffffff80' } : {}}>📖 Grammar</button>
+          {canEdit && (
+            <button onClick={() => { resetForm(); setEditingVideo(null); setMediaType("video"); setShowAddDialog(true); }} className="px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 text-stone-500 hover:text-stone-700 ml-auto">
+              <Plus className="w-4 h-4" /> Add Media
+            </button>
+          )}
         </div>
 
         {/* Filters */}
@@ -1010,8 +1002,50 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
           </div>
         </div>
 
+        {/* Grammar Tab */}
+        {activeMediaTab === 'grammar' && (
+          <div className="space-y-4">
+            <div className="bg-white/70 backdrop-blur-xl rounded-2xl border border-stone-200 overflow-hidden">
+              <div className="p-5 border-b border-stone-200" style={{ background: 'linear-gradient(135deg, #5a6b5a20, #6b7c6320)' }}>
+                <h3 className="text-xl font-bold" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>לִבְחֹר — Livchor</h3>
+                <p className="text-stone-500 text-sm mt-1">To Choose · Future Tense Conjugations</p>
+              </div>
+              <div className="mx-4 mt-4 p-3 rounded-xl text-sm" style={{ background: '#f5f0e820', border: '1px solid #5a6b5a30' }}>
+                <p className="font-semibold mb-1" style={{ color: '#3d4a2e' }}>📌 Rule</p>
+                <p style={{ color: '#5a6b5a' }}>Future tense uses <strong>prefixes</strong> (and sometimes <strong>suffixes</strong>) on the root <strong>ב-ח-ר</strong> (B-Ch-R).</p>
+                <div className="grid grid-cols-2 gap-1 mt-2 text-xs" style={{ color: '#6b7c5a' }}>
+                  <span>• <strong>Ev-</strong> → I</span>
+                  <span>• <strong>Ti-</strong> → You (m) / She</span>
+                  <span>• <strong>Ti-...-i</strong> → You (f)</span>
+                  <span>• <strong>Yi-</strong> → He / They</span>
+                  <span>• <strong>Ni-</strong> → We</span>
+                  <span>• <strong>Ti-...-u</strong> → You (pl)</span>
+                </div>
+              </div>
+              <div className="p-4 space-y-2">
+                {[
+                  { subject: 'I', transliteration: 'Ev-char', hebrew: 'אֶבְחַר' },
+                  { subject: 'You (m)', transliteration: 'Ti-vchar', hebrew: 'תִּבְחַר' },
+                  { subject: 'You (f)', transliteration: 'Ti-vchar-i', hebrew: 'תִּבְחֲרִי' },
+                  { subject: 'He', transliteration: 'Yi-vchar', hebrew: 'יִבְחַר' },
+                  { subject: 'She', transliteration: 'Ti-vchar', hebrew: 'תִּבְחַר' },
+                  { subject: 'We', transliteration: 'Ni-vchar', hebrew: 'נִבְחַר' },
+                  { subject: 'You (pl)', transliteration: 'Ti-vchar-u', hebrew: 'תִּבְחֲרוּ' },
+                  { subject: 'They', transliteration: 'Yi-vchar-u', hebrew: 'יִבְחֲרוּ' },
+                ].map((row, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 rounded-xl" style={{ background: idx % 2 === 0 ? '#ffffff60' : '#f5f0e840', border: '1px solid #e8e4d850' }}>
+                    <span className="text-sm font-medium w-20 flex-shrink-0" style={{ color: '#6b7c5a' }}>{row.subject}</span>
+                    <span className="text-base font-semibold flex-1 text-center" style={{ color: '#3d4a2e' }}>{row.transliteration}</span>
+                    <span className="text-xl font-bold" style={{ color: '#5a6b3a', direction: 'rtl' }}>{row.hebrew}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* User's Custom Videos (from Video entity / BabyVideos) */}
-        {userVideos.length > 0 && (
+        {(activeMediaTab === 'videos' || activeMediaTab === 'audio') && userVideos.length > 0 && (
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-white mb-4">My Videos</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1049,7 +1083,7 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
         )}
 
         {/* Assigned Videos Section */}
-        {myVideos.length > 0 && (
+        {activeMediaTab === 'videos' && myVideos.length > 0 && (
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-white mb-4">My Videos</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1107,7 +1141,7 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
         )}
 
         {/* Library Videos Section */}
-        <div className="mb-8">
+        {(activeMediaTab === 'videos' || activeMediaTab === 'audio') && (<div className="mb-8">
           <button
             onClick={() => setShowLibrary(!showLibrary)}
             className="w-full bg-cyan-600/40 hover:bg-cyan-600/50 backdrop-blur-xl rounded-2xl border border-white/10 p-4 flex items-center justify-between transition-all mb-4"
@@ -1233,10 +1267,10 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
               ))}
             </motion.div>
           )}
-        </div>
+          </div>)}
 
-        {/* Recommended Videos Section */}
-        {allVideosData.length > 0 && (
+          {/* Recommended Videos Section */}
+          {activeMediaTab === 'videos' && allVideosData.length > 0 && (
           <div className="mt-8">
             <button
               onClick={() => setShowRecommended(!showRecommended)}
