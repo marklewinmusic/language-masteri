@@ -280,7 +280,7 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
 
       {/* Nav grid: 4 per row, hold to drag */}
       <div style={{ borderTop: '1px solid #c9a84c20' }} className="px-4 py-2">
-        <div className="grid grid-cols-4 gap-1.5 max-w-sm mx-auto">
+        <div className="grid grid-cols-5 gap-1.5 max-w-lg mx-auto">
           {orderedNav.map(({ id, to, emoji, label }) => {
             const isDragging = draggingId === id;
             const isOver = dragOverId === id && !isDragging;
