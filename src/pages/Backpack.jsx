@@ -513,8 +513,9 @@ export default function Backpack() {
                     {word.image_url ? (
                       <img src={word.image_url} alt={word.phonetic} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-stone-200 to-stone-300 flex items-center justify-center text-stone-400 text-xs text-center px-2">
-                        No image yet
+                      <div className="w-full h-full bg-gradient-to-br from-cyan-400/20 via-purple-400/20 to-pink-400/20 flex flex-col items-center justify-center text-center px-4">
+                        <p className="text-cyan-600 font-bold text-xl mb-2" dir="rtl">{word.word}</p>
+                        <p className="text-stone-500 text-sm">{word.phonetic}</p>
                       </div>
                     )}
                   </div>
