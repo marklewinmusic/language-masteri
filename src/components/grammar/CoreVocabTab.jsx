@@ -239,12 +239,12 @@ function Section({ section, onAddToBackpack }) {
               {section.items.map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex flex-col items-center text-center px-2 py-2.5 rounded-xl group"
+                  className="flex flex-col items-center text-center px-2 py-1 rounded-xl group w-fit mx-auto"
                   style={{ background: idx % 2 === 0 ? '#ffffff70' : '#f5f0e850', border: '1px solid #e8e4d860' }}
                 >
-                  <span className="text-sm font-medium leading-tight" style={{ color: '#6b7c5a' }}>{item.roman}</span>
-                  <span className="text-xs text-stone-500 leading-tight">{item.english}</span>
-                  <span className="text-lg font-bold leading-tight mt-0.5" dir="rtl" style={{ color: '#3d4a2e' }}>{item.hebrew}</span>
+                  <span className="text-xs font-medium leading-none" style={{ color: '#6b7c5a' }}>{item.roman}</span>
+                  <span className="text-[10px] text-stone-500 leading-none">{item.english}</span>
+                  <span className="text-base font-bold leading-none mt-0.5" dir="rtl" style={{ color: '#3d4a2e' }}>{item.hebrew}</span>
                   {onAddToBackpack && (
                     <button
                       onClick={(e) => {

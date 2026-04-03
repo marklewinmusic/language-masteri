@@ -442,9 +442,9 @@ export default function Backpack() {
                   >
                     <div className="relative">
                       <div
-                        onClick={() => setFlippedCards(prev => ({ ...prev, [word.id]: !prev[word.id] }))}
-                        className="p-3 cursor-pointer hover:bg-white/5 transition-all h-28 flex flex-col justify-center items-center text-center"
-                      >
+                         onClick={() => setFlippedCards(prev => ({ ...prev, [word.id]: !prev[word.id] }))}
+                         className="p-2 cursor-pointer hover:bg-white/5 transition-all flex flex-col justify-center items-center text-center"
+                       >
                         <div className="absolute top-1 right-1 flex gap-1 z-10">
                           <button
                             onClick={(e) => { e.stopPropagation(); deleteWordMutation.mutate(word.id); }}
@@ -461,26 +461,26 @@ export default function Backpack() {
                             🎨
                           </button>
                         </div>
-                        <p className="text-white/60 text-xs font-medium leading-tight">
+                        <p className="text-white/60 text-[11px] font-medium leading-none">
                           <EditableWord
                             text={word.phonetic}
                             onSave={(newPhonetic) => updateWordMutation.mutate({ id: word.id, data: { phonetic: newPhonetic } })}
-                            className="text-white/60 text-xs"
+                            className="text-white/60 text-[11px]"
                           />
                         </p>
-                        <p className="text-green-400 font-medium text-xs leading-tight mt-0.5">
+                        <p className="text-green-400 font-medium text-[10px] leading-none mt-0.5">
                           <EditableWord
                             text={word.translation}
                             onSave={(newTranslation) => updateWordMutation.mutate({ id: word.id, data: { translation: newTranslation } })}
-                            className="text-green-400 font-medium text-xs"
+                            className="text-green-400 font-medium text-[10px]"
                           />
                         </p>
-                        <p className="text-cyan-400 font-bold text-sm leading-tight mt-0.5" dir="rtl">
+                        <p className="text-cyan-400 font-bold text-xs leading-none mt-0.5" dir="rtl">
                           <EditableWord
                             text={word.word}
                             language="he"
                             onSave={(newWord) => updateWordMutation.mutate({ id: word.id, data: { word: newWord } })}
-                            className="text-cyan-400 font-bold text-sm"
+                            className="text-cyan-400 font-bold text-xs"
                           />
                         </p>
                       </div>
