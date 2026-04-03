@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Play, Loader2, Check, X, Plus, Trash2 } from "lucide-react";
+import { Play, Pause, Loader2, Check, X, Plus } from "lucide-react";
 
 export default function ContinuousTranscript({ 
   transcript, 
@@ -10,7 +10,6 @@ export default function ContinuousTranscript({
   onEditWord,
   canEdit
 }) {
-  const [playingSegment, setPlayingSegment] = useState(null);
   const [editingSegmentTime, setEditingSegmentTime] = useState(null);
   const [editingTimeValue, setEditingTimeValue] = useState("");
 
@@ -229,12 +228,10 @@ Provide:
                 ) : (
                   <button
                     onClick={() => {
-                      if (playingSegment === segIdx) {
-                        onSeekTo(currentTime, false);
-                        setPlayingSegment(null);
+                      if (isActive) {
+                        onSeekTo(currentTime, false); // pause at current position
                       } else {
-                        onSeekTo(segment.start, true);
-                        setPlayingSegment(segIdx);
+                        onSeekTo(segment.start, true); // seek and play
                       }
                     }}
                     onDoubleClick={(e) => {
@@ -248,7 +245,7 @@ Provide:
                         : 'bg-white/10 text-white/60 hover:bg-white/20'
                     }`}
                   >
-                    <Play className="w-3 h-3" />
+                    {isActive ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
                     {formatTime(segment.start)}
                   </button>
                 )}
