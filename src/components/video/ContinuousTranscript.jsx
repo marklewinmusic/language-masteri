@@ -192,7 +192,7 @@ export default function ContinuousTranscript({
                   <button
                     onClick={() => {
                       if (playingSegment === segIdx) {
-                        onSeekTo(segment.start, false);
+                        onSeekTo(currentTime, false);
                         setPlayingSegment(null);
                       } else {
                         onSeekTo(segment.start, true);
