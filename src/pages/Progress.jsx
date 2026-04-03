@@ -129,6 +129,32 @@ export default function Progress() {
           </div>
         </div>
 
+        {/* Words Backpack Counts */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-white mb-4">🎒 Words Backpack Summary</h2>
+          <div className="flex flex-wrap gap-4 justify-start">
+            {[
+              { name: 'New', count: wordRatings.filter(w => w.times_practiced === 0).length, color: '#999999' },
+              { name: 'Recognized', count: wordRatings.filter(w => w.times_practiced > 0 && w.times_practiced < 3).length, color: '#dc2626' },
+              { name: 'Familiar', count: wordRatings.filter(w => w.times_practiced >= 3 && w.times_practiced < 5).length, color: '#eab308' },
+              { name: 'Can Use', count: wordRatings.filter(w => w.times_practiced >= 5 && w.times_practiced < 8).length, color: '#86efac' },
+              { name: 'Mastered', count: wordRatings.filter(w => w.times_practiced >= 8).length, color: '#16a34a' },
+            ].map((level) => (
+              <motion.div
+                key={level.name}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-6 hover:border-white/20 transition-all"
+              >
+                <div className="text-center">
+                  <p className="text-white/60 text-sm mb-2">{level.name}</p>
+                  <p className="text-4xl font-bold" style={{ color: level.color }}>{level.count}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
         {/* Graphs Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {graphs.map((graph, idx) => (
