@@ -571,8 +571,14 @@ export default function Home() {
           <div className="space-y-10">
 
             {/* SCHEDULE SECTION */}
-            <div className="text-center">
-              <h2 className="text-3xl font-bold mb-4" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>📅 Schedule</h2>
+            <div>
+              <h2
+                className="text-3xl font-bold mb-4 text-center cursor-pointer hover:opacity-80 transition-opacity"
+                style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}
+                onClick={() => navigate(createPageUrl("Days"))}
+              >
+                📅 Schedule <ChevronRight className="inline w-5 h-5 mb-1" />
+              </h2>
               {sortedDays.length === 0 ? (
                 <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-4 text-center">
                   <p style={{ color: '#6b7c5a' }} className="text-sm">No days available yet</p>
@@ -589,19 +595,57 @@ export default function Home() {
                     const progress = getDayProgress(day.id);
                     const allCompleted = day.subsections?.length > 0 &&
                       day.subsections.every(task => progress?.subsections_completed?.includes(task.id));
+                    const isExpanded = expandedDay === day.day_number;
 
                     return (
-                      <div
-                        key={day.id}
-                        className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-3 flex items-center justify-between cursor-pointer hover:border-white/20 transition-all"
-                        style={{ backgroundColor: dayColor.bg + '40' }}
-                        onClick={() => setExpandedDay(expandedDay === day.day_number ? null : day.day_number)}
-                      >
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-sm" style={{ color: '#3d4a2e' }}>{day.title || `Day ${day.day_number}`}</h3>
-                          {allCompleted && <span className="text-xs">✓</span>}
+                      <div key={day.id}>
+                        <div
+                          className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-3 flex items-center justify-between cursor-pointer hover:border-white/20 transition-all"
+                          style={{ backgroundColor: dayColor.bg + '40' }}
+                          onClick={() => setExpandedDay(isExpanded ? null : day.day_number)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-bold text-sm" style={{ color: '#3d4a2e' }}>{day.title || `Day ${day.day_number}`}</h3>
+                            {allCompleted && <span className="text-xs text-green-600">✓</span>}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs" style={{ color: '#6b7c5a' }}>{day.subsections?.length || 0} tasks</span>
+                            <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} style={{ color: '#6b7c5a' }} />
+                          </div>
                         </div>
-                        <span className="text-xs" style={{ color: '#6b7c5a' }}>{day.subsections?.length || 0} tasks</span>
+                        <AnimatePresence>
+                          {isExpanded && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="mt-1 space-y-1 pl-3">
+                                {(day.subsections || []).map((task) => {
+                                  const isTaskDone = progress?.subsections_completed?.includes(task.id);
+                                  return (
+                                    <div
+                                      key={task.id}
+                                      className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:opacity-80 transition-all"
+                                      style={{ background: isTaskDone ? '#5a6b5a30' : '#ffffff50', border: '1px solid #5a6b5a20' }}
+                                      onClick={() => task.page ? navigate(createPageUrl(task.page)) : toggleTaskMutation.mutate({ dayId: day.id, taskId: task.id, dayNumber: day.day_number })}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isTaskDone ? 'bg-green-500 border-green-500' : 'border-stone-400'}`}>
+                                          {isTaskDone && <Check className="w-2.5 h-2.5 text-white" />}
+                                        </div>
+                                        <span className="text-sm font-medium" style={{ color: '#3d4a2e' }}>{task.name}</span>
+                                      </div>
+                                      {task.duration && <span className="text-xs" style={{ color: '#6b7c5a' }}>{task.duration}</span>}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     );
                   })}
@@ -611,7 +655,7 @@ export default function Home() {
 
             {/* LIBRARY SECTION */}
             <div className="text-center">
-              <h2 className="text-3xl font-bold mb-4" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>📚 Library</h2>
+              <h2 className="text-3xl font-bold mb-4 cursor-pointer hover:opacity-80 transition-opacity inline-flex items-center gap-1" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }} onClick={() => navigate(createPageUrl("MediaLibrary"))}>📚 Library <ChevronRight className="w-5 h-5 mb-1" /></h2>
               <div className="flex flex-wrap justify-center gap-2">
                 {[
                   { label: 'Videos', emoji: '📹', to: 'MediaLibrary' },
@@ -640,7 +684,7 @@ export default function Home() {
 
             {/* BACKPACK SECTION */}
             <div className="text-center">
-              <h2 className="text-3xl font-bold mb-4" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>🎒 Words Backpack</h2>
+              <h2 className="text-3xl font-bold mb-4 cursor-pointer hover:opacity-80 transition-opacity inline-flex items-center gap-1" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }} onClick={() => navigate(createPageUrl("Backpack"))}>🎒 Words Backpack <ChevronRight className="w-5 h-5 mb-1" /></h2>
               <div className="flex flex-wrap gap-4 justify-center">
                 {[
                   { name: 'New', count: wordRatings.filter(w => w.times_practiced === 0).length, icon: '✨', color: '#8a9a6a' },
@@ -666,7 +710,7 @@ export default function Home() {
 
             {/* PROGRESS SECTION */}
             <div className="text-center">
-              <h2 className="text-3xl font-bold mb-4" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>🏆 Progress</h2>
+              <h2 className="text-3xl font-bold mb-4 cursor-pointer hover:opacity-80 transition-opacity inline-flex items-center gap-1" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }} onClick={() => navigate(createPageUrl("Progress"))}>🏆 Progress <ChevronRight className="w-5 h-5 mb-1" /></h2>
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-4 text-center">
                   <p style={{ color: '#6b7c5a' }} className="text-xs mb-1">Current Day</p>
