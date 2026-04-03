@@ -204,7 +204,7 @@ const SECTIONS = [
   },
 ];
 
-function Section({ section }) {
+function Section({ section, onAddToBackpack }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -239,14 +239,28 @@ function Section({ section }) {
               {section.items.map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between px-3 py-2.5 rounded-xl"
+                  className="flex items-center justify-between px-3 py-2.5 rounded-xl group"
                   style={{ background: idx % 2 === 0 ? '#ffffff70' : '#f5f0e850', border: '1px solid #e8e4d860' }}
                 >
-                  <div className="flex flex-col">
+                  <div className="flex flex-col flex-1">
                     <span className="text-xs font-medium" style={{ color: '#6b7c5a' }}>{item.roman}</span>
                     <span className="text-sm text-stone-500">{item.english}</span>
                   </div>
-                  <span className="text-xl font-bold" dir="rtl" style={{ color: '#3d4a2e' }}>{item.hebrew}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-bold" dir="rtl" style={{ color: '#3d4a2e' }}>{item.hebrew}</span>
+                    {onAddToBackpack && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddToBackpack({ hebrew: item.hebrew, transliteration: item.roman, english: item.english });
+                        }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity px-2 py-1 rounded text-xs font-medium bg-amber-500/20 text-amber-600 hover:bg-amber-500/30"
+                        title="Add to backpack"
+                      >
+                        +
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -257,17 +271,17 @@ function Section({ section }) {
   );
 }
 
-export default function CoreVocabTab() {
+export default function CoreVocabTab({ onAddToBackpack }) {
   return (
     <div className="space-y-3">
       <div className="p-4 rounded-xl mb-2" style={{ background: '#5a6b5a18', border: '1px solid #5a6b5a30' }}>
         <p className="text-sm font-semibold mb-1" style={{ color: '#3d4a2e' }}>📚 Core Vocabulary — The Foundation</p>
         <p className="text-xs" style={{ color: '#5a6b5a' }}>
-          These are the highest-ROI words in Hebrew. Master these first and you'll understand the structure of most everyday conversations. Click any section to expand.
+          These are the highest-ROI words in Hebrew. Master these first and you'll understand the structure of most everyday conversations. Click any word's + to add to backpack.
         </p>
       </div>
       {SECTIONS.map(section => (
-        <Section key={section.id} section={section} />
+        <Section key={section.id} section={section} onAddToBackpack={onAddToBackpack} />
       ))}
     </div>
   );

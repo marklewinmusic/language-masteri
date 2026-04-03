@@ -909,13 +909,6 @@ export default function BabyVideos() {
             >
               📚 Core Vocab
             </button>
-            <button
-              onClick={() => setActiveTab("corevocab")}
-              className="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all"
-              style={activeTab === "corevocab" ? { background: '#5a6b5a', color: '#f5f0e8' } : { color: '#6b7c5a' }}
-            >
-              📚 Core Vocab
-            </button>
           </div>
         )}
 
@@ -1195,10 +1188,22 @@ export default function BabyVideos() {
           </motion.div>
         ) : activeTab === "corevocab" ? (
           /* ===== CORE VOCAB TAB ===== */
-          <CoreVocabTab />
-        ) : activeTab === "corevocab" ? (
-          /* ===== CORE VOCAB TAB ===== */
-          <CoreVocabTab />
+          <CoreVocabTab onAddToBackpack={(word) => {
+            const existing = wordRatings.find(w => w.word === word.hebrew);
+            if (existing) {
+              toast.info("Already in backpack!");
+              return;
+            }
+            createWordMutation.mutate({
+              word: word.hebrew,
+              translation: word.english,
+              phonetic: word.transliteration,
+              category: "wordbank",
+              times_practiced: 1,
+              mastered: false,
+            });
+            toast.success(`Added "${word.transliteration}" to backpack! 🎒`);
+          }} />
         ) : activeTab === "grammar" ? (
           /* ===== GRAMMAR TAB ===== */
           <GrammarTab />
