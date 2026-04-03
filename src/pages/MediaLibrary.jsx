@@ -1632,7 +1632,7 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
             </div>
 
             {/* Transcript */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center">
               {loadingTranscript ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
