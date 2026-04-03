@@ -62,6 +62,11 @@ export default function MediaLibrary() {
   const [mediaType, setMediaType] = useState("video");
   const [uploadingAudio, setUploadingAudio] = useState(false);
   const [activeMediaTab, setActiveMediaTab] = useState("videos");
+  const [draggedButton, setDraggedButton] = useState(null);
+  const [buttonOrder, setButtonOrder] = useState(() => {
+    const saved = localStorage.getItem("mediaLibraryButtonOrder");
+    return saved ? JSON.parse(saved) : ["videos", "songs", "audio", "grammar", "corevocab", "backpack"];
+  });
 
   const [formData, setFormData] = useState({
     title: "",
@@ -939,22 +944,86 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
     return null;
   };
 
+  const buttonConfigs = {
+    videos: { label: "Videos", emoji: "📹" },
+    songs: { label: "Songs", emoji: "🎵" },
+    audio: { label: "Audio Training", emoji: "🎧" },
+    grammar: { label: "Grammar", emoji: "📖" },
+    corevocab: { label: "Core Vocab", emoji: "📚" },
+    backpack: { label: "Words", emoji: "🎒" }
+  };
+
+  const handleDragStart = (e, id) => {
+    setDraggedButton(id);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (e, targetId) => {
+    e.preventDefault();
+    if (!draggedButton || draggedButton === targetId) {
+      setDraggedButton(null);
+      return;
+    }
+    
+    const newOrder = [...buttonOrder];
+    const draggedIndex = newOrder.indexOf(draggedButton);
+    const targetIndex = newOrder.indexOf(targetId);
+    
+    newOrder.splice(draggedIndex, 1);
+    newOrder.splice(targetIndex, 0, draggedButton);
+    
+    setButtonOrder(newOrder);
+    localStorage.setItem("mediaLibraryButtonOrder", JSON.stringify(newOrder));
+    setDraggedButton(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedButton(null);
+  };
+
   return (
     <>
     <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 50%, #eae6da 100%)' }}>
       <div className="max-w-7xl mx-auto p-6">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Media Library</h1>
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>📚 Library</h1>
         </div>
 
-        {/* Filter Buttons and Actions */}
-        <div className="flex items-center justify-center gap-2 mb-6 p-1 rounded-xl flex-wrap" style={{ background: '#ffffff18', border: '1px solid #ffffff20' }}>
-          <button onClick={() => setActiveMediaTab('videos')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${activeMediaTab === 'videos' ? 'text-stone-800' : 'text-stone-500 hover:text-stone-700'}`} style={activeMediaTab === 'videos' ? { background: '#ffffff80' } : {}}>📹 Videos</button>
-          <button onClick={() => setActiveMediaTab('songs')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${activeMediaTab === 'songs' ? 'text-stone-800' : 'text-stone-500 hover:text-stone-700'}`} style={activeMediaTab === 'songs' ? { background: '#ffffff80' } : {}}>🎵 Songs</button>
-          <button onClick={() => setActiveMediaTab('audio')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${activeMediaTab === 'audio' ? 'text-stone-800' : 'text-stone-500 hover:text-stone-700'}`} style={activeMediaTab === 'audio' ? { background: '#ffffff80' } : {}}>🎧 Audio Training</button>
-          <button onClick={() => setActiveMediaTab('grammar')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${activeMediaTab === 'grammar' ? 'text-stone-800' : 'text-stone-500 hover:text-stone-700'}`} style={activeMediaTab === 'grammar' ? { background: '#ffffff80' } : {}}>📖 Grammar</button>
-          <button onClick={() => setActiveMediaTab('corevocab')} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${activeMediaTab === 'corevocab' ? 'text-stone-800' : 'text-stone-500 hover:text-stone-700'}`} style={activeMediaTab === 'corevocab' ? { background: '#ffffff80' } : {}}>📚 Core Vocab</button>
-          <button onClick={() => navigate(createPageUrl('Backpack'))} className="px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 text-stone-500 hover:text-stone-700">🎒 Words</button>
+        {/* Draggable Filter Buttons */}
+        <div className="flex items-center justify-center gap-2 mb-6 p-2 rounded-xl flex-wrap" style={{ background: '#ffffff18', border: '1px solid #ffffff20' }}>
+          {buttonOrder.map((btnId) => {
+            if (btnId === 'backpack') {
+              return (
+                <button key="backpack" onClick={() => navigate(createPageUrl('Backpack'))} className="px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 text-stone-500 hover:text-stone-700 cursor-pointer">
+                  🎒 Words
+                </button>
+              );
+            }
+            const config = buttonConfigs[btnId];
+            if (!config) return null;
+            return (
+              <button
+                key={btnId}
+                draggable
+                onDragStart={(e) => handleDragStart(e, btnId)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, btnId)}
+                onDragEnd={handleDragEnd}
+                onClick={() => setActiveMediaTab(btnId)}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 cursor-grab active:cursor-grabbing ${
+                  activeMediaTab === btnId ? 'text-stone-800' : 'text-stone-500 hover:text-stone-700'
+                } ${draggedButton === btnId ? 'opacity-50' : ''}`}
+                style={activeMediaTab === btnId ? { background: '#ffffff80' } : {}}
+              >
+                {config.emoji} {config.label}
+              </button>
+            );
+          })}
           {canEdit && (
             <button onClick={() => { resetForm(); setEditingVideo(null); setMediaType("video"); setShowAddDialog(true); }} className="px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 text-stone-500 hover:text-stone-700">
               <Plus className="w-4 h-4" /> Add Media
