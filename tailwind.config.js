@@ -4,11 +4,16 @@ module.exports = {
     content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   theme: {
   	extend: {
-      fontFamily: {
-        serif: ['Cormorant Garamond', 'Georgia', 'serif'],
-        sans: ['Jost', 'system-ui', 'sans-serif'],
-      },
-  		borderRadius: {
+  	  fontFamily: {
+  	    serif: ['Cormorant Garamond', 'Georgia', 'serif'],
+  	    sans: ['Jost', 'system-ui', 'sans-serif'],
+  	  },
+  	  colors: {
+  	    success: 'hsl(var(--success))',
+  	    warning: 'hsl(var(--warning))',
+  	    error: 'hsl(var(--error))',
+  	  },
+  	borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
