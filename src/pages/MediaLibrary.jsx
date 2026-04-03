@@ -770,7 +770,6 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
     setLoadingTranscript(true);
     setVideoPlayer(null);
 
-    // Initialize YouTube player
     const videoId = video.video_id || video.youtube_video_id || extractYouTubeId(video.video_url);
 
     if (!videoId) {
@@ -786,56 +785,42 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
       document.head.appendChild(tag);
     }
 
-    // Initialize player when API is ready
     const initPlayer = () => {
-      // Clear any existing player
       const container = document.getElementById('youtube-player');
-      if (container) {
-        container.innerHTML = '';
-      }
-
-      const player = new window.YT.Player('youtube-player', {
-        videoId: videoId,
-        playerVars: { 
-          enablejsapi: 1,
-          autoplay: 0,
-          controls: 1
-        },
-        events: {
-          onReady: (event) => {
-            setVideoPlayer(event.target);
-          }
-        }
+      if (container) container.innerHTML = '';
+      new window.YT.Player('youtube-player', {
+        videoId,
+        playerVars: { enablejsapi: 1, autoplay: 0, controls: 1 },
+        events: { onReady: (event) => setVideoPlayer(event.target) }
       });
     };
 
     if (window.YT && window.YT.Player) {
-      // Small delay to ensure DOM is ready
       setTimeout(initPlayer, 100);
     } else {
       window.onYouTubeIframeAPIReady = initPlayer;
     }
 
-    // Check if video has processed transcript first
+    // Always check DB for saved transcript first
+    try {
+      const saved = await base44.entities.MediaLibrary.filter({ video_id: videoId });
+      const savedVideo = saved.find(v => v.processed_transcript?.length > 0);
+      if (savedVideo) {
+        setTranscript(savedVideo.processed_transcript);
+        setSelectedVideo(savedVideo);
+        setLoadingTranscript(false);
+        return;
+      }
+    } catch (e) {}
+
+    // Also check if the passed video already has a transcript
     if (video.processed_transcript && video.processed_transcript.length > 0) {
       setTranscript(video.processed_transcript);
       setLoadingTranscript(false);
       return;
     }
 
-    // Otherwise try to fetch raw transcript from YouTube
-    try {
-      const result = await base44.functions.invoke('youtubeTranscript', { videoId });
-      
-      if (result.data?.transcript) {
-        // Show raw transcript (user can generate full version with button)
-        setTranscript(result.data.transcript);
-      } else {
-        toast.error("No transcript available");
-      }
-    } catch (e) {
-      // Silently fail - user can click generate button
-    }
+    // No saved transcript found
     setLoadingTranscript(false);
   };
 
