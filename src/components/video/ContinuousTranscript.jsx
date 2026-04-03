@@ -146,7 +146,7 @@ export default function ContinuousTranscript({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto bg-white/5 rounded-2xl p-6">
+    <div className="w-full bg-white/5 rounded-2xl p-4">
       <div className="space-y-4">
         {transcript.map((segment, segIdx) => {
           if (!segment.transliteration) return null;

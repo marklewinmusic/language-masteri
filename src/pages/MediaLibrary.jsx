@@ -1624,15 +1624,17 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
               </button>
             </div>
 
-            {/* Video Player */}
-            <div className="w-full bg-black flex items-center justify-center" style={{ height: '30vh' }}>
-              {(selectedVideo?.video_id || selectedVideo?.youtube_video_id || selectedVideo?.video_url) && (
-                <div id="youtube-player" className="w-full h-full" />
-              )}
-            </div>
+            {/* Main content: video + transcript side by side on wide screens, stacked on mobile */}
+            <div className="flex-1 overflow-hidden flex flex-col items-center">
+              {/* Video Player - constrained width */}
+              <div className="w-full max-w-3xl bg-black" style={{ height: '35vh' }}>
+                {(selectedVideo?.video_id || selectedVideo?.youtube_video_id || selectedVideo?.video_url) && (
+                  <div id="youtube-player" className="w-full h-full" />
+                )}
+              </div>
 
-            {/* Transcript */}
-            <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center">
+            {/* Transcript - same width as video */}
+            <div className="w-full max-w-3xl flex-1 overflow-y-auto py-4 px-2">
               {loadingTranscript ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
@@ -1680,6 +1682,7 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                   </div>
                 </div>
               )}
+            </div>
             </div>
           </div>
         </div>
