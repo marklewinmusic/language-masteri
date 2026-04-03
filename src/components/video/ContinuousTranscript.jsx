@@ -203,28 +203,52 @@ Provide:
               {/* Timestamp Play Button */}
               <div className="flex-shrink-0 pt-1">
                 {editingSegmentTime === segIdx ? (
-                  <input
-                    autoFocus
-                    type="text"
-                    value={editingTimeValue}
-                    onChange={(e) => setEditingTimeValue(e.target.value)}
-                    onBlur={() => {
-                      const parts = editingTimeValue.split(':');
-                      if (parts.length === 2) {
-                        const secs = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-                        if (!isNaN(secs)) {
-                          if (onEditWord) onEditWord(segIdx, 'start', secs);
-                          onSeekTo(secs, false);
+                  <span className="inline-flex items-center gap-0.5">
+                    <input
+                      autoFocus
+                      type="text"
+                      value={editingTimeValue}
+                      onChange={(e) => setEditingTimeValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const parts = editingTimeValue.split(':');
+                          if (parts.length === 2) {
+                            const secs = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+                            if (!isNaN(secs)) {
+                              if (onEditWord) onEditWord(segIdx, 'start', secs);
+                              onSeekTo(secs, false);
+                            }
+                          }
+                          setEditingSegmentTime(null);
                         }
-                      }
-                      setEditingSegmentTime(null);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') e.target.blur();
-                      if (e.key === 'Escape') setEditingSegmentTime(null);
-                    }}
-                    className="w-16 px-2 py-1 rounded-lg text-xs font-mono bg-yellow-400/20 border border-yellow-400 text-yellow-300 outline-none"
-                  />
+                        if (e.key === 'Escape') setEditingSegmentTime(null);
+                      }}
+                      className="w-14 px-1 py-0.5 rounded text-xs font-mono bg-yellow-400/20 border border-yellow-400 text-yellow-300 outline-none"
+                    />
+                    <button
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        const parts = editingTimeValue.split(':');
+                        if (parts.length === 2) {
+                          const secs = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+                          if (!isNaN(secs)) {
+                            if (onEditWord) onEditWord(segIdx, 'start', secs);
+                            onSeekTo(secs, false);
+                          }
+                        }
+                        setEditingSegmentTime(null);
+                      }}
+                      className="text-green-400 hover:text-green-300"
+                    >
+                      <Check className="w-3 h-3" />
+                    </button>
+                    <button
+                      onMouseDown={(e) => { e.preventDefault(); setEditingSegmentTime(null); }}
+                      className="text-red-400 hover:text-red-300"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
                 ) : (
                   <button
                     onClick={() => {
