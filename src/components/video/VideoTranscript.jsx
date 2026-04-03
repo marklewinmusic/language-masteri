@@ -91,12 +91,23 @@ export default function VideoTranscript({ videoId, videoUrl, iframeId, onPauseVi
 
   const loadVideo = async () => {
     try {
-      const videos = await base44.entities.Video.filter({ video_url: videoUrl });
+      // Try to find by video_url first
+      let videos = await base44.entities.Video.filter({ video_url: videoUrl });
+      
+      // Also try by youtube_video_id if we have one
+      if (videos.length === 0 && videoId) {
+        videos = await base44.entities.Video.filter({ youtube_video_id: videoId });
+      }
+
       if (videos.length > 0) {
-        setVideo(videos[0]);
-        // If no transcript and not failed, start transcription
-        if (!videos[0].transcript_status || videos[0].transcript_status === "failed") {
-          startTranscription(videos[0].id);
+        // Pick the one with the best transcript
+        const withTranscript = videos.find(v => v.transcript_status === "complete" && v.transcript_text);
+        const best = withTranscript || videos[0];
+        setVideo(best);
+        
+        // Only auto-transcribe if no transcript at all
+        if (!best.transcript_text && best.transcript_status !== "failed" && best.transcript_status !== "unavailable") {
+          startTranscription(best.id);
         }
       } else {
         // Create video entry
@@ -114,6 +125,13 @@ export default function VideoTranscript({ videoId, videoUrl, iframeId, onPauseVi
   };
 
   const startTranscription = async (id) => {
+    // Safety check: don't overwrite existing transcript
+    const check = await base44.entities.Video.filter({ id });
+    if (check[0]?.transcript_text && check[0]?.transcript_status === "complete") {
+      setVideo(check[0]);
+      setTranscribing(false);
+      return;
+    }
     setTranscribing(true);
     try {
       // Extract YouTube video ID
@@ -656,14 +674,15 @@ Provide:
           )}
         </Button>
         
-        {(video?.transcript_status === "failed" || video?.transcript_status === "deleted") && (
+        {!isProcessing && (
           <Button
             onClick={() => setShowManualInput(true)}
             variant="outline"
+            size="sm"
             className="bg-green-500/20 border-green-500/50 text-green-400 hover:bg-green-500/30"
+            title={hasTranscript ? "Replace transcript" : "Add transcript"}
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Add New Transcript
+            <Plus className="w-4 h-4" />
           </Button>
         )}
       </div>
