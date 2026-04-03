@@ -60,6 +60,8 @@ export default function Home() {
   const [selectedCoach, setSelectedCoach] = useState("");
   const [selectedStudent, setSelectedStudent] = useState("");
   const [expandedDay, setExpandedDay] = useState(null);
+  const [draggedTask, setDraggedTask] = useState(null);
+  const [dragOverTask, setDragOverTask] = useState(null);
   const [newTask, setNewTask] = useState({ name: "", duration: "", page: "" });
   const [editingTask, setEditingTask] = useState(null);
   const [editingTaskData, setEditingTaskData] = useState({ name: "", duration: "", page: "" });
@@ -484,6 +486,15 @@ export default function Home() {
     setEditingTaskData({ name: "", duration: "", page: "" });
   };
 
+  const reorderTasks = (dayId, fromIdx, toIdx) => {
+    const day = days.find(d => d.id === dayId);
+    if (!day) return;
+    const updated = [...(day.subsections || [])];
+    const [item] = updated.splice(fromIdx, 1);
+    updated.splice(toIdx, 0, item);
+    updateDayMutation.mutate({ id: dayId, data: { subsections: updated } });
+  };
+
   const currentAge = userProfile?.age_level || 3;
   const isBaby = currentAge < 5;
   const hasDiaper = unlockedItems.includes("diaper");
@@ -605,14 +616,8 @@ export default function Home() {
                           style={{ backgroundColor: dayColor.bg + '40' }}
                           onClick={() => setExpandedDay(isExpanded ? null : day.day_number)}
                         >
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-bold text-sm" style={{ color: '#3d4a2e' }}>{day.title || `Session ${day.day_number}`}</h3>
-                            {allCompleted && <span className="text-xs text-green-600">✓</span>}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs" style={{ color: '#6b7c5a' }}>{day.subsections?.length || 0} tasks</span>
-                            <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} style={{ color: '#6b7c5a' }} />
-                          </div>
+                          <h3 className="font-bold text-sm" style={{ color: '#3d4a2e' }}>Session {day.day_number}</h3>
+                          <ChevronDown className={`w-4 h-4 transition-transform ml-auto ${isExpanded ? 'rotate-180' : ''}`} style={{ color: '#6b7c5a' }} />
                         </div>
                         <AnimatePresence>
                           {isExpanded && (
@@ -624,24 +629,40 @@ export default function Home() {
                               className="overflow-hidden"
                             >
                               <div className="mt-1 space-y-1 pl-3">
-                                {(day.subsections || []).map((task) => {
-                                  const isTaskDone = progress?.subsections_completed?.includes(task.id);
-                                  return (
-                                    <div
-                                      key={task.id}
-                                      className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:opacity-80 transition-all"
-                                      style={{ background: isTaskDone ? '#5a6b5a30' : '#ffffff50', border: '1px solid #5a6b5a20' }}
-                                      onClick={() => task.page ? navigate(createPageUrl(task.page)) : toggleTaskMutation.mutate({ dayId: day.id, taskId: task.id, dayNumber: day.day_number })}
-                                    >
-                                      <div className="flex items-center gap-2">
-                                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isTaskDone ? 'bg-green-500 border-green-500' : 'border-stone-400'}`}>
-                                          {isTaskDone && <Check className="w-2.5 h-2.5 text-white" />}
-                                        </div>
-                                        <span className="text-sm font-medium" style={{ color: '#3d4a2e' }}>{task.name}</span>
-                                      </div>
-                                      {task.duration && <span className="text-xs" style={{ color: '#6b7c5a' }}>{task.duration}</span>}
-                                    </div>
-                                  );
+                                {(day.subsections || []).map((task, idx) => {
+                                   const isTaskDone = progress?.subsections_completed?.includes(task.id);
+                                   const isDragging = draggedTask?.dayId === day.id && draggedTask?.idx === idx;
+                                   const isDragOver = dragOverTask?.dayId === day.id && dragOverTask?.idx === idx;
+                                   return (
+                                     <div
+                                       key={task.id}
+                                       draggable
+                                       onDragStart={() => setDraggedTask({ dayId: day.id, idx })}
+                                       onDragOver={(e) => {
+                                         e.preventDefault();
+                                         setDragOverTask({ dayId: day.id, idx });
+                                       }}
+                                       onDragLeave={() => setDragOverTask(null)}
+                                       onDrop={() => {
+                                         if (draggedTask && draggedTask.dayId === day.id && draggedTask.idx !== idx) {
+                                           reorderTasks(day.id, draggedTask.idx, idx);
+                                         }
+                                         setDraggedTask(null);
+                                         setDragOverTask(null);
+                                       }}
+                                       className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-move hover:opacity-80 transition-all ${isDragging ? 'opacity-50' : ''} ${isDragOver ? 'border-2 border-dashed border-cyan-400' : ''}`}
+                                       style={{ background: isTaskDone ? '#5a6b5a30' : '#ffffff50', border: isDragOver ? undefined : '1px solid #5a6b5a20' }}
+                                       onClick={() => !isDragging && (task.page ? navigate(createPageUrl(task.page)) : toggleTaskMutation.mutate({ dayId: day.id, taskId: task.id, dayNumber: day.day_number }))}
+                                     >
+                                       <div className="flex items-center gap-2">
+                                         <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isTaskDone ? 'bg-green-500 border-green-500' : 'border-stone-400'}`}>
+                                           {isTaskDone && <Check className="w-2.5 h-2.5 text-white" />}
+                                         </div>
+                                         <span className="text-sm font-medium" style={{ color: '#3d4a2e' }}>{task.name}</span>
+                                       </div>
+                                       {task.duration && <span className="text-xs" style={{ color: '#6b7c5a' }}>{task.duration}</span>}
+                                     </div>
+                                   );
                                 })}
                               </div>
                             </motion.div>
