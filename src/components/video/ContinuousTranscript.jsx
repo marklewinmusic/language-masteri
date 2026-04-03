@@ -147,14 +147,14 @@ export default function ContinuousTranscript({
 
   return (
     <div className="w-full bg-white/5 rounded-2xl p-4">
-      <div className="space-y-4">
+      <div className="space-y-4 flex flex-col items-center">
         {transcript.map((segment, segIdx) => {
           if (!segment.transliteration) return null;
           const isActive = currentTime >= segment.start &&
             currentTime < (transcript[segIdx + 1]?.start || Infinity);
 
           return (
-            <div key={segIdx} className={`flex gap-3 items-start rounded-xl px-3 py-2 transition-all ${isActive ? 'bg-cyan-500/10 border border-cyan-400/30' : 'border border-transparent'}`}>
+            <div key={segIdx} className={`flex gap-3 items-start rounded-xl px-3 py-2 transition-all w-full max-w-lg ${isActive ? 'bg-cyan-500/10 border border-cyan-400/30' : 'border border-transparent'}`}>
               {/* Timestamp Play Button */}
               <div className="flex-shrink-0 pt-1">
                 <button
