@@ -15,7 +15,7 @@ import GrammarTab from "../components/grammar/GrammarTab";
 import CoreVocabTab from "../components/grammar/CoreVocabTab";
 import ClickableTranscriptText from "../components/learning/ClickableTranscriptText";
 import TranslatorWidget from "../components/TranslatorWidget";
-import MediaLibraryHeader from "../components/MediaLibraryHeader";
+
 import ContinuousTranscript from "../components/video/ContinuousTranscript";
 
 const topics = [
@@ -939,7 +939,6 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
   return (
     <>
     <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 50%, #eae6da 100%)' }}>
-      <MediaLibraryHeader />
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-4xl font-bold" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Media Library</h1>
@@ -1627,7 +1626,6 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
       {/* Video Transcript Dialog - Fullscreen */}
       {showTranscript && (
         <div className="fixed inset-0 z-50 bg-slate-900">
-          <MediaLibraryHeader />
           <div className="h-full flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/10">
