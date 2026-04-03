@@ -169,8 +169,9 @@ export default function ContinuousTranscript({
                       const parts = editingTimeValue.split(':');
                       if (parts.length === 2) {
                         const secs = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-                        if (!isNaN(secs) && onEditWord) {
-                          onEditWord(segIdx, 'start', secs);
+                        if (!isNaN(secs)) {
+                          if (onEditWord) onEditWord(segIdx, 'start', secs);
+                          onSeekTo(secs, false);
                         }
                       }
                       setEditingSegmentTime(null);
