@@ -10,6 +10,8 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthChecked, setIsAuthChecked] = useState(false);
+  const [lastActivity, setLastActivity] = useState(Date.now());
+  const [sessionActive, setSessionActive] = useState(false);
   
   // Don't show dock or run onboarding checks on these pages
   const isOnboardingPage = currentPageName === "LanguageSelect" || currentPageName === "AvatarSelect";
@@ -61,6 +63,39 @@ export default function Layout({ children, currentPageName }) {
   // Debug label (dev only)
   const isDev = window.location.hostname === 'localhost' || window.location.hostname.includes('dev');
   
+  // Inactivity detection - reset session if no activity for 2 minutes
+  useEffect(() => {
+    if (!sessionActive) return;
+
+    const checkInactivity = setInterval(() => {
+      const timeSinceLastActivity = Date.now() - lastActivity;
+      if (timeSinceLastActivity > 2 * 60 * 1000) { // 2 minutes
+        setSessionActive(false);
+      }
+    }, 30000); // Check every 30 seconds
+
+    return () => clearInterval(checkInactivity);
+  }, [sessionActive, lastActivity]);
+
+  // Track user activity globally
+  useEffect(() => {
+    const handleActivity = () => {
+      if (sessionActive) {
+        setLastActivity(Date.now());
+      }
+    };
+
+    window.addEventListener('click', handleActivity);
+    window.addEventListener('keydown', handleActivity);
+    window.addEventListener('scroll', handleActivity);
+
+    return () => {
+      window.removeEventListener('click', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('scroll', handleActivity);
+    };
+  }, [sessionActive]);
+
   // Only redirect authenticated users with loaded profiles
   useEffect(() => {
     console.log('Layout redirect check:', {
@@ -132,10 +167,11 @@ export default function Layout({ children, currentPageName }) {
           role: {currentUser?.role || 'none'} | 
           lang: {userProfile?.language || 'null'} | 
           route: {currentPageName} | 
-          auth: {currentUser ? 'yes' : 'no'}
+          auth: {currentUser ? 'yes' : 'no'} |
+          session: {sessionActive ? 'active' : 'inactive'}
         </div>
       )}
-      {showHeader && <GameHeader profile={userProfile} coins={userCoins?.coins} onBuyCoins={() => {}} />}
+      {showHeader && <GameHeader profile={userProfile} coins={userCoins?.coins} sessionActive={sessionActive} onSessionToggle={() => { setSessionActive(!sessionActive); setLastActivity(Date.now()); }} />}
       {children}
       <TranslatorWidget />
     </>

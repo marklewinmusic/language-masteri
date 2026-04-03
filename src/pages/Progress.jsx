@@ -15,6 +15,8 @@ export default function Progress() {
       const profiles = await base44.entities.UserProfile.list();
       return profiles[0] || null;
     },
+    staleTime: 0,
+    refetchOnWindowFocus: false,
   });
 
   const { data: userCoins } = useQuery({
@@ -116,8 +118,6 @@ export default function Progress() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <GameHeader profile={userProfile} coins={userCoins?.coins} onBuyCoins={() => {}} />
-
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-center gap-4 mb-8">
           <Link to={createPageUrl("Home")} className="text-white/60 hover:text-white">
