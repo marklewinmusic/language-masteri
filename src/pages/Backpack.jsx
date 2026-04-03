@@ -34,6 +34,13 @@ export default function Backpack() {
   const [newWordCustomMnemonic, setNewWordCustomMnemonic] = useState("");
   const [lastImagePrompt, setLastImagePrompt] = useState("");
   const [imageApproved, setImageApproved] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [lockedWords, setLockedWords] = useState(JSON.parse(localStorage.getItem('lockedWords') || '{}'));
+
+  // Load current user
+  useEffect(() => {
+    base44.auth.me().then(setCurrentUser).catch(() => {});
+  }, []);
 
   // Load pending words from localStorage on mount
   useEffect(() => {
@@ -44,6 +51,14 @@ export default function Backpack() {
       toast.success(`${pending.length} word(s) loaded from chat!`);
     }
   }, []);
+
+  // Auto-generate mnemonics for words without images on load
+  useEffect(() => {
+    const wordsToGenerate = wordRatings.filter(w => !w.image_url && !lockedWords[w.id]);
+    if (wordsToGenerate.length > 0) {
+      generateMissingMnemonics(wordsToGenerate);
+    }
+  }, [wordRatings.length]);
 
   // Auto-generate image after user stops typing
   useEffect(() => {
@@ -300,6 +315,38 @@ export default function Backpack() {
     setLastImagePrompt("");
   };
 
+  const generateMissingMnemonics = async (words) => {
+    for (const word of words) {
+      try {
+        setGeneratingMnemonic(true);
+        const mnemonicPrompt = `A memorable, colorful cartoon illustration to help learn the Hebrew word "${word.phonetic}" meaning "${word.translation}". 
+        Visually represent the meaning. Fun, educational style. NO TEXT IN THE IMAGE.`;
+        
+        const result = await base44.integrations.Core.GenerateImage({
+          prompt: mnemonicPrompt
+        });
+
+        await updateWordMutation.mutateAsync({
+          id: word.id,
+          data: { image_url: result.url }
+        });
+      } catch (e) {
+        console.error("Failed to auto-generate mnemonic for", word.phonetic);
+      }
+    }
+    setGeneratingMnemonic(false);
+  };
+
+  const toggleWordLock = (wordId) => {
+    const updated = { ...lockedWords, [wordId]: !lockedWords[wordId] };
+    setLockedWords(updated);
+    localStorage.setItem('lockedWords', JSON.stringify(updated));
+    toast.success(updated[wordId] ? "Word locked 🔒" : "Word unlocked 🔓");
+  };
+
+  const isWordLocked = (wordId) => lockedWords[wordId];
+  const isAdmin = currentUser?.role === 'admin';
+
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 50%, #eae6da 100%)' }}>
       <GameHeader profile={userProfile} coins={0} onBuyCoins={() => {}} />
@@ -476,6 +523,7 @@ export default function Backpack() {
                     <p className="text-cyan-400 font-semibold text-sm text-center">
                       <EditableWord
                         text={word.phonetic}
+                        editable={!isWordLocked(word.id) || isAdmin}
                         onSave={(newPhonetic) => updateWordMutation.mutate({ id: word.id, data: { phonetic: newPhonetic } })}
                         className="text-cyan-400 font-semibold text-sm"
                       />
@@ -483,6 +531,7 @@ export default function Backpack() {
                     <p className="text-stone-500 text-xs text-center mt-1">
                       = <EditableWord
                         text={word.translation}
+                        editable={!isWordLocked(word.id) || isAdmin}
                         onSave={(newTranslation) => updateWordMutation.mutate({ id: word.id, data: { translation: newTranslation } })}
                         className="text-stone-600 text-xs"
                       />
@@ -491,6 +540,7 @@ export default function Backpack() {
                       <EditableWord
                         text={word.word}
                         language="he"
+                        editable={!isWordLocked(word.id) || isAdmin}
                         onSave={(newWord) => updateWordMutation.mutate({ id: word.id, data: { word: newWord } })}
                         className="text-cyan-600 font-bold text-sm"
                       />
@@ -504,11 +554,12 @@ export default function Backpack() {
                         <button
                           key={num}
                           onClick={(e) => handleRateWord(word.id, num, e)}
+                          disabled={isWordLocked(word.id) && !isAdmin}
                           className={`flex-1 h-6 rounded text-xs font-bold transition-all ${
                             word.times_practiced === num
                               ? num === 5 ? "bg-green-600 text-white" : "bg-stone-600 text-white"
                               : "bg-stone-100 text-stone-400 hover:bg-stone-200"
-                          }`}
+                          } ${isWordLocked(word.id) && !isAdmin ? "opacity-50 cursor-not-allowed" : ""}`}
                         >
                           {num}
                         </button>
@@ -516,14 +567,27 @@ export default function Backpack() {
                     </div>
                     <button
                       onClick={() => setPictureWordId(pictureWordId === word.id ? null : word.id)}
-                      className="w-6 h-6 rounded flex items-center justify-center text-sm hover:bg-purple-500/20 transition-all"
+                      disabled={isWordLocked(word.id) && !isAdmin}
+                      className={`w-6 h-6 rounded flex items-center justify-center text-sm hover:bg-purple-500/20 transition-all ${isWordLocked(word.id) && !isAdmin ? "opacity-50 cursor-not-allowed" : ""}`}
                       title="Edit/generate picture"
                     >
                       🎨
                     </button>
                     <button
+                      onClick={() => toggleWordLock(word.id)}
+                      className={`w-6 h-6 rounded flex items-center justify-center text-sm transition-all ${
+                        isWordLocked(word.id)
+                          ? "bg-orange-500/30 hover:bg-orange-500/40"
+                          : "hover:bg-stone-300"
+                      }`}
+                      title={isWordLocked(word.id) ? "Unlock card" : "Lock card"}
+                    >
+                      {isWordLocked(word.id) ? "🔒" : "🔓"}
+                    </button>
+                    <button
                       onClick={() => deleteWordMutation.mutate(word.id)}
-                      className="w-6 h-6 rounded flex items-center justify-center text-sm hover:bg-red-500/20 transition-all"
+                      disabled={isWordLocked(word.id) && !isAdmin}
+                      className={`w-6 h-6 rounded flex items-center justify-center text-sm hover:bg-red-500/20 transition-all ${isWordLocked(word.id) && !isAdmin ? "opacity-50 cursor-not-allowed" : ""}`}
                       title="Delete word"
                     >
                       🗑️
