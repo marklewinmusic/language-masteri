@@ -620,6 +620,8 @@ export default function Home() {
                   { label: 'Verbs', emoji: '📖', to: 'MediaLibrary' },
                   { label: 'Core Vocab', emoji: '📚', to: 'MediaLibrary' },
                   { label: 'Journal', emoji: '📓', to: 'Journal' },
+                  { label: 'Words', emoji: '🎒', to: 'Flashcards' },
+                  { label: 'Progress', emoji: '🏆', to: 'Progress' },
                 ].map((item) => (
                   <Link key={item.label} to={createPageUrl(item.to)} className="no-underline">
                     <motion.div
