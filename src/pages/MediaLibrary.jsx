@@ -1638,6 +1638,20 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
               />
             </div>
 
+            <div>
+              <Label>Designate to Session (Day) *</Label>
+              <Input
+                type="number"
+                min="1"
+                max="100"
+                value={formData.default_day}
+                onChange={(e) => setFormData({ ...formData, default_day: e.target.value })}
+                placeholder="Which session? (1-100)"
+                className="bg-white/5 border-white/20 text-white"
+              />
+              <p className="text-xs text-white/50 mt-1">Video will auto-populate in this session's schedule</p>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Language *</Label>
@@ -1692,26 +1706,38 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label>Tags (select relevant)</Label>
+              <div className="space-y-2 mt-2 bg-white/5 rounded-lg p-3 border border-white/10 max-h-48 overflow-y-auto">
+                {['Learning', 'Hebrew', 'Beginner', 'Intermediate', 'Advanced', 'Grammar', 'Vocabulary', 'Conversation', 'Music', 'Stories', 'Culture', 'Daily Routine', 'Business', 'Travel', 'Food', 'Health'].map(tag => (
+                  <label key={tag} className="flex items-center gap-2 cursor-pointer hover:text-white/80 transition-all text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={formData.tags.split(',').map(t => t.trim()).filter(Boolean).includes(tag)}
+                      onChange={(e) => {
+                        const tagsList = formData.tags.split(',').map(t => t.trim()).filter(Boolean);
+                        if (e.target.checked) {
+                          tagsList.push(tag);
+                        } else {
+                          tagsList = tagsList.filter(t => t !== tag);
+                        }
+                        setFormData({ ...formData, tags: tagsList.join(', ') });
+                      }}
+                      className="w-4 h-4 rounded bg-white/10 border border-white/30 cursor-pointer"
+                    />
+                    <span className="text-sm">{tag}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Duration (minutes) - auto-populated</Label>
                 <Input
                   type="number"
                   value={formData.duration_minutes}
                   onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
-                  className="bg-white/5 border-white/20 text-white"
-                />
-              </div>
-
-              <div>
-                <Label>Session Number (1-100)</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={formData.default_day}
-                  onChange={(e) => setFormData({ ...formData, default_day: e.target.value })}
-                  placeholder="Optional"
                   className="bg-white/5 border-white/20 text-white"
                 />
               </div>
