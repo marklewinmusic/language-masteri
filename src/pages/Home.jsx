@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import ActivityCard from "../components/game/ActivityCard";
+import RecommendedForYou from "@/components/home/RecommendedForYou";
 import BabyGame from "../components/game/BabyGame";
 import AvatarMenu from "../components/game/AvatarMenu";
 
@@ -580,6 +581,11 @@ export default function Home() {
           </motion.div>
         ) : (
           <div className="space-y-10">
+
+            {/* RECOMMENDED FOR YOU */}
+            {userProfile?.onboarding_completed && (
+              <RecommendedForYou userProfile={userProfile} />
+            )}
 
             {/* SCHEDULE SECTION */}
             <div className="flex justify-center">

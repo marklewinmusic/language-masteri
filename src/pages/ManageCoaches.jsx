@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Trash2, Users, UserCheck } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Users, UserCheck, ClipboardList } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
@@ -145,13 +145,23 @@ export default function ManageCoaches() {
               <p className="text-white/60">Assign coaches to manage students</p>
             </div>
           </div>
-          <Button
-            onClick={() => setShowAssignDialog(true)}
-            className="bg-gradient-to-r from-green-500 to-emerald-500"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Assign Coach
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => window.open(createPageUrl("Onboarding"), '_blank')}
+              variant="outline"
+              className="border-white/20 text-white"
+            >
+              <ClipboardList className="w-5 h-5 mr-2" />
+              Questionnaire
+            </Button>
+            <Button
+              onClick={() => setShowAssignDialog(true)}
+              className="bg-gradient-to-r from-green-500 to-emerald-500"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Assign Coach
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-4">
