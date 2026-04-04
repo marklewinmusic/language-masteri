@@ -71,7 +71,21 @@ export default function StickyNote() {
           words: words,
         });
 
-        toast.success(`Note saved for @${mention}`);
+        // If we matched a real user, add words to their backpack via backend
+        if (matchedUser?.email && words.length > 0) {
+          try {
+            const result = await base44.functions.invoke('addWordsToStudentBackpack', {
+              student_email: matchedUser.email,
+              words,
+            });
+            toast.success(`Note saved + ${result.data?.added || 0} word(s) added to @${mention}'s backpack!`);
+          } catch (e) {
+            console.error("Failed to add words to student backpack:", e);
+            toast.success(`Note saved for @${mention}`);
+          }
+        } else {
+          toast.success(`Note saved for @${mention}`);
+        }
       }
 
       // Clear note after saving
