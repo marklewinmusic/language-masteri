@@ -446,14 +446,16 @@ export default function Home() {
     if (!newTask.name.trim()) return;
     
     const day = days.find(d => d.id === dayId);
+    const videoId = extractYouTubeId(newTask.youtube_url);
     const updatedSubsections = [...(day.subsections || []), { 
       id: Date.now().toString(), 
       name: newTask.name,
-      duration: newTask.duration,
-      page: newTask.page
+      youtube_url: newTask.youtube_url,
+      video_id: videoId || undefined,
+      page: newTask.page || (videoId ? "MediaLibrary" : ""),
     }];
     updateDayMutation.mutate({ id: dayId, data: { subsections: updatedSubsections } });
-    setNewTask({ name: "", duration: "", page: "" });
+    setNewTask({ name: "", youtube_url: "", page: "" });
     setAddingTaskToDayId(null);
   };
 
