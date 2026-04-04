@@ -59,32 +59,40 @@ export default function ManageCoaches() {
       const appUrl = window.location.origin;
       const isExistingUser = allUsers.some(u => u.email === variables.student_email);
 
-      const studentEmailBody = isExistingUser
-        ? `Congratulations! You have been matched with a coach: ${variables.coach_email} on Language Mastery.\n\nYour coach is here to support your learning journey. Log in to get started!\n\n${appUrl}\n\nWelcome,\nThe Language Mastery Team`
-        : `You've been invited to Language Mastery and matched with a personal coach: ${variables.coach_email}!\n\nClick the link below to create your account and start your learning journey:\n\n${appUrl}\n\nYour coach is ready and waiting to support you.\n\nWelcome,\nThe Language Mastery Team`;
-
-      // Send emails to both coach and student
       try {
-        await Promise.all([
+        // If new user, invite them (platform sends login credentials automatically)
+        if (!isExistingUser) {
+          await base44.users.inviteUser(variables.student_email, "user");
+        }
+
+        // Send coach notification + student notification (existing users only — new users get platform invite email)
+        const emailPromises = [
           base44.integrations.Core.SendEmail({
             to: variables.coach_email,
             subject: "🎉 You've been assigned a new student!",
             body: `You have been assigned as a coach to ${variables.student_email} on Language Mastery.\n\nYou can now support their learning journey. Log in to view their progress and get started!\n\n${appUrl}\n\nWelcome aboard,\nThe Language Mastery Team`
           }),
-          base44.integrations.Core.SendEmail({
-            to: variables.student_email,
-            subject: "🎉 You've been matched with a coach on Language Mastery!",
-            body: studentEmailBody
-          })
-        ]);
+        ];
+
+        if (isExistingUser) {
+          emailPromises.push(
+            base44.integrations.Core.SendEmail({
+              to: variables.student_email,
+              subject: "🎉 You've been matched with a coach on Language Mastery!",
+              body: `Great news! You have been matched with a personal coach: ${variables.coach_email} on Language Mastery.\n\nYour coach is ready to support your learning journey. Log in to get started!\n\n${appUrl}\n\nWelcome,\nThe Language Mastery Team`
+            })
+          );
+        }
+
+        await Promise.all(emailPromises);
       } catch (e) {
-        console.error("Failed to send assignment emails:", e);
+        console.error("Failed to invite/notify:", e);
       }
 
       setSelectedCoach("");
       setSelectedStudent("");
       setStudentEmailInput("");
-      toast.success("Coach assigned! Emails sent.");
+      toast.success(isExistingUser ? "Coach assigned! Notification sent." : "Coach assigned! Account created and login details sent to student.");
     },
   });
 
@@ -250,7 +258,7 @@ export default function ManageCoaches() {
                 className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/30"
               />
               {studentEmailInput && !allUsers.some(u => u.email === studentEmailInput) && (
-                <p className="text-amber-400 text-xs mt-1">⚠️ New user — they'll receive a signup link in their email.</p>
+                <p className="text-amber-400 text-xs mt-1">✉️ New user — an account will be created and login details sent to their email automatically.</p>
               )}
             </div>
 
