@@ -451,6 +451,36 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
       data.processed_transcript = processedTranscript;
     }
 
+    // If a default_day is set, inject/update a video task into that Day's subsections for ALL users
+    if (formData.default_day) {
+      const dayNum = parseInt(formData.default_day);
+      try {
+        const matchingDays = await base44.entities.Day.filter({ day_number: dayNum });
+        for (const day of matchingDays) {
+          const subsections = day.subsections || [];
+          const videoTaskId = `video_${data.video_id || formData.video_id}`;
+          const existingIdx = subsections.findIndex(s => s.id === videoTaskId || s.video_id === (data.video_id || formData.video_id));
+          const videoTask = {
+            id: videoTaskId,
+            name: `Watch: ${data.title || formData.title}`,
+            duration: data.duration_minutes ? `${data.duration_minutes} min` : "",
+            page: "MediaLibrary",
+            video_id: data.video_id || formData.video_id,
+          };
+          let updatedSubsections;
+          if (existingIdx >= 0) {
+            updatedSubsections = subsections.map((s, i) => i === existingIdx ? videoTask : s);
+          } else {
+            updatedSubsections = [videoTask, ...subsections];
+          }
+          await base44.entities.Day.update(day.id, { subsections: updatedSubsections });
+        }
+        toast.success(`Video added to Session ${dayNum} schedule!`);
+      } catch (e) {
+        console.error("Failed to update day schedule:", e);
+      }
+    }
+
     if (editingVideo) {
       updateVideoMutation.mutate({ id: editingVideo.id, data });
     } else {
