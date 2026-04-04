@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Trash2, Users, UserCheck, ClipboardList } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Users, UserCheck, ClipboardList, StickyNote, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,21 @@ export default function ManageCoaches() {
     queryKey: ['coachAssignments'],
     queryFn: () => base44.entities.CoachAssignment.list(),
     enabled: currentUser?.role === 'admin',
+  });
+
+  // Fetch all coach notes
+  const { data: coachNotes = [], refetch: refetchNotes } = useQuery({
+    queryKey: ['coachNotes'],
+    queryFn: () => base44.entities.CoachNote.list('-created_date'),
+    enabled: currentUser?.role === 'admin',
+  });
+
+  const deleteNoteMutation = useMutation({
+    mutationFn: (id) => base44.entities.CoachNote.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coachNotes'] });
+      toast.success("Note deleted");
+    },
   });
 
   const createAssignmentMutation = useMutation({
@@ -185,28 +200,69 @@ export default function ManageCoaches() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  {coachAssignments.map((assignment) => (
-                    <div
-                      key={assignment.id}
-                      className="flex items-center justify-between bg-white/5 rounded-lg p-3 border border-white/10"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-white">{assignment.student_email}</span>
-                        <span className="text-white/40 text-xs">
-                          (assigned {new Date(assignment.assigned_at).toLocaleDateString()})
-                        </span>
+                <div className="space-y-4">
+                  {coachAssignments.map((assignment) => {
+                    // Find notes for this student by email or name match
+                    const studentUser = allUsers.find(u => u.email === assignment.student_email);
+                    const studentName = studentUser?.full_name || "";
+                    const studentNotes = coachNotes.filter(n =>
+                      n.student_email === assignment.student_email ||
+                      (studentName && n.student_name.toLowerCase() === studentName.toLowerCase())
+                    );
+
+                    return (
+                      <div key={assignment.id} className="bg-white/5 rounded-xl border border-white/10 overflow-hidden">
+                        <div className="flex items-center justify-between p-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-white font-medium">{assignment.student_email}</span>
+                            {studentName && <span className="text-white/50 text-xs">({studentName})</span>}
+                            <span className="text-white/40 text-xs">
+                              assigned {new Date(assignment.assigned_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <Button
+                            onClick={() => deleteAssignmentMutation.mutate(assignment.id)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+
+                        {/* Coach Notes for this student */}
+                        {studentNotes.length > 0 && (
+                          <div className="border-t border-white/10 px-3 py-2 space-y-2">
+                            <p className="text-yellow-300 text-xs font-semibold flex items-center gap-1">
+                              <StickyNote className="w-3 h-3" /> Coach Notes ({studentNotes.length})
+                            </p>
+                            {studentNotes.map(note => (
+                              <div key={note.id} className="bg-yellow-400/10 border border-yellow-400/20 rounded-lg p-2.5">
+                                <div className="flex items-start justify-between gap-2">
+                                  <p className="text-white/80 text-sm flex-1 whitespace-pre-wrap">{note.note}</p>
+                                  <button
+                                    onClick={() => deleteNoteMutation.mutate(note.id)}
+                                    className="text-white/30 hover:text-red-400 flex-shrink-0"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
+                                {note.words?.length > 0 && (
+                                  <div className="mt-1.5 flex flex-wrap gap-1">
+                                    <span className="text-white/40 text-xs flex items-center gap-1"><BookOpen className="w-3 h-3" /> Words:</span>
+                                    {note.words.map((w, i) => (
+                                      <span key={i} className="bg-cyan-500/20 text-cyan-300 text-xs px-1.5 py-0.5 rounded">{w}</span>
+                                    ))}
+                                  </div>
+                                )}
+                                <p className="text-white/30 text-xs mt-1">by {note.coach_email} · {new Date(note.created_date).toLocaleDateString()}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <Button
-                        onClick={() => deleteAssignmentMutation.mutate(assignment.id)}
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))
