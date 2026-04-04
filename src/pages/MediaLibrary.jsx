@@ -100,6 +100,17 @@ export default function MediaLibrary() {
     };
     fetchUser();
     document.title = "Media Library - Lashon Languages";
+
+    // Auto-open video if videoId param is present
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoId = urlParams.get('videoId');
+    if (videoId) {
+      base44.entities.MediaLibrary.filter({ video_id: videoId }).then(results => {
+        if (results[0]) {
+          handleVideoClick(results[0]);
+        }
+      }).catch(() => {});
+    }
   }, []);
 
   const { data: videos = [] } = useQuery({

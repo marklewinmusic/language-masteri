@@ -689,7 +689,7 @@ export default function Home() {
                                             }}
                                             className={`flex items-center justify-between px-3 py-2 rounded-lg hover:opacity-80 transition-all group ${isDragging ? 'cursor-grabbing opacity-50' : 'cursor-pointer'} ${isDragOver ? 'border-t-2 border-b-2 border-cyan-400 my-2' : ''}`}
                                             style={{ background: isTaskDone ? '#5a6b5a30' : '#ffffff50', border: isDragOver ? undefined : '1px solid #5a6b5a20' }}
-                                            onClick={() => !isDragging && (task.page ? navigate(createPageUrl(task.page)) : toggleTaskMutation.mutate({ dayId: day.id, taskId: task.id, dayNumber: day.day_number }))}
+                                            onClick={() => !isDragging && (task.page ? navigate(createPageUrl(task.page) + (task.video_id ? `?videoId=${task.video_id}` : '')) : toggleTaskMutation.mutate({ dayId: day.id, taskId: task.id, dayNumber: day.day_number }))}
                                           >
                                             <div className="flex items-center gap-2">
                                               <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isTaskDone ? 'bg-green-500 border-green-500' : 'border-stone-400'}`}>
