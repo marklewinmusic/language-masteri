@@ -36,15 +36,13 @@ export default function AddVideoDialog({ open, onOpenChange, editingVideo, formD
           <DialogTitle>{editingVideo ? "Edit Media" : "Add Media to Library"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          {!editingVideo && (
-            <div className="flex gap-2 mb-4">
+          <div className="flex gap-2 mb-4">
               {["video", "audio", "song"].map(type => (
                 <Button key={type} type="button" onClick={() => setMediaType(type)} className={mediaType === type ? "bg-cyan-500" : "bg-white/10"}>
                   {type === "video" ? "📹 Video" : type === "audio" ? "🎵 Audio" : "🎶 Song"}
                 </Button>
               ))}
-            </div>
-          )}
+          </div>
 
           {mediaType === "video" ? (
             <div>
@@ -107,18 +105,6 @@ export default function AddVideoDialog({ open, onOpenChange, editingVideo, formD
             <div className="grid grid-cols-2 gap-2 mt-2">
               {topics.map(topic => (
                 <button key={topic} type="button" onClick={() => toggleTopic(topic)} className={`text-sm px-3 py-2 rounded border transition-all ${formData.topics.includes(topic) ? 'bg-cyan-500/30 border-cyan-500 text-cyan-400' : 'bg-white/5 border-white/20 text-white/70 hover:bg-white/10'}`}>{topic}</button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <Label>Tags</Label>
-            <div className="space-y-2 mt-2 bg-white/5 rounded-lg p-3 border border-white/10 max-h-40 overflow-y-auto">
-              {tagOptions.map(tag => (
-                <label key={tag} className="flex items-center gap-2 cursor-pointer text-white/70">
-                  <input type="checkbox" checked={formData.tags.split(',').map(t=>t.trim()).includes(tag)} onChange={(e) => toggleTag(tag, e.target.checked)} className="w-4 h-4 rounded bg-white/10 border border-white/30" />
-                  <span className="text-sm">{tag}</span>
-                </label>
               ))}
             </div>
           </div>
