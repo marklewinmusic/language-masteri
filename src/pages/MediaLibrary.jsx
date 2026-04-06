@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Plus, Edit, Trash2, Search, Filter, Video, Users, Play, Loader2, ChevronDown, X, Pencil } from "lucide-react";
+import { Plus, Trash2, Search, Video, Users, Loader2, ChevronDown, X, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import EditableWord from "../components/learning/EditableWord";
@@ -19,6 +19,7 @@ import ClickableTranscriptText from "../components/learning/ClickableTranscriptT
 import TranslatorWidget from "../components/TranslatorWidget";
 
 import ContinuousTranscript from "../components/video/ContinuousTranscript";
+import AddVideoDialog from "../components/media/AddVideoDialog";
 
 const topics = [
   "Religion / Spirituality",
@@ -70,6 +71,7 @@ export default function MediaLibrary() {
     return saved ? JSON.parse(saved) : ["videos", "songs", "audio", "backpack"];
   });
   const [selectedVerb, setSelectedVerb] = useState(null);
+  const [extractingVocab, setExtractingVocab] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -506,6 +508,10 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
     } else {
       createVideoMutation.mutate(data);
     }
+    // Close the dialog immediately after submitting
+    setShowAddDialog(false);
+    setEditingVideo(null);
+    resetForm();
   };
 
   const handleEdit = (video) => {
@@ -907,6 +913,30 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
 
     // No saved transcript found
     setLoadingTranscript(false);
+  };
+
+  const extractVocabFromTranscript = async (video, transcriptSegments) => {
+    if (!transcriptSegments?.length) { toast.error("No transcript to extract from"); return; }
+    setExtractingVocab(true);
+    try {
+      const fullText = transcriptSegments.map(s => s.transliteration || s.text).join(' ');
+      const sessionLabel = video.notes?.match(/Session \d+/)?.[0] || video.title;
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Extract the 10-15 most important vocabulary words from this Hebrew learning transcript for a beginner. Transcript: "${fullText.slice(0, 3000)}". Only meaningful content words (nouns, verbs, adjectives). For each: word (Hebrew with nikud), phonetic (Latin transliteration), translation (English meaning).`,
+        response_json_schema: { type: "object", properties: { words: { type: "array", items: { type: "object", properties: { word: { type: "string" }, phonetic: { type: "string" }, translation: { type: "string" } } } } } }
+      });
+      let added = 0;
+      for (const w of (result.words || [])) {
+        if (!w.phonetic || !w.translation) continue;
+        const existing = await base44.entities.Word.filter({ phonetic: w.phonetic });
+        if (existing.length === 0) {
+          await base44.entities.Word.create({ word: w.word || w.phonetic, translation: w.translation, phonetic: w.phonetic, category: "wordbank", times_practiced: 0, mastered: false, vocab_level: 0, example_sentence: `Words: ${sessionLabel}` });
+          added++;
+        }
+      }
+      toast.success(`Added ${added} key words from "${sessionLabel}" to your Backpack! 🎒`);
+    } catch (e) { toast.error("Failed to extract vocab"); }
+    setExtractingVocab(false);
   };
 
   const handleAddWordFromTranscript = async (word) => {
@@ -1575,288 +1605,21 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
       </div>
 
       {/* Add/Edit Dialog */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="bg-slate-900 border-white/20 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingVideo ? "Edit Media" : "Add Media to Library"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {!editingVideo && (
-              <div className="flex gap-2 mb-4">
-                <Button
-                  type="button"
-                  onClick={() => setMediaType("video")}
-                  className={mediaType === "video" ? "bg-cyan-500" : "bg-white/10"}
-                >
-                  📹 Video
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => setMediaType("audio")}
-                  className={mediaType === "audio" ? "bg-cyan-500" : "bg-white/10"}
-                >
-                  🎵 Audio
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => setMediaType("song")}
-                  className={mediaType === "song" ? "bg-cyan-500" : "bg-white/10"}
-                >
-                  🎶 Song
-                </Button>
-              </div>
-            )}
-
-            {mediaType === "video" ? (
-              <div>
-                <Label>Video URL *</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={formData.video_url}
-                    onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-                    placeholder="https://youtube.com/watch?v=..."
-                    className="bg-white/5 border-white/20 text-white flex-1"
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => fetchYouTubeMetadata(formData.video_url)}
-                    disabled={!formData.video_url}
-                    className="bg-cyan-500 hover:bg-cyan-600"
-                  >
-                    Load
-                  </Button>
-                </div>
-              </div>
-            ) : mediaType === "audio" ? (
-              <div>
-                <Label>Upload MP3 Audio *</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="file"
-                    accept="audio/mp3,audio/mpeg,.mp3"
-                    onChange={handleAudioUpload}
-                    className="bg-white/5 border-white/20 text-white flex-1"
-                    disabled={uploadingAudio}
-                  />
-                  {uploadingAudio && <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />}
-                </div>
-                {formData.video_url && (
-                  <p className="text-xs text-green-400 mt-1">✓ Audio uploaded</p>
-                )}
-              </div>
-            ) : (
-              <div>
-                <Label>Upload Song (MP3) *</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="file"
-                    accept="audio/mp3,audio/mpeg,audio/wav,audio/ogg,.mp3,.wav,.ogg"
-                    onChange={handleAudioUpload}
-                    className="bg-white/5 border-white/20 text-white flex-1"
-                    disabled={uploadingAudio}
-                  />
-                  {uploadingAudio && <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />}
-                </div>
-                {formData.video_url && (
-                  <p className="text-xs text-green-400 mt-1">✓ Song uploaded</p>
-                )}
-                <p className="text-xs text-white/50 mt-2">Supported: MP3, WAV, OGG</p>
-              </div>
-            )}
-
-            <div>
-              <Label>Video ID * (auto-populated)</Label>
-              <Input
-                value={formData.video_id}
-                readOnly
-                placeholder="Auto-populated from URL"
-                className="bg-white/5 border-white/20 text-white/60"
-              />
-            </div>
-
-            <div>
-              <Label>Title * (editable)</Label>
-              <Input
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="Auto-populated from YouTube"
-                className="bg-white/5 border-white/20 text-white"
-              />
-            </div>
-
-            <div>
-              <Label>Designate to Session (Day) *</Label>
-              <Input
-                type="number"
-                min="1"
-                max="100"
-                value={formData.default_day}
-                onChange={(e) => setFormData({ ...formData, default_day: e.target.value })}
-                placeholder="Which session? (1-100)"
-                className="bg-white/5 border-white/20 text-white"
-              />
-              <p className="text-xs text-white/50 mt-1">Video will auto-populate in this session's schedule</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Language *</Label>
-                <Select value={formData.language} onValueChange={(val) => setFormData({ ...formData, language: val })}>
-                  <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="hebrew">Hebrew</SelectItem>
-                    <SelectItem value="english">English</SelectItem>
-                    <SelectItem value="spanish">Spanish</SelectItem>
-                    <SelectItem value="french">French</SelectItem>
-                    <SelectItem value="portuguese">Portuguese</SelectItem>
-                    <SelectItem value="italian">Italian</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label>Difficulty</Label>
-                <Select value={formData.difficulty_level} onValueChange={(val) => setFormData({ ...formData, difficulty_level: val })}>
-                  <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Beginner">Beginner</SelectItem>
-                    <SelectItem value="Intermediate">Intermediate</SelectItem>
-                    <SelectItem value="Advanced">Advanced</SelectItem>
-                    <SelectItem value="All">All</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div>
-              <Label>Topics (select multiple)</Label>
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                {topics.map(topic => (
-                  <button
-                    key={topic}
-                    type="button"
-                    onClick={() => toggleTopic(topic)}
-                    className={`text-sm px-3 py-2 rounded border transition-all ${
-                      formData.topics.includes(topic)
-                        ? 'bg-cyan-500/30 border-cyan-500 text-cyan-400'
-                        : 'bg-white/5 border-white/20 text-white/70 hover:bg-white/10'
-                    }`}
-                  >
-                    {topic}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <Label>Tags (select relevant)</Label>
-              <div className="space-y-2 mt-2 bg-white/5 rounded-lg p-3 border border-white/10 max-h-48 overflow-y-auto">
-                {['Learning', 'Hebrew', 'Beginner', 'Intermediate', 'Advanced', 'Grammar', 'Vocabulary', 'Conversation', 'Music', 'Stories', 'Culture', 'Daily Routine', 'Business', 'Travel', 'Food', 'Health'].map(tag => (
-                  <label key={tag} className="flex items-center gap-2 cursor-pointer hover:text-white/80 transition-all text-white/70">
-                    <input
-                      type="checkbox"
-                      checked={formData.tags.split(',').map(t => t.trim()).filter(Boolean).includes(tag)}
-                      onChange={(e) => {
-                        let tagsList = formData.tags.split(',').map(t => t.trim()).filter(Boolean);
-                        if (e.target.checked) {
-                          tagsList.push(tag);
-                        } else {
-                          tagsList = tagsList.filter(t => t !== tag);
-                        }
-                        setFormData({ ...formData, tags: tagsList.join(', ') });
-                      }}
-                      className="w-4 h-4 rounded bg-white/10 border border-white/30 cursor-pointer"
-                    />
-                    <span className="text-sm">{tag}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Duration (minutes) - auto-populated</Label>
-                <Input
-                  type="number"
-                  value={formData.duration_minutes}
-                  onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
-                  className="bg-white/5 border-white/20 text-white"
-                />
-              </div>
-
-              <div>
-                <Label>Accent/Region</Label>
-                <Input
-                  value={formData.accent_region}
-                  onChange={(e) => setFormData({ ...formData, accent_region: e.target.value })}
-                  placeholder="Optional"
-                  className="bg-white/5 border-white/20 text-white"
-                />
-              </div>
-            </div>
-
-
-
-            <div>
-              <label className="flex items-center gap-2 text-white/80 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.is_active}
-                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="w-4 h-4"
-                />
-                Active
-              </label>
-            </div>
-
-            <div>
-              <Label>Notes</Label>
-              <Textarea
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="bg-white/5 border-white/20 text-white"
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <Label>Transcript (Hebrew Phonetics)</Label>
-              <p className="text-xs text-white/60 mb-2">Paste Hebrew phonetic transcript. System will add transliteration, translation, and Hebrew phonetics.</p>
-              <Textarea
-                value={formData.transcript_phonetics}
-                onChange={(e) => setFormData({ ...formData, transcript_phonetics: e.target.value })}
-                placeholder="Paste Hebrew phonetics here..."
-                className="bg-white/5 border-white/20 text-white"
-                rows={6}
-              />
-            </div>
-
-            <div className="flex gap-2">
-              <Button 
-                onClick={handleSubmit} 
-                disabled={createVideoMutation.isPending || updateVideoMutation.isPending}
-                className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500"
-              >
-                {(createVideoMutation.isPending || updateVideoMutation.isPending) ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {editingVideo ? "Updating..." : "Adding..."}
-                  </>
-                ) : (
-                  editingVideo ? "Update Video" : "Add to Library"
-                )}
-              </Button>
-              <Button onClick={() => { setShowAddDialog(false); setEditingVideo(null); resetForm(); }} variant="outline" className="border-white/20">
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <AddVideoDialog
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+        editingVideo={editingVideo}
+        formData={formData}
+        setFormData={setFormData}
+        mediaType={mediaType}
+        setMediaType={setMediaType}
+        uploadingAudio={uploadingAudio}
+        onSubmit={handleSubmit}
+        onCancel={() => { setShowAddDialog(false); setEditingVideo(null); resetForm(); }}
+        onAudioUpload={handleAudioUpload}
+        onLoadYoutube={fetchYouTubeMetadata}
+        isPending={createVideoMutation.isPending || updateVideoMutation.isPending}
+      />
 
 
 
@@ -1896,12 +1659,24 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/10">
               <h2 className="text-white font-bold text-xl">{selectedVideo?.title}</h2>
-              <button
-                onClick={() => setShowTranscript(false)}
-                className="text-white/60 hover:text-white p-2"
-              >
-                <X className="w-6 h-6" />
-              </button>
+              <div className="flex items-center gap-2">
+                {transcript.length > 0 && (
+                  <button
+                    onClick={() => extractVocabFromTranscript(selectedVideo, transcript)}
+                    disabled={extractingVocab}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 text-sm font-medium border border-cyan-500/40 transition-all disabled:opacity-50"
+                  >
+                    {extractingVocab ? <Loader2 className="w-4 h-4 animate-spin" /> : "🎒"}
+                    {extractingVocab ? "Extracting..." : "Save key words to Backpack"}
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowTranscript(false)}
+                  className="text-white/60 hover:text-white p-2"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
             </div>
 
             {/* Main content: video + transcript side by side on wide screens, stacked on mobile */}

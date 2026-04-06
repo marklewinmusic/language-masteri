@@ -68,6 +68,8 @@ export default function Home() {
   const [editingTaskData, setEditingTaskData] = useState({ name: "", youtube_url: "", page: "" });
   const [currentWeek, setCurrentWeek] = useState(1);
   const [addingTaskToDayId, setAddingTaskToDayId] = useState(null);
+  const [quickVideoUrl, setQuickVideoUrl] = useState({});
+  const [addingVideoToDayId, setAddingVideoToDayId] = useState(null);
 
 
   // Get current user
@@ -496,6 +498,54 @@ export default function Home() {
     setEditingTaskData({ name: "", youtube_url: "", page: "" });
   };
 
+  const handleQuickAddVideo = async (dayId, dayNumber) => {
+    const url = quickVideoUrl[dayId]?.trim();
+    if (!url) return;
+    const videoId = extractYouTubeId(url);
+    if (!videoId) { toast.error("Invalid YouTube URL"); return; }
+
+    // Fetch title from oEmbed
+    let title = `Video - Session ${dayNumber}`;
+    try {
+      const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);
+      const meta = await res.json();
+      title = meta.title || title;
+    } catch {}
+
+    // Add to MediaLibrary
+    await base44.entities.MediaLibrary.create({
+      title,
+      language: userProfile?.language || "hebrew",
+      video_url: url,
+      video_id: videoId,
+      topics: [],
+      difficulty_level: "All",
+      tags: "",
+      is_active: true,
+      thumbnail_url: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+      notes: `Session ${dayNumber}`,
+    });
+
+    // Add as task to the day
+    const day = days.find(d => d.id === dayId);
+    const taskId = `video_${videoId}`;
+    const existing = (day?.subsections || []).find(s => s.id === taskId || s.video_id === videoId);
+    if (!existing) {
+      const updatedSubsections = [...(day?.subsections || []), {
+        id: taskId,
+        name: `▶ ${title}`,
+        video_id: videoId,
+        page: "MediaLibrary",
+      }];
+      updateDayMutation.mutate({ id: dayId, data: { subsections: updatedSubsections } });
+    }
+
+    setQuickVideoUrl(prev => ({ ...prev, [dayId]: "" }));
+    setAddingVideoToDayId(null);
+    toast.success("Video added to schedule!");
+    queryClient.invalidateQueries({ queryKey: ['mediaLibrary'] });
+  };
+
   const reorderTasks = (dayId, fromIdx, toIdx) => {
     const day = days.find(d => d.id === dayId);
     if (!day) return;
@@ -644,6 +694,29 @@ export default function Home() {
                               className="overflow-hidden"
                             >
                               <div className="mt-1 space-y-1 pl-3">
+                                {/* Quick add video */}
+                                {addingVideoToDayId === day.id ? (
+                                  <div className="flex gap-1 mb-2">
+                                    <Input
+                                      autoFocus
+                                      value={quickVideoUrl[day.id] || ""}
+                                      onChange={(e) => setQuickVideoUrl(prev => ({ ...prev, [day.id]: e.target.value }))}
+                                      onKeyDown={(e) => { if (e.key === 'Enter') handleQuickAddVideo(day.id, day.day_number); if (e.key === 'Escape') setAddingVideoToDayId(null); }}
+                                      placeholder="Paste YouTube URL..."
+                                      className="flex-1 bg-white/80 border-stone-300 text-stone-800 text-xs h-7"
+                                    />
+                                    <Button onClick={() => handleQuickAddVideo(day.id, day.day_number)} size="sm" className="h-7 px-2 bg-green-600 text-white text-xs">Add</Button>
+                                    <Button onClick={() => setAddingVideoToDayId(null)} size="sm" variant="ghost" className="h-7 px-2 text-xs">✕</Button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={() => setAddingVideoToDayId(day.id)}
+                                    className="w-full text-left px-3 py-1 text-xs rounded-lg mb-1 transition-all"
+                                    style={{ color: '#6b7c5a', background: '#5a6b5a10', border: '1px dashed #5a6b5a40' }}
+                                  >
+                                    + Add video to this session
+                                  </button>
+                                )}
                                 {(day.subsections || []).map((task, idx) => {
                                     const isTaskDone = progress?.subsections_completed?.includes(task.id);
                                     const isDragging = draggedTask?.dayId === day.id && draggedTask?.idx === idx;
