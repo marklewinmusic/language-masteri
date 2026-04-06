@@ -1234,25 +1234,44 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
         {/* Backpack - All words with levels */}
         {activeMediaTab === 'allwords' && (
           <div>
-            <h2 className="text-2xl font-bold text-white mb-4">All Words</h2>
+            <h2 className="text-2xl font-bold mb-6" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>🎒 Words Backpack</h2>
             <div className="flex flex-wrap gap-4 justify-center">
               {[
-                { name: 'New', count: wordRatings.filter(w => w.times_practiced === 0).length, icon: '✨', color: '#8a9a6a' },
-                { name: 'Level 1', count: wordRatings.filter(w => w.times_practiced > 0 && w.times_practiced < 3).length, icon: '🌱', color: '#6b7c5a' },
-                { name: 'Level 2', count: wordRatings.filter(w => w.times_practiced >= 3 && w.times_practiced < 5).length, icon: '🌿', color: '#5a6b5a' },
-                { name: 'Mastered', count: wordRatings.filter(w => w.times_practiced >= 5).length, icon: '✓', color: '#4a7c4a' },
+                { name: 'New', color: '#999999' },
+                { name: 'Recognized', color: '#dc2626' },
+                { name: 'Familiar', color: '#eab308' },
+                { name: 'Can Use', color: '#86efac' },
+                { name: 'Mastered', color: '#16a34a' },
               ].map((level) => (
                 <motion.div
                   key={level.name}
                   whileHover={{ scale: 1.08 }}
                   whileTap={{ scale: 0.95 }}
-                  className="w-20 h-20 rounded-full flex flex-col items-center justify-center cursor-pointer transition-all shadow-lg"
-                  style={{ background: `linear-gradient(135deg, ${level.color}40, ${level.color}20)`, border: `2px solid ${level.color}80` }}
+                  onClick={() => navigate(createPageUrl("Backpack"))}
+                  className="w-24 h-24 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all shadow-lg"
+                  style={{ background: `${level.color}15`, border: `2px solid ${level.color}50` }}
                 >
-                  <div className="text-xl mb-1">{level.icon}</div>
-                  <p className="text-xs font-bold" style={{ color: level.color }}>{level.count}</p>
+                  <p className="text-center text-sm font-bold" style={{ color: level.color }}>{level.name}</p>
                 </motion.div>
               ))}
+              <motion.div
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate(createPageUrl("Backpack"))}
+                className="w-24 h-24 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all shadow-lg"
+                style={{ background: '#8b5cf615', border: '2px solid #8b5cf650' }}
+              >
+                <p className="text-center text-sm font-bold" style={{ color: '#8b5cf6' }}>Verbs</p>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate(createPageUrl("Backpack"))}
+                className="w-24 h-24 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all shadow-lg"
+                style={{ background: '#06b6d415', border: '2px solid #06b6d450' }}
+              >
+                <p className="text-center text-sm font-bold" style={{ color: '#06b6d4' }}>Core Vocab</p>
+              </motion.div>
             </div>
           </div>
         )}
