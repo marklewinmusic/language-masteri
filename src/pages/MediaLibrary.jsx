@@ -524,11 +524,48 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
           if (existingIdx >= 0) {
             updatedSubsections = subsections.map((s, i) => i === existingIdx ? videoTask : s);
           } else {
-            updatedSubsections = [videoTask, ...subsections];
+            // Remove generic "Watch a video" task (id: "video") since we now have a specific one
+            const withoutGeneric = subsections.filter(s => s.id !== 'video');
+            updatedSubsections = [videoTask, ...withoutGeneric];
           }
           await base44.entities.Day.update(day.id, { subsections: updatedSubsections });
         }
         toast.success(`Video added to Session ${dayNum} schedule!`);
+
+        // Auto-extract vocab from transcript and tag it with this session
+        if (processedTranscript?.length || data.processed_transcript?.length) {
+          const transcriptToUse = processedTranscript || data.processed_transcript;
+          const sessionLabel = `Session ${dayNum}`;
+          const fullText = transcriptToUse.map(s => s.transliteration || s.text).join(' ');
+          const lang = data.language || userProfile?.language || 'spanish';
+          const langCap = lang.charAt(0).toUpperCase() + lang.slice(1);
+          try {
+            const vocabResult = await base44.integrations.Core.InvokeLLM({
+              prompt: `Extract the 10-15 most important vocabulary words from this ${langCap} learning transcript. Transcript: "${fullText.slice(0, 3000)}". Only meaningful content words (nouns, verbs, adjectives). For each word: the word in ${langCap}, its phonetic (Latin spelling if needed, else same word), and English translation.`,
+              response_json_schema: { type: "object", properties: { words: { type: "array", items: { type: "object", properties: { word: { type: "string" }, phonetic: { type: "string" }, translation: { type: "string" } } } } } }
+            });
+            for (const w of (vocabResult.words || [])) {
+              if (!w.word || !w.translation) continue;
+              const phonetic = w.phonetic || w.word;
+              const existing = await base44.entities.Word.filter({ phonetic });
+              if (existing.length === 0) {
+                await base44.entities.Word.create({
+                  word: w.word,
+                  translation: w.translation,
+                  phonetic,
+                  category: "wordbank",
+                  times_practiced: 0,
+                  mastered: false,
+                  vocab_level: 0,
+                  example_sentence: sessionLabel,
+                });
+              }
+            }
+            toast.success(`Vocab auto-populated for ${sessionLabel}!`);
+          } catch (e) {
+            console.error("Failed to auto-extract vocab:", e);
+          }
+        }
       } catch (e) {
         console.error("Failed to update day schedule:", e);
       }
@@ -973,17 +1010,20 @@ For each segment:
     setExtractingVocab(true);
     try {
       const fullText = transcriptSegments.map(s => s.transliteration || s.text).join(' ');
-      const sessionLabel = video.notes?.match(/Session \d+/)?.[0] || video.title;
+      const sessionLabel = video.notes?.match(/Session \d+/)?.[0] || video.default_day ? `Session ${video.default_day}` : video.title;
+      const lang = video.language || userProfile?.language || 'spanish';
+      const langCap = lang.charAt(0).toUpperCase() + lang.slice(1);
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Extract the 10-15 most important vocabulary words from this Hebrew learning transcript for a beginner. Transcript: "${fullText.slice(0, 3000)}". Only meaningful content words (nouns, verbs, adjectives). For each: word (Hebrew with nikud), phonetic (Latin transliteration), translation (English meaning).`,
+        prompt: `Extract the 10-15 most important vocabulary words from this ${langCap} learning transcript for a beginner. Transcript: "${fullText.slice(0, 3000)}". Only meaningful content words (nouns, verbs, adjectives). For each: the word in ${langCap}, phonetic (Latin spelling if needed, else the word itself), and English translation.`,
         response_json_schema: { type: "object", properties: { words: { type: "array", items: { type: "object", properties: { word: { type: "string" }, phonetic: { type: "string" }, translation: { type: "string" } } } } } }
       });
       let added = 0;
       for (const w of (result.words || [])) {
-        if (!w.phonetic || !w.translation) continue;
-        const existing = await base44.entities.Word.filter({ phonetic: w.phonetic });
+        if (!w.word || !w.translation) continue;
+        const phonetic = w.phonetic || w.word;
+        const existing = await base44.entities.Word.filter({ phonetic });
         if (existing.length === 0) {
-          await base44.entities.Word.create({ word: w.word || w.phonetic, translation: w.translation, phonetic: w.phonetic, category: "wordbank", times_practiced: 0, mastered: false, vocab_level: 0, example_sentence: `Words: ${sessionLabel}` });
+          await base44.entities.Word.create({ word: w.word, translation: w.translation, phonetic, category: "wordbank", times_practiced: 0, mastered: false, vocab_level: 0, example_sentence: sessionLabel });
           added++;
         }
       }

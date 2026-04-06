@@ -717,7 +717,11 @@ export default function Home() {
                                     + Add video to this session
                                   </button>
                                 )}
-                                {(day.subsections || []).map((task, idx) => {
+                                {(day.subsections || []).filter(task => {
+                                   // Hide generic "Watch a video" if a specific video task exists
+                                   if (task.id === 'video' && (day.subsections || []).some(s => s.video_id)) return false;
+                                   return true;
+                                 }).map((task, idx) => {
                                     const isTaskDone = progress?.subsections_completed?.includes(task.id);
                                     const isDragging = draggedTask?.dayId === day.id && draggedTask?.idx === idx;
                                     const isDragOver = dragOverTask?.dayId === day.id && dragOverTask?.idx === idx;
