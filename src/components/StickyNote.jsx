@@ -1,10 +1,10 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, StickyNote as StickyNoteIcon, Send, Loader2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 
-// Extract @Name mentions from text (single or multi word)
+// Extract @Name mentions from text
 function parseMentions(text) {
   const regex = /@([A-Za-z]+(?:\s+[A-Za-z]+)*)/g;
   const matches = [];
@@ -15,11 +15,9 @@ function parseMentions(text) {
   return [...new Set(matches)];
 }
 
-// Extract standalone words (Hebrew or English, not @mentions) for backpack
+// Extract standalone words (not @mentions) for backpack
 function extractWords(text) {
-  // Remove @mentions
   const clean = text.replace(/@[A-Za-z]+(?:\s+[A-Za-z]+)*/g, "");
-  // Split by whitespace/punctuation, keep Hebrew and Latin words
   return clean.split(/[\s,;.!?()[\]{}"']+/).map(w => w.trim()).filter(w => w.length > 1);
 }
 
@@ -27,21 +25,93 @@ export default function StickyNote() {
   const [isOpen, setIsOpen] = useState(false);
   const [notes, setNotes] = useState(() => localStorage.getItem("sticky_notes") || "");
   const [saving, setSaving] = useState(false);
+  const [addingToBackpack, setAddingToBackpack] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [mentionQuery, setMentionQuery] = useState(null); // string after @ currently being typed
   const textareaRef = useRef(null);
 
+  // Load all users for @mention autocomplete
+  useEffect(() => {
+    base44.entities.User.list().then(users => setAllUsers(users)).catch(() => {});
+  }, []);
+
+  const mentions = parseMentions(notes);
+  const words = extractWords(notes);
+
   const handleChange = (e) => {
-    setNotes(e.target.value);
-    localStorage.setItem("sticky_notes", e.target.value);
+    const val = e.target.value;
+    setNotes(val);
+    localStorage.setItem("sticky_notes", val);
+
+    // Detect if user is currently typing an @mention
+    const cursorPos = e.target.selectionStart;
+    const textUpToCursor = val.slice(0, cursorPos);
+    const atMatch = textUpToCursor.match(/@([A-Za-z\s]*)$/);
+
+    if (atMatch) {
+      const query = atMatch[1].toLowerCase();
+      setMentionQuery(query);
+      const filtered = allUsers.filter(u =>
+        (u.full_name || "").toLowerCase().includes(query) ||
+        (u.email || "").toLowerCase().includes(query)
+      ).slice(0, 5);
+      setSuggestions(filtered);
+    } else {
+      setMentionQuery(null);
+      setSuggestions([]);
+    }
   };
 
-  // Highlight @mentions in textarea via a visual overlay isn't easy,
-  // so we show a preview of detected mentions below the textarea.
-  const mentions = parseMentions(notes);
+  const insertMention = (user) => {
+    const cursorPos = textareaRef.current?.selectionStart || notes.length;
+    const textUpToCursor = notes.slice(0, cursorPos);
+    const afterCursor = notes.slice(cursorPos);
+    // Replace the partial @... with the full name
+    const replaced = textUpToCursor.replace(/@([A-Za-z\s]*)$/, `@${user.full_name || user.email} `);
+    const newVal = replaced + afterCursor;
+    setNotes(newVal);
+    localStorage.setItem("sticky_notes", newVal);
+    setSuggestions([]);
+    setMentionQuery(null);
+    textareaRef.current?.focus();
+  };
+
+  const handleAddToMyBackpack = async () => {
+    if (words.length === 0) {
+      toast.error("No words found in note");
+      return;
+    }
+    setAddingToBackpack(true);
+    try {
+      let added = 0;
+      const existing = await base44.entities.Word.filter({ category: "wordbank" });
+      const existingPhonetics = new Set(existing.map(w => (w.phonetic || w.word || "").toLowerCase()));
+
+      for (const word of words) {
+        if (existingPhonetics.has(word.toLowerCase())) continue;
+        await base44.entities.Word.create({
+          word: word,
+          translation: "",
+          phonetic: word,
+          category: "wordbank",
+          times_practiced: 0,
+          mastered: false,
+          vocab_level: 0,
+        });
+        added++;
+      }
+      toast.success(`${added} new word(s) added to your backpack! 🎒`);
+    } catch (e) {
+      toast.error("Failed to add words");
+    }
+    setAddingToBackpack(false);
+  };
 
   const handleSave = async () => {
     if (!notes.trim()) return;
     if (mentions.length === 0) {
-      toast.error("Add @FirstName LastName to tag a student");
+      toast.error("Add @Name to tag a student");
       return;
     }
 
@@ -49,20 +119,12 @@ export default function StickyNote() {
     try {
       const currentUser = await base44.auth.me();
 
-      // Fetch all users to try to match names
-      let allUsers = [];
-      try { allUsers = await base44.entities.User.list(); } catch {}
-
-      const words = extractWords(notes);
-
       for (const mention of mentions) {
-        // Try to match full name to a user
         const nameLower = mention.toLowerCase();
         const matchedUser = allUsers.find(u =>
           (u.full_name || "").toLowerCase() === nameLower
         );
 
-        // Save CoachNote
         await base44.entities.CoachNote.create({
           student_name: mention,
           student_email: matchedUser?.email || "",
@@ -71,7 +133,6 @@ export default function StickyNote() {
           words: words,
         });
 
-        // If we matched a real user, add words to their backpack via backend
         if (matchedUser?.email && words.length > 0) {
           try {
             const result = await base44.functions.invoke('addWordsToStudentBackpack', {
@@ -79,8 +140,7 @@ export default function StickyNote() {
               words,
             });
             toast.success(`Note saved + ${result.data?.added || 0} word(s) added to @${mention}'s backpack!`);
-          } catch (e) {
-            console.error("Failed to add words to student backpack:", e);
+          } catch {
             toast.success(`Note saved for @${mention}`);
           }
         } else {
@@ -88,7 +148,6 @@ export default function StickyNote() {
         }
       }
 
-      // Clear note after saving
       setNotes("");
       localStorage.setItem("sticky_notes", "");
     } catch (e) {
@@ -125,24 +184,43 @@ export default function StickyNote() {
               <div className="flex items-center gap-1.5">
                 <StickyNoteIcon className="w-4 h-4 text-slate-700" />
                 <span className="font-bold text-slate-700 text-sm">Notes</span>
-                <span className="text-slate-500 text-xs ml-1">use @FirstName LastName to tag</span>
+                <span className="text-slate-500 text-xs ml-1">@ to tag someone</span>
               </div>
               <button onClick={() => setIsOpen(false)} className="text-slate-500 hover:text-slate-800 transition-colors">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <textarea
-              ref={textareaRef}
-              value={notes}
-              onChange={handleChange}
-              placeholder={"Take notes...\n\n@John Smith - practice these words: shalom, toda"}
-              className="w-full h-44 p-3 text-sm text-slate-800 resize-none outline-none"
-              style={{ background: "transparent" }}
-              autoFocus
-            />
+            {/* Textarea */}
+            <div className="relative">
+              <textarea
+                ref={textareaRef}
+                value={notes}
+                onChange={handleChange}
+                placeholder={"Take notes...\n\n@John Smith - practice: shalom, toda"}
+                className="w-full h-44 p-3 text-sm text-slate-800 resize-none outline-none"
+                style={{ background: "transparent" }}
+                autoFocus
+              />
 
-            {/* Detected mentions preview */}
+              {/* @mention autocomplete dropdown */}
+              {suggestions.length > 0 && (
+                <div className="absolute left-3 right-3 bg-white rounded-xl shadow-lg border border-yellow-300 z-10 overflow-hidden">
+                  {suggestions.map(user => (
+                    <button
+                      key={user.id}
+                      onMouseDown={(e) => { e.preventDefault(); insertMention(user); }}
+                      className="w-full text-left px-3 py-2 hover:bg-yellow-50 text-sm text-slate-800 flex items-center gap-2 border-b border-yellow-100 last:border-0"
+                    >
+                      <span className="font-medium">{user.full_name || user.email}</span>
+                      {user.full_name && <span className="text-slate-400 text-xs">{user.email}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Detected mentions */}
             {mentions.length > 0 && (
               <div className="px-3 pb-1 flex flex-wrap gap-1">
                 {mentions.map(m => (
@@ -153,19 +231,32 @@ export default function StickyNote() {
               </div>
             )}
 
-            {/* Save button */}
-            {mentions.length > 0 && (
-              <div className="px-3 pb-3 pt-1">
+            {/* Bottom action row */}
+            <div className="px-3 pb-3 pt-1 flex gap-2">
+              {/* Backpack button — always shown when there are words */}
+              {words.length > 0 && (
+                <button
+                  onClick={handleAddToMyBackpack}
+                  disabled={addingToBackpack}
+                  title="Add words to my backpack"
+                  className="flex items-center justify-center gap-1.5 bg-amber-400 hover:bg-amber-500 text-slate-900 font-semibold text-sm rounded-lg py-2 px-3 transition-all disabled:opacity-60 flex-shrink-0"
+                >
+                  {addingToBackpack ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="text-base">🎒</span>}
+                </button>
+              )}
+
+              {/* Save to student button — only when @mention present */}
+              {mentions.length > 0 && (
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm rounded-lg py-2 transition-all disabled:opacity-60"
+                  className="flex-1 flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm rounded-lg py-2 transition-all disabled:opacity-60"
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                  Save note & words for {mentions.map(m => `@${m}`).join(", ")}
+                  Save for {mentions.map(m => `@${m}`).join(", ")}
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
