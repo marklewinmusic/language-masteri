@@ -430,8 +430,12 @@ export default function MediaLibrary() {
     if (formData.transcript_phonetics && formData.transcript_phonetics.trim()) {
       toast.info("Processing transcript...");
       try {
+        const lang = formData.language || userProfile?.language || 'spanish';
+        const langCap = lang.charAt(0).toUpperCase() + lang.slice(1);
+        const isHebrew = lang === 'hebrew';
         const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `You are processing a Hebrew phonetic transcript for a language learning app.
+          prompt: isHebrew
+            ? `You are processing a Hebrew phonetic transcript for a language learning app.
 
 Input (Hebrew phonetics): "${formData.transcript_phonetics}"
 
@@ -446,6 +450,21 @@ Return a JSON array where each item has:
 - transliteration: Latin alphabet only
 - english: English translation
 - start: timestamp in seconds (estimate based on position, starting at 0)
+
+Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds per sentence).`
+            : `You are processing a ${langCap} transcript for a language learning app.
+
+Input: "${formData.transcript_phonetics}"
+
+For each line/sentence:
+1. Keep the original ${langCap} text as "transliteration"
+2. Provide the English translation as "english"
+
+Return a JSON array where each item has:
+- text: original input
+- transliteration: the ${langCap} text
+- english: English translation
+- start: timestamp in seconds (estimate, starting at 0)
 
 Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds per sentence).`,
           response_json_schema: {
@@ -616,6 +635,38 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
     return video ? { ...video, programId: prog.id, completed: prog.completed } : null;
   }).filter(Boolean);
 
+  const buildTranscriptPrompt = (batch, detectedLang, userLang) => {
+    const isEnglishSource = detectedLang === 'english';
+    const targetLang = userLang || 'spanish';
+    const targetLangCap = targetLang.charAt(0).toUpperCase() + targetLang.slice(1);
+
+    if (isEnglishSource) {
+      return `These are English sentences. Translate each to ${targetLangCap}. Return exactly ${batch.length} segments.
+
+${batch.map((s, idx) => `[${idx + 1}] "${s.text}"`).join('\n')}
+
+For each segment:
+- transliteration: the original English text
+- english: ${targetLangCap} translation of the sentence`;
+    } else {
+      // Target language source → translate to English
+      return `These are ${targetLangCap} sentences. Return exactly ${batch.length} segments.
+
+${batch.map((s, idx) => `[${idx + 1}] "${s.text}"`).join('\n')}
+
+For each segment:
+- transliteration: the original ${targetLangCap} text (keep as-is)
+- english: English translation of the sentence`;
+    }
+  };
+
+  const detectTranscriptLanguage = async (sampleText) => {
+    const result = await base44.integrations.Core.InvokeLLM({
+      prompt: `Detect the language of this text. Return only one word: english, spanish, hebrew, french, portuguese, or italian.\n\nText: "${sampleText.slice(0, 300)}"`,
+    });
+    return result.trim().toLowerCase().replace(/[^a-z]/g, '');
+  };
+
   const processManualTranscript = async (video, text) => {
     if (!text || !text.trim()) {
       toast.error("Please paste a transcript");
@@ -632,14 +683,12 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
       
       let rawSegments;
       if (timestampMatches.length > 0) {
-        // Parse lines with [MM:SS] timestamps
         rawSegments = timestampMatches.map(match => ({
           text: match[3].trim(),
           start: parseInt(match[1]) * 60 + parseInt(match[2]),
           duration: 5
         }));
       } else {
-        // Fallback: split by newlines, then by sentences
         const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
         rawSegments = lines.map((line, idx) => ({
           text: line,
@@ -647,6 +696,11 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
           duration: 5
         }));
       }
+
+      // Detect language of transcript
+      const detectedLang = await detectTranscriptLanguage(rawSegments.slice(0, 3).map(s => s.text).join(' '));
+      const userLang = userProfile?.language || video.language || 'spanish';
+      toast.info(`Detected: ${detectedLang} → translating...`);
 
       // Process with AI
       const processedSegments = [];
@@ -657,14 +711,7 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
 
         try {
           const llmResult = await base44.integrations.Core.InvokeLLM({
-            prompt: `Process these Hebrew sentences. Return exactly ${batch.length} segments.
-
-  ${batch.map((s, idx) => `[${idx + 1}] "${s.text}"`).join('\n')}
-
-  CRITICAL: For each provide:
-  - hebrew: Hebrew WITH FULL NIKUD (vowel points/diacritics). NEVER without nikud.
-  - transliteration: Latin phonetic
-  - english: English translation`,
+            prompt: buildTranscriptPrompt(batch, detectedLang, userLang),
             response_json_schema: {
               type: "object",
               properties: {
@@ -673,7 +720,6 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                   items: {
                     type: "object",
                     properties: {
-                      hebrew: { type: "string" },
                       transliteration: { type: "string" },
                       english: { type: "string" }
                     }
@@ -687,7 +733,6 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
             const processed = llmResult.segments?.[idx] || {};
             processedSegments.push({
               text: segment.text,
-              hebrew: processed.hebrew || segment.text,
               transliteration: processed.transliteration || segment.text,
               english: processed.english || '',
               start: segment.start
@@ -697,11 +742,10 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
           toast.info(`${Math.min(i + batchSize, rawSegments.length)} / ${rawSegments.length} done`);
         } catch (e) {
           console.error('Batch error:', e);
-          batch.forEach(segment => processedSegments.push(segment));
+          batch.forEach(segment => processedSegments.push({ ...segment, transliteration: segment.text, english: '' }));
         }
       }
 
-      // Save to correct entity
       await updateVideoMutation.mutateAsync({
         id: video.id,
         data: { processed_transcript: processedSegments },
@@ -783,6 +827,12 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
         const rawTranscript = result.data.transcript;
         toast.info(`Processing ${rawTranscript.length} segments...`);
 
+        // Detect language
+        const sampleText = rawTranscript.slice(0, 3).map(s => s.text).join(' ');
+        const detectedLang = await detectTranscriptLanguage(sampleText);
+        const userLang = userProfile?.language || video.language || 'spanish';
+        toast.info(`Detected: ${detectedLang} → translating...`);
+
       // Process in batches
       const processedSegments = [];
       const batchSize = 5;
@@ -792,14 +842,7 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
 
         try {
           const llmResult = await base44.integrations.Core.InvokeLLM({
-            prompt: `Process these Hebrew captions. Return exactly ${batch.length} segments.
-
-  ${batch.map((s, idx) => `[${idx + 1}] "${s.text}"`).join('\n')}
-
-  CRITICAL: For each segment provide:
-  - hebrew: Hebrew text WITH FULL NIKUD (vowel points/diacritics). NEVER without nikud.
-  - transliteration: Latin phonetic
-  - english: English translation`,
+            prompt: buildTranscriptPrompt(batch, detectedLang, userLang),
             response_json_schema: {
               type: "object",
               properties: {
@@ -808,7 +851,6 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                   items: {
                     type: "object",
                     properties: {
-                      hebrew: { type: "string" },
                       transliteration: { type: "string" },
                       english: { type: "string" }
                     }
@@ -822,7 +864,6 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
             const processed = llmResult.segments?.[idx] || {};
             processedSegments.push({
               text: segment.text,
-              hebrew: processed.hebrew || segment.text,
               transliteration: processed.transliteration || segment.text,
               english: processed.english || '',
               start: segment.start
@@ -832,7 +873,7 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
           toast.info(`${Math.min(i + batchSize, rawTranscript.length)} / ${rawTranscript.length} done`);
         } catch (e) {
           console.error('Batch error:', e);
-          batch.forEach(segment => processedSegments.push(segment));
+          batch.forEach(segment => processedSegments.push({ ...segment, transliteration: segment.text, english: '' }));
         }
       }
 
