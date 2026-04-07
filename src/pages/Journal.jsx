@@ -51,8 +51,9 @@ export default function Journal() {
 
   // Fetch latest 10 words from flashcards (wordbank), sorted by newest first
   const { data: backpackWords = [] } = useQuery({
-    queryKey: ['backpackWords'],
-    queryFn: () => base44.entities.Word.filter({ category: "wordbank" })
+    queryKey: ['backpackWords', userProfile?.language],
+    queryFn: () => base44.entities.Word.filter({ category: "wordbank", language: userProfile?.language || 'hebrew' }),
+    enabled: !!userProfile,
   });
 
   const { data: publicEntries = [] } = useQuery({
