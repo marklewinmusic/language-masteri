@@ -551,15 +551,16 @@ Keep natural sentence breaks. Return a JSON object with a "transcript" array.`,
       }
     }
 
+    // Close the dialog immediately
+    setShowAddDialog(false);
+    setEditingVideo(null);
+    resetForm();
+
     if (editingVideo) {
       updateVideoMutation.mutate({ id: editingVideo.id, data });
     } else {
       createVideoMutation.mutate(data);
     }
-    // Close the dialog immediately after submitting
-    setShowAddDialog(false);
-    setEditingVideo(null);
-    resetForm();
   };
 
   const handleEdit = (video) => {
@@ -1722,7 +1723,7 @@ For each segment:
         onCancel={() => { setShowAddDialog(false); setEditingVideo(null); resetForm(); }}
         onAudioUpload={handleAudioUpload}
         onLoadYoutube={fetchYouTubeMetadata}
-        isPending={createVideoMutation.isPending || updateVideoMutation.isPending}
+        isPending={false}
       />
 
 
