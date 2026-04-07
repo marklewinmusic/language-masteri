@@ -95,37 +95,24 @@ export default function ContinuousTranscript({
     if (onEditWord) onEditWord(segIdx, field, newFieldText);
 
     try {
+      // Only auto-translate if editing the native language fields (not english)
       if (field === 'transliteration') {
+        await new Promise(r => setTimeout(r, 1000)); // rate limit buffer
         const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `Given this transliteration line: "${newFieldText}"
-Provide an English translation of the full line.
-Return JSON with:
-- english: English translation of the full line`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              english: { type: "string" }
-            }
-          }
+          prompt: `Translate this sentence to English: "${newFieldText}". Return JSON with: english (string).`,
+          response_json_schema: { type: "object", properties: { english: { type: "string" } } }
         });
         if (result.english) { applyLocalEdit(segIdx, 'english', result.english); onEditWord(segIdx, 'english', result.english); }
       } else if (field === 'hebrew') {
+        await new Promise(r => setTimeout(r, 1000)); // rate limit buffer
         const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `Given this Hebrew text: "${newFieldText}"
-Provide:
-- transliteration: Latin phonetic transliteration of the full line
-- english: English translation of the full line`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              transliteration: { type: "string" },
-              english: { type: "string" }
-            }
-          }
+          prompt: `For this Hebrew text: "${newFieldText}", provide: transliteration (Latin phonetic) and english (English translation). Return JSON.`,
+          response_json_schema: { type: "object", properties: { transliteration: { type: "string" }, english: { type: "string" } } }
         });
         if (result.transliteration) { applyLocalEdit(segIdx, 'transliteration', result.transliteration); onEditWord(segIdx, 'transliteration', result.transliteration); }
         if (result.english) { applyLocalEdit(segIdx, 'english', result.english); onEditWord(segIdx, 'english', result.english); }
       }
+      // If editing 'english' field directly, no LLM call needed
     } catch (e) {
       console.error('Re-translation failed', e);
     }
