@@ -183,7 +183,8 @@ Provide:
           const wordKey = `${segIdx}-${field}-${wordIdx}`;
           const isWordActive = activeWordKey === wordKey;
           return (
-            <span key={wordIdx} className="inline-block relative">
+            <React.Fragment key={wordIdx}>
+            <span className="inline-block relative">
               <span
                 onClick={(e) => {
                   e.stopPropagation();
@@ -229,8 +230,9 @@ Provide:
                   )}
                 </span>
               )}
-              {wordIdx < words.length - 1 && ' '}
             </span>
+            {wordIdx < words.length - 1 ? ' ' : ''}
+            </React.Fragment>
           );
         })}
       </span>
