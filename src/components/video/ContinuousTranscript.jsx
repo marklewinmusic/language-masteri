@@ -30,8 +30,7 @@ export default function ContinuousTranscript({
   const [editingTimeValue, setEditingTimeValue] = useState("");
   const [wasPlayingBeforeEdit, setWasPlayingBeforeEdit] = useState(false);
 
-  // Word editing state
-  const [editingCell, setEditingCell] = useState(null); // { segIdx, field, wordIdx }
+  const [editingCell, setEditingCell] = useState(null);
   const [editCellValue, setEditCellValue] = useState("");
   const [savingCell, setSavingCell] = useState(false);
 
@@ -41,8 +40,19 @@ export default function ContinuousTranscript({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Sort transcript by start time for correct active highlighting
-  const sortedByTime = [...transcript].sort((a, b) => (a.start || 0) - (b.start || 0));
+  // Sort transcript indices by start time for correct active highlighting
+  // Use index-based sorted array to avoid object identity issues after edits
+  const sortedIndices = transcript
+    .map((seg, i) => ({ i, start: seg.start || 0 }))
+    .sort((a, b) => a.start - b.start);
+
+  const getIsActive = (segIdx) => {
+    const seg = transcript[segIdx];
+    const sortedPos = sortedIndices.findIndex(s => s.i === segIdx);
+    const nextEntry = sortedIndices[sortedPos + 1];
+    const nextStart = nextEntry ? transcript[nextEntry.i]?.start ?? Infinity : Infinity;
+    return currentTime >= (seg.start || 0) && currentTime < nextStart;
+  };
 
   const getWordsArray = (text) => (text || "").split(/\s+/).filter(w => w.trim());
 
@@ -63,7 +73,6 @@ export default function ContinuousTranscript({
 
     let changed = false;
     if (!trimmed) {
-      // Delete
       words.splice(wordIdx, 1);
       changed = true;
     } else if (trimmed !== words[wordIdx]) {
@@ -79,40 +88,29 @@ export default function ContinuousTranscript({
     const newFieldText = words.join(' ');
     setSavingCell(true);
 
-    // Update locally immediately
     applyLocalEdit(segIdx, field, newFieldText);
     cancelEdit();
 
-    // Persist to DB
     if (onEditWord) onEditWord(segIdx, field, newFieldText);
 
-    // Only re-translate the OTHER fields based on what changed
     try {
       if (field === 'transliteration') {
-        // Re-fetch hebrew and english from new transliteration
         const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `Given this Hebrew transliteration line: "${newFieldText}"
-Convert ONLY the changed/new words to Hebrew with nikud, keeping existing Hebrew words for unchanged parts where possible.
-Also provide an English translation of the full line.
-
+          prompt: `Given this transliteration line: "${newFieldText}"
+Provide an English translation of the full line.
 Return JSON with:
-- hebrew: full Hebrew line with nikud (same word count and order as transliteration)
 - english: English translation of the full line`,
           response_json_schema: {
             type: "object",
             properties: {
-              hebrew: { type: "string" },
               english: { type: "string" }
             }
           }
         });
-        if (onEditWord) {
-          if (result.hebrew) { applyLocalEdit(segIdx, 'hebrew', result.hebrew); onEditWord(segIdx, 'hebrew', result.hebrew); }
-          if (result.english) { applyLocalEdit(segIdx, 'english', result.english); onEditWord(segIdx, 'english', result.english); }
-        }
+        if (result.english) { applyLocalEdit(segIdx, 'english', result.english); onEditWord(segIdx, 'english', result.english); }
       } else if (field === 'hebrew') {
         const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `Given this Hebrew text with nikud: "${newFieldText}"
+          prompt: `Given this Hebrew text: "${newFieldText}"
 Provide:
 - transliteration: Latin phonetic transliteration of the full line
 - english: English translation of the full line`,
@@ -124,10 +122,8 @@ Provide:
             }
           }
         });
-        if (onEditWord) {
-          if (result.transliteration) { applyLocalEdit(segIdx, 'transliteration', result.transliteration); onEditWord(segIdx, 'transliteration', result.transliteration); }
-          if (result.english) { applyLocalEdit(segIdx, 'english', result.english); onEditWord(segIdx, 'english', result.english); }
-        }
+        if (result.transliteration) { applyLocalEdit(segIdx, 'transliteration', result.transliteration); onEditWord(segIdx, 'transliteration', result.transliteration); }
+        if (result.english) { applyLocalEdit(segIdx, 'english', result.english); onEditWord(segIdx, 'english', result.english); }
       }
     } catch (e) {
       console.error('Re-translation failed', e);
@@ -145,17 +141,15 @@ Provide:
   const addWordToSegment = async (segIdx, field, afterIdx) => {
     const segment = transcript[segIdx];
     const words = getWordsArray(segment[field]);
-    const newWord = "___";
-    words.splice(afterIdx + 1, 0, newWord);
+    words.splice(afterIdx + 1, 0, "___");
     const newText = words.join(' ');
     applyLocalEdit(segIdx, field, newText);
     if (onEditWord) onEditWord(segIdx, field, newText);
-    // Start editing the new word
     setEditingCell({ segIdx, field, wordIdx: afterIdx + 1 });
     setEditCellValue("");
   };
 
-  const renderEditableWords = (segIdx, field, text, textClassName) => {
+  const renderWords = (segIdx, field, text, textClassName) => {
     const words = getWordsArray(text);
     return (
       <span>
@@ -186,13 +180,23 @@ Provide:
             );
           }
           return (
-            <span key={wordIdx} className="group/word inline-block">
+            <span key={wordIdx} className="group/word inline-block relative">
               <span
                 onClick={() => canEdit && startEditWord(segIdx, field, wordIdx, words)}
-                className={`${textClassName} ${canEdit ? 'cursor-pointer hover:underline hover:opacity-80 transition-opacity' : ''}`}
+                className={`${textClassName} ${canEdit ? 'cursor-pointer hover:underline hover:opacity-80 transition-opacity' : 'cursor-pointer'}`}
               >
                 {word}
               </span>
+              {/* Backpack button - always visible on hover for all users */}
+              {onAddWord && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onAddWord(word); }}
+                  className="opacity-0 group-hover/word:opacity-80 transition-opacity absolute -top-5 left-1/2 -translate-x-1/2 text-sm bg-slate-800/90 rounded px-1 shadow-lg z-10 hover:opacity-100"
+                  title="Add to backpack"
+                >
+                  🎒
+                </button>
+              )}
               {canEdit && (
                 <button
                   onClick={() => addWordToSegment(segIdx, field, wordIdx)}
@@ -214,7 +218,10 @@ Provide:
     <div className="w-full bg-white/5 rounded-2xl p-4">
       <div className="flex items-center justify-between mb-3">
         {canEdit && (
-          <p className="text-white/30 text-xs">Click any word to edit • Leave empty to delete • + to add after</p>
+          <p className="text-white/30 text-xs">Click word to edit • Leave empty to delete • + to add after</p>
+        )}
+        {!canEdit && (
+          <p className="text-white/30 text-xs">Hover a word and click 🎒 to add to backpack</p>
         )}
         <button
           onClick={() => setShowPhonetics(prev => !prev)}
@@ -230,10 +237,7 @@ Provide:
       <div className="space-y-1 flex flex-col items-center">
         {transcript.map((segment, segIdx) => {
           if (!segment.transliteration) return null;
-          const sortedIdx = sortedByTime.findIndex(s => s === segment);
-          const nextSegment = sortedByTime[sortedIdx + 1];
-          const isActive = currentTime >= segment.start &&
-            currentTime < (nextSegment?.start ?? Infinity);
+          const isActive = getIsActive(segIdx);
 
           return (
             <div key={segIdx} className={`flex gap-3 items-start rounded-xl px-3 py-2 transition-all w-full max-w-lg ${isActive ? 'bg-cyan-500/10 border border-cyan-400/30' : 'border border-transparent'}`}>
@@ -252,6 +256,7 @@ Provide:
                           if (parts.length === 2) {
                             const secs = parseInt(parts[0]) * 60 + parseInt(parts[1]);
                             if (!isNaN(secs)) {
+                              applyLocalEdit(segIdx, 'start', secs);
                               if (onEditWord) onEditWord(segIdx, 'start', secs);
                               onSeekTo(secs, wasPlayingBeforeEdit);
                             }
@@ -269,6 +274,7 @@ Provide:
                         if (parts.length === 2) {
                           const secs = parseInt(parts[0]) * 60 + parseInt(parts[1]);
                           if (!isNaN(secs)) {
+                            applyLocalEdit(segIdx, 'start', secs);
                             if (onEditWord) onEditWord(segIdx, 'start', secs);
                             onSeekTo(secs, wasPlayingBeforeEdit);
                           }
@@ -299,11 +305,11 @@ Provide:
                   <button
                     onClick={() => {
                       if (isActive && isPlayingProp) {
-                        onSeekTo(segment.start, false); // pause
+                        onSeekTo(segment.start, false);
                       } else if (isActive && !isPlayingProp) {
-                        onSeekTo(segment.start, true); // resume (don't seek, just play)
+                        onSeekTo(segment.start, true);
                       } else {
-                        onSeekTo(segment.start, true); // seek to new segment and play
+                        onSeekTo(segment.start, true);
                       }
                     }}
                     onDoubleClick={(e) => {
@@ -326,22 +332,20 @@ Provide:
 
               {/* Text Block */}
               <div className="flex-1 space-y-0">
-                {/* Main line: transliteration OR hebrew phonetics */}
                 {showPhonetics ? (
                   segment.hebrew && (
                     <p className="text-cyan-300 text-base font-medium leading-tight text-left" dir="rtl">
-                      {renderEditableWords(segIdx, 'hebrew', segment.hebrew, 'text-cyan-300 text-base font-medium')}
+                      {renderWords(segIdx, 'hebrew', segment.hebrew, 'text-cyan-300 text-base font-medium')}
                     </p>
                   )
                 ) : (
                   <p className="text-white text-base font-medium leading-tight text-left">
-                    {renderEditableWords(segIdx, 'transliteration', segment.transliteration, 'text-white text-base font-medium')}
+                    {renderWords(segIdx, 'transliteration', segment.transliteration, 'text-white text-base font-medium')}
                   </p>
                 )}
-                {/* Translation */}
                 {segment.english && (
                   <p className="text-white/60 text-sm leading-tight text-left">
-                    {renderEditableWords(segIdx, 'english', segment.english, 'text-white/60 text-sm')}
+                    {renderWords(segIdx, 'english', segment.english, 'text-white/60 text-sm')}
                   </p>
                 )}
               </div>
