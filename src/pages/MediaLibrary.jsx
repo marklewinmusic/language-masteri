@@ -489,7 +489,7 @@ Keep natural sentence breaks. Return a JSON object with a "transcript" array.`,
       default_day: formData.default_day ? parseInt(formData.default_day) : null,
     };
 
-    // Only include processed_transcript if it was updated
+    // If new transcript was processed, replace the old one entirely (clear then set)
     if (processedTranscript !== undefined) {
       data.processed_transcript = processedTranscript;
     }
@@ -971,11 +971,14 @@ For each segment:
       window.onYouTubeIframeAPIReady = initPlayer;
     }
 
-    // Always check DB for saved transcript first
+    // Always fetch fresh from DB (to get latest transcript after updates)
     try {
       const saved = await base44.entities.MediaLibrary.filter({ video_id: videoId });
-      const savedVideo = saved.find(v => v.processed_transcript?.length > 0);
-      if (savedVideo) {
+      // Pick the one with most recent update or most segments
+      const savedVideo = saved.sort((a, b) => 
+        (b.processed_transcript?.length || 0) - (a.processed_transcript?.length || 0)
+      )[0];
+      if (savedVideo?.processed_transcript?.length > 0) {
         setTranscript(savedVideo.processed_transcript);
         setSelectedVideo(savedVideo);
         setLoadingTranscript(false);
@@ -983,7 +986,7 @@ For each segment:
       }
     } catch (e) {}
 
-    // Also check if the passed video already has a transcript
+    // Fall back to passed video's transcript
     if (video.processed_transcript && video.processed_transcript.length > 0) {
       setTranscript(video.processed_transcript);
       setLoadingTranscript(false);
