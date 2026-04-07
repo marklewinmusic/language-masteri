@@ -432,43 +432,22 @@ export default function MediaLibrary() {
     if (formData.transcript_phonetics && formData.transcript_phonetics.trim()) {
       toast.info("Processing transcript...");
       try {
-        const lang = formData.language || userProfile?.language || 'spanish';
-        const langCap = lang.charAt(0).toUpperCase() + lang.slice(1);
-        const isHebrew = lang === 'hebrew';
+        const targetLang = formData.language || userProfile?.language || 'spanish';
+        const targetLangCap = targetLang.charAt(0).toUpperCase() + targetLang.slice(1);
         const result = await base44.integrations.Core.InvokeLLM({
-          prompt: isHebrew
-            ? `You are processing a Hebrew phonetic transcript for a language learning app.
+          prompt: `You are processing a transcript for a language learning app. The TARGET language of this video is ${targetLangCap}.
 
-Input (Hebrew phonetics): "${formData.transcript_phonetics}"
+Input transcript (may be in ${targetLangCap}, English, or phonetic form):
+"${formData.transcript_phonetics}"
 
-For each line/sentence:
-1. Convert phonetics to proper Hebrew script with nikud (vowel points)
-2. Provide clean Latin transliteration (no Hebrew characters)
-3. Translate to English
+For each sentence/line:
+1. Detect the input language automatically.
+2. "transliteration": the sentence in ${targetLangCap} (native script). If input is already in ${targetLangCap}, keep it. If input is in English or phonetics, convert/translate to ${targetLangCap}.
+3. "english": the English translation of the sentence.
+4. "text": the original input line (keep as-is).
+5. "start": estimated timestamp in seconds (starting at 0, ~5-8 seconds per sentence).
 
-Return a JSON array where each item has:
-- text: original phonetic input
-- hebrew: Hebrew text with nikud
-- transliteration: Latin alphabet only
-- english: English translation
-- start: timestamp in seconds (estimate based on position, starting at 0)
-
-Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds per sentence).`
-            : `You are processing a ${langCap} transcript for a language learning app.
-
-Input: "${formData.transcript_phonetics}"
-
-For each line/sentence:
-1. Keep the original ${langCap} text as "transliteration"
-2. Provide the English translation as "english"
-
-Return a JSON array where each item has:
-- text: original input
-- transliteration: the ${langCap} text
-- english: English translation
-- start: timestamp in seconds (estimate, starting at 0)
-
-Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds per sentence).`,
+Keep natural sentence breaks. Return a JSON object with a "transcript" array.`,
           response_json_schema: {
             type: "object",
             properties: {
@@ -478,7 +457,6 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
                   type: "object",
                   properties: {
                     text: { type: "string" },
-                    hebrew: { type: "string" },
                     transliteration: { type: "string" },
                     english: { type: "string" },
                     start: { type: "number" }

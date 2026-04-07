@@ -131,9 +131,9 @@ export default function AddVideoDialog({ open, onOpenChange, editingVideo, formD
           </div>
 
           <div>
-            <Label>Transcript (Hebrew Phonetics)</Label>
-            <p className="text-xs text-white/60 mb-2">Paste Hebrew phonetic transcript. System will add transliteration, translation, and Hebrew phonetics.</p>
-            <Textarea value={formData.transcript_phonetics} onChange={(e) => setFormData(p => ({ ...p, transcript_phonetics: e.target.value }))} placeholder="Paste Hebrew phonetics here..." className="bg-white/5 border-white/20 text-white" rows={6} />
+            <Label>Transcript</Label>
+            <p className="text-xs text-white/60 mb-2">Paste transcript in any language (target language, English, or phonetics). System will generate the target language text + English translation for each sentence.</p>
+            <Textarea value={formData.transcript_phonetics} onChange={(e) => setFormData(p => ({ ...p, transcript_phonetics: e.target.value }))} placeholder="Paste transcript here (Spanish, English, Hebrew, etc.)..." className="bg-white/5 border-white/20 text-white" rows={6} />
           </div>
 
           <div className="flex gap-2">
