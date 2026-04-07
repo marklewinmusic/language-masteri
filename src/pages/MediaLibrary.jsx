@@ -1156,15 +1156,11 @@ For each segment:
     if (loadingRecommendations || recommendations.length > 0) return;
     setLoadingRecommendations(true);
     try {
-      // Extract channel IDs from existing library video URLs
-      const channelIds = new Set();
       const existingVideoIds = new Set(filteredVideos.map(v => v.video_id).filter(Boolean));
       
-      // Use LLM with internet to find popular language learning videos matching user's language
       const lang = userProfile?.language || 'spanish';
       const langCap = lang.charAt(0).toUpperCase() + lang.slice(1);
       
-      // Get channel names from existing videos using oEmbed
       const channelNames = [];
       for (const video of filteredVideos.slice(0, 3)) {
         if (!video.video_url) continue;
@@ -1180,7 +1176,7 @@ For each segment:
         : '';
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Find 8 popular YouTube videos for learning ${langCap} as a beginner/intermediate student. ${channelContext}
+        prompt: `Find 8 popular YouTube videos for learning ${langCap} as a beginner/intermediate student. ONLY recommend ${langCap} learning videos. ${channelContext}
         
 Prioritize videos from the same channels if mentioned, or similar educational ${langCap} learning channels.
 Focus on videos with high view counts and good educational value.
@@ -1210,7 +1206,6 @@ Return a JSON with a "videos" array. Each video must have:
         }
       });
 
-      // Filter out videos already in library
       const newRecs = (result.videos || []).filter(v => v.youtube_id && !existingVideoIds.has(v.youtube_id));
       setRecommendations(newRecs);
     } catch (e) {
