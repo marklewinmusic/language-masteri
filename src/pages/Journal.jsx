@@ -224,10 +224,29 @@ export default function Journal() {
     setTranslationPosition({ x, y });
     setTranslatingWord(true);
     try {
+      const userLang = userProfile?.language || 'hebrew';
+      const langName = languageNames[userLang];
+      
+      // Always get transliteration (phonetic form) first
+      let transliterResult = clickedWord;
+      if (userLang === 'hebrew') {
+        const translit = await base44.integrations.Core.InvokeLLM({
+          prompt: `Provide the transliteration (Latin phonetic spelling) of this Hebrew word: "${clickedWord}". Return only the transliteration.`
+        });
+        transliterResult = translit;
+      }
+      
+      // Get translation to target language
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Translate this word to English: "${clickedWord}". Return only the translation.`
+        prompt: `Translate this word to ${langName}: "${clickedWord}". Return only the translation.`
       });
-      setWordTranslation({ word: clickedWord, translation: result });
+      
+      setWordTranslation({ 
+        word: clickedWord, 
+        transliteration: transliterResult,
+        translation: result,
+        language: userLang
+      });
     } catch (e) {
       toast.error("Translation failed");
     } finally {
@@ -490,14 +509,30 @@ export default function Journal() {
               <span className="text-sm">Translating...</span>
             </div>
           ) : (
-            <div className="flex items-center gap-3">
+            <div className="space-y-2">
               <div>
                 <p className="text-cyan-400 font-bold text-sm">{wordTranslation.word}</p>
-                <p className="text-white text-xs">{wordTranslation.translation}</p>
+                <p className="text-white text-xs">
+                  {wordTranslation.language === 'hebrew' ? wordTranslation.transliteration : wordTranslation.translation}
+                </p>
               </div>
-              <button onClick={() => setWordTranslation(null)} className="text-white/60 hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex gap-1">
+                {wordTranslation.language === 'hebrew' && (
+                  <button
+                    onClick={() => setWordTranslation(prev => ({ ...prev, showHebrew: !prev.showHebrew }))}
+                    className="text-xs px-2 py-1 rounded bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 transition-all"
+                    title="Show Hebrew phonetics"
+                  >
+                    {wordTranslation.showHebrew ? 'א Transliterate' : 'א Hebrew'}
+                  </button>
+                )}
+                <button onClick={() => setWordTranslation(null)} className="text-white/60 hover:text-white">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              {wordTranslation.showHebrew && wordTranslation.language === 'hebrew' && (
+                <p className="text-white text-xs" dir="rtl">{wordTranslation.word}</p>
+              )}
             </div>
           )}
         </motion.div>
