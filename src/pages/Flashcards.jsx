@@ -56,8 +56,12 @@ export default function Flashcards() {
   });
 
   const { data: words = [], isLoading } = useQuery({
-    queryKey: ['words'],
-    queryFn: () => base44.entities.Word.filter({ category: "wordbank" }),
+    queryKey: ['words', userProfile?.language],
+    queryFn: () => {
+      const lang = userProfile?.language || 'hebrew';
+      return base44.entities.Word.filter({ category: "wordbank", language: lang });
+    },
+    enabled: !!userProfile,
     staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
@@ -117,9 +121,11 @@ export default function Flashcards() {
     
     if (exampleSentences.length > 0) return;
     setGeneratingSentences(true);
+    const lang = userProfile?.language || 'hebrew';
+    const langCap = lang.charAt(0).toUpperCase() + lang.slice(1);
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Generate 3 simple example sentences in Hebrew using the word "${word.word}" (${word.translation}).
+        prompt: `Generate 3 simple example sentences in ${langCap} using the word "${word.word}" (${word.translation}).
 
       Each sentence should:
       - Be short (5-10 words)
@@ -128,19 +134,9 @@ export default function Flashcards() {
       - Include the target word
 
       Return JSON with sentences array, each containing:
-      - hebrew: the Hebrew sentence WITH nikud vowel points (e.g., הַיּוֹם קָפוּא בַּחוּץ)
-      - transliteration: ENGLISH/LATIN alphabet phonetic spelling ONLY - NO HEBREW CHARACTERS (e.g., "Hayom kafu bachuts")
-      - english: English translation
-
-      CRITICAL REQUIREMENTS: 
-      1. hebrew field: Hebrew script with nikud diacritics (ְ ֱ ֲ ֳ ִ ֵ ֶ ַ ָ ֹ ֺ ֻ ּ ֽ)
-      2. transliteration field: MUST be Latin/English letters (a-z, A-Z) ONLY - absolutely NO Hebrew characters allowed
-      3. english field: English translation
-
-      Example:
-      - hebrew: "הַיּוֹם קָפוּא בַּחוּץ."
-      - transliteration: "Hayom kafu bachuts."
-      - english: "Today it is frozen outside."`,
+      - hebrew: the sentence in ${langCap} (use native script if applicable, e.g. Hebrew with nikud, or just the word in Spanish/French/etc.)
+      - transliteration: phonetic spelling in Latin/English letters ONLY (for Hebrew/Arabic; for Latin-script languages like Spanish, repeat the sentence)
+      - english: English translation`,
         response_json_schema: {
           type: "object",
           properties: {

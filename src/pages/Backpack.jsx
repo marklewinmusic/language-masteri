@@ -93,8 +93,12 @@ export default function Backpack() {
   });
 
   const { data: wordRatings = [] } = useQuery({
-    queryKey: ['wordRatings'],
-    queryFn: () => base44.entities.Word.filter({ category: "wordbank" }),
+    queryKey: ['wordRatings', userProfile?.language],
+    queryFn: () => {
+      const lang = userProfile?.language || 'hebrew';
+      return base44.entities.Word.filter({ category: "wordbank", language: lang });
+    },
+    enabled: !!userProfile,
     staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
@@ -289,6 +293,7 @@ Return ONLY a 1-2 sentence image description (no explanations, no headers). Star
       translation: activeNewWord.meaning,
       phonetic: activeNewWord.word,
       category: "wordbank",
+      language: userProfile?.language || 'hebrew',
       times_practiced: rating,
       mastered: rating >= 5,
       image_url: newWordImage || null,

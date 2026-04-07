@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Trash2, Loader2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -11,6 +11,13 @@ export default function BackpackNotes() {
     try { return JSON.parse(localStorage.getItem("backpack_pending") || "[]"); } catch { return []; }
   });
   const [saving, setSaving] = useState(null);
+  const [userLanguage, setUserLanguage] = useState("hebrew");
+
+  useEffect(() => {
+    base44.entities.UserProfile.list().then(profiles => {
+      if (profiles[0]?.language) setUserLanguage(profiles[0].language);
+    }).catch(() => {});
+  }, []);
 
   const savePending = (list) => {
     setPending(list);
@@ -31,15 +38,20 @@ export default function BackpackNotes() {
 
   const saveToBackpack = async (word, idx) => {
     setSaving(idx);
+    const lang = userLanguage || "hebrew";
+    const langCap = lang.charAt(0).toUpperCase() + lang.slice(1);
     try {
       // Get translation via LLM
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Translate this word or phrase to English. It may be Hebrew, transliteration, or English. Return JSON only.
-Word: "${word}"`,
+        prompt: `The user is learning ${langCap}. Translate this word or phrase. It may already be in ${langCap} or in English. Return JSON only.
+Word: "${word}"
+- native: the word in ${langCap} (use native script if applicable, e.g. Hebrew with nikud)
+- transliteration: phonetic spelling in Latin letters (same as native if already Latin script like Spanish)
+- english: English translation`,
         response_json_schema: {
           type: "object",
           properties: {
-            hebrew: { type: "string" },
+            native: { type: "string" },
             transliteration: { type: "string" },
             english: { type: "string" }
           }
@@ -47,10 +59,11 @@ Word: "${word}"`,
       });
 
       await base44.entities.Word.create({
-        word: result.hebrew || word,
+        word: result.native || word,
         translation: result.english || word,
-        phonetic: result.transliteration || "",
+        phonetic: result.transliteration || result.native || word,
         category: "wordbank",
+        language: lang,
         vocab_level: 0,
         times_practiced: 0,
         mastered: false,

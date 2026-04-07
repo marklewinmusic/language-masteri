@@ -1042,6 +1042,7 @@ For each segment:
         word: word,
         translation: result,
         category: "wordbank",
+        language: userProfile?.language || 'hebrew',
         times_practiced: 0,
         mastered: false,
         vocab_level: 0,
