@@ -411,11 +411,21 @@ export default function MediaLibrary() {
     });
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!formData.title || !formData.video_url) {
       toast.error("Title and URL are required");
       return;
     }
+
+    // Close dialog immediately before any async work
+    setShowAddDialog(false);
+
+    handleSubmitAsync(formData, editingVideo);
+    setEditingVideo(null);
+    resetForm();
+  };
+
+  const handleSubmitAsync = async (formData, editingVideo) => {
 
     // Auto-extract video_id from URL if missing
     if (!formData.video_id && formData.video_url) {
@@ -550,11 +560,6 @@ Keep natural sentence breaks. Return a JSON object with a "transcript" array.`,
         console.error("Failed to update day schedule:", e);
       }
     }
-
-    // Close the dialog immediately
-    setShowAddDialog(false);
-    setEditingVideo(null);
-    resetForm();
 
     if (editingVideo) {
       updateVideoMutation.mutate({ id: editingVideo.id, data });
