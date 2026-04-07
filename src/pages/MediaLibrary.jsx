@@ -163,16 +163,18 @@ export default function MediaLibrary() {
   });
 
   const { data: userVideos = [] } = useQuery({
-    queryKey: ['userVideos'],
+    queryKey: ['userVideos', userProfile?.language],
     queryFn: async () => {
       const videos = await base44.entities.Video.list();
+      const lang = userProfile?.language;
       return videos
         .filter(v => !v.deleted_at && v.is_active !== false)
+        .filter(v => !lang || !v.language || v.language === lang || v.language === lang.slice(0, 2))
         .sort((a, b) => (a.order || 0) - (b.order || 0));
     },
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
-    enabled: !!currentUser,
+    enabled: !!currentUser && !!userProfile,
   });
 
   const { data: myProgram = [] } = useQuery({
@@ -644,7 +646,10 @@ Keep natural sentence breaks. Estimate reasonable timestamps (e.g., 5-10 seconds
   const filteredVideos = videos.filter(video => {
     const matchesSearch = video.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (video.tags || "").toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLanguage = filterLanguage === "all" || video.language === filterLanguage;
+    // Always enforce user's language unless explicitly overridden
+    const userLang = userProfile?.language;
+    const effectiveLangFilter = filterLanguage && filterLanguage !== "all" ? filterLanguage : userLang;
+    const matchesLanguage = !effectiveLangFilter || video.language === effectiveLangFilter;
     const matchesDifficulty = filterDifficulty === "all" || video.difficulty_level === filterDifficulty;
     const matchesTopic = filterTopic === "all" || (video.topics || []).includes(filterTopic);
     return matchesSearch && matchesLanguage && matchesDifficulty && matchesTopic && video.is_active !== false;
@@ -1664,13 +1669,12 @@ For each segment:
               >
                 {allVideosData
                 .filter(video => {
-                  // Only show Hebrew videos for Hebrew learners
-                  if (userProfile?.language === 'hebrew') {
-                    return video.title?.toLowerCase().includes('hebrew') || 
-                           video.tags?.toLowerCase().includes('hebrew') ||
-                           video.title?.toLowerCase().includes('עברית');
-                  }
-                  return true;
+                  // Filter recommended by user's language
+                  const lang = userProfile?.language;
+                  if (!lang) return true;
+                  return video.language === lang ||
+                    video.title?.toLowerCase().includes(lang) ||
+                    (video.tags || '').toLowerCase().includes(lang);
                 })
                 .filter((video, index, self) => 
                   // Remove duplicates by video_url or youtube_video_id
