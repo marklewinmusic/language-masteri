@@ -43,6 +43,7 @@ export default function Backpack() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestingMnemonic, setSuggestingMnemonic] = useState(null); // wordId currently suggesting
+  const [showPhonetics, setShowPhonetics] = useState({}); // track phonetics/transliteration toggle per word
 
   // Load current user
   useEffect(() => {
@@ -695,12 +696,16 @@ Return JSON with:
                   {/* Word info */}
                   <div className="p-3 flex-1 flex flex-col">
                     <p className="text-cyan-400 font-semibold text-sm text-center">
-                     <EditableWord
-                       text={word.phonetic}
-                       editable={isContentEditable(word)}
-                        onSave={(newPhonetic) => updateWordMutation.mutate({ id: word.id, data: { phonetic: newPhonetic } })}
-                        className="text-cyan-400 font-semibold text-sm"
-                      />
+                     {showPhonetics[word.id] ? (
+                       <span>{word.phonetic || word.word}</span>
+                     ) : (
+                       <EditableWord
+                         text={word.phonetic}
+                         editable={isContentEditable(word)}
+                         onSave={(newPhonetic) => updateWordMutation.mutate({ id: word.id, data: { phonetic: newPhonetic } })}
+                         className="text-cyan-400 font-semibold text-sm"
+                       />
+                     )}
                     </p>
                     <p className="text-stone-500 text-xs text-center mt-1">
                       = <EditableWord
@@ -725,6 +730,17 @@ Return JSON with:
                   {mnemonicExplanations[word.id] && (
                     <p className="text-[10px] text-center px-2 pb-1 italic" style={{ color: '#6b7c5a' }}>{mnemonicExplanations[word.id]}</p>
                   )}
+
+                  {/* Phonetics/Transliteration toggle */}
+                  <div className="px-2 pb-1 flex items-center justify-between">
+                    <button
+                      onClick={() => setShowPhonetics(prev => ({ ...prev, [word.id]: !prev[word.id] }))}
+                      className="text-xs px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-all"
+                      title="Toggle between phonetics and transliteration"
+                    >
+                      {showPhonetics[word.id] ? "音 Phonetics" : "ת Transliteration"}
+                    </button>
+                  </div>
 
                   {/* Bottom row: ratings + edit/delete buttons */}
                   <div className="px-2 pb-2 flex gap-1 items-center">
@@ -765,17 +781,7 @@ Return JSON with:
                         ✅
                       </button>
                     )}
-                    {!word.approved && (
-                      <button
-                        onClick={() => toggleWordLock(word.id)}
-                        className={`w-6 h-6 rounded flex items-center justify-center text-sm transition-all ${
-                          isWordLocked(word.id) ? "bg-orange-500/30 hover:bg-orange-500/40" : "hover:bg-stone-300"
-                        }`}
-                        title={isWordLocked(word.id) ? "Unlock card" : "Lock card"}
-                      >
-                        {isWordLocked(word.id) ? "🔒" : "🔓"}
-                      </button>
-                    )}
+
                     {(!word.approved || isAdmin) && (
                       <button
                         onClick={() => deleteWordMutation.mutate(word.id)}
