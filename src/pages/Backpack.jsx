@@ -97,21 +97,18 @@ export default function Backpack() {
     queryKey: ['wordRatings', userProfile?.language, currentUser?.email],
     queryFn: async () => {
       const lang = userProfile?.language || 'hebrew';
-      // Fetch user's own words
-      const ownWords = await base44.entities.Word.filter({ category: "wordbank", language: lang });
-      // Fetch all approved words (shared cards from admin)
-      let approvedWords = [];
-      try {
-        approvedWords = await base44.entities.Word.filter({ approved: true, language: lang });
-      } catch (e) {}
-      // Merge: for each approved word not already in own words (by phonetic), add it as level 0
+      // Fetch only THIS user's own rated words
+      const ownWords = await base44.entities.Word.filter({ category: "wordbank", language: lang, created_by: currentUser.email });
+      // Fetch all approved words (shared by admin across all users)
+      const approvedWords = await base44.entities.Word.filter({ approved: true, language: lang });
+      // Find approved words the user hasn't personally rated yet (by phonetic)
       const ownPhonetics = new Set(ownWords.map(w => (w.phonetic || w.word).toLowerCase()));
-      const newApproved = approvedWords.filter(w => !ownPhonetics.has((w.phonetic || w.word).toLowerCase()));
-      // Mark these as "shared" so UI can show badge, and reset their times_practiced for this user
-      const sharedCards = newApproved.map(w => ({ ...w, _shared: true, times_practiced: 0, mastered: false }));
+      const unratedApproved = approvedWords.filter(w => !ownPhonetics.has((w.phonetic || w.word).toLowerCase()));
+      // Show these as shared cards with times_practiced = 0 so user can rank them
+      const sharedCards = unratedApproved.map(w => ({ ...w, _shared: true, times_practiced: 0, mastered: false }));
       return [...ownWords, ...sharedCards];
     },
-    enabled: !!userProfile && !!currentUser,
+    enabled: !!userProfile && !!currentUser?.email,
     staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
