@@ -43,7 +43,7 @@ export default function Backpack() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestingMnemonic, setSuggestingMnemonic] = useState(null); // wordId currently suggesting
-  const [showPhonetics, setShowPhonetics] = useState({}); // track phonetics/transliteration toggle per word
+  const [showPhonetics, setShowPhonetics] = useState(false); // global toggle for all cards
 
   // Load current user
   useEffect(() => {
@@ -554,30 +554,8 @@ Return JSON with:
           </div>
         </div>
 
-        {/* Tabs - Single Row */}
+        {/* Tabs - Single Row + Phonetics Toggle */}
         <div className="flex gap-1 mb-2 justify-center overflow-x-auto flex-wrap items-center">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => { setActiveTab(tab.id); setActiveSecondTab(null); }}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                activeTab === tab.id && !activeSecondTab
-                  ? "bg-stone-700 text-stone-100 border border-stone-600"
-                  : "bg-white/60 text-stone-500 hover:bg-white/80 border border-stone-200"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-          {/* Search toggle */}
-          <button
-            onClick={() => { setSearchOpen(!searchOpen); if (searchOpen) setSearchQuery(""); }}
-            className={`p-1.5 rounded-lg border transition-all ${searchOpen ? "bg-stone-700 text-stone-100 border-stone-600" : "bg-white/60 text-stone-500 hover:bg-white/80 border-stone-200"}`}
-            title="Search words"
-          >
-            <Search className="w-4 h-4" />
-          </button>
-        </div>
 
         {/* Second Row: Verbs + Core Vocab */}
         <div className="flex gap-1 mb-4 justify-center">
@@ -696,7 +674,7 @@ Return JSON with:
                   {/* Word info */}
                   <div className="p-3 flex-1 flex flex-col">
                     <p className="text-cyan-400 font-semibold text-sm text-center">
-                     {showPhonetics[word.id] ? (
+                     {showPhonetics ? (
                        <span>{word.phonetic || word.word}</span>
                      ) : (
                        <EditableWord
@@ -731,18 +709,7 @@ Return JSON with:
                     <p className="text-[10px] text-center px-2 pb-1 italic" style={{ color: '#6b7c5a' }}>{mnemonicExplanations[word.id]}</p>
                   )}
 
-                  {/* Phonetics/Transliteration toggle */}
-                  <div className="px-2 pb-1 flex items-center justify-between">
-                    <button
-                      onClick={() => setShowPhonetics(prev => ({ ...prev, [word.id]: !prev[word.id] }))}
-                      className="text-xs px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-all"
-                      title="Toggle between phonetics and transliteration"
-                    >
-                      {showPhonetics[word.id] ? "音 Phonetics" : "ת Transliteration"}
-                    </button>
-                  </div>
-
-                  {/* Bottom row: ratings + edit/delete buttons */}
+                            {/* Bottom row: ratings + edit/delete buttons */}
                   <div className="px-2 pb-2 flex gap-1 items-center">
                     <div className="flex gap-0.5 flex-1">
                       {[{ value: 1, label: "1" }, { value: 2, label: "2" }, { value: 3, label: "3" }, { value: 5, label: "M" }].map(({ value, label }) => (
@@ -957,6 +924,6 @@ Return JSON with:
 
       {/* Translator Widget */}
       <TranslatorWidget />
-      </div>
-      );
-      }
+    </div>
+  );
+}
