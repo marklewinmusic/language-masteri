@@ -53,14 +53,7 @@ Always return ALL three fields:
 - native: the word in ${langCap} WITH full native script (e.g. Hebrew with nikud vowel marks). REQUIRED.
 - transliteration: phonetic Latin-letter spelling. REQUIRED.
 - english: clear English meaning/translation. REQUIRED.`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            native: { type: "string" },
-            transliteration: { type: "string" },
-            english: { type: "string" }
-          }
-        }
+        response_json_schema: { type: "object", properties: { native: { type: "string" }, transliteration: { type: "string" }, english: { type: "string" } } }
       });
 
       await base44.entities.Word.create({
