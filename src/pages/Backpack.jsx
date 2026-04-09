@@ -203,7 +203,6 @@ export default function Backpack() {
       const targetWord = word.phonetic || word.word;
       const meaning = word.translation || '';
 
-      // Generate sound anchor + explanation + image prompt
       const concept = await base44.integrations.Core.InvokeLLM({
         prompt: `You help create mnemonics for language learning.
 
@@ -232,12 +231,35 @@ Return JSON with:
       });
 
       setMnemonicExplanations(prev => ({ ...prev, [word.id]: concept.explanation }));
-      setMnemonicDescription(concept.explanation);
 
-      await updateWordMutation.mutateAsync({
-        id: word.id,
-        data: { image_url: imageResult.url }
-      });
+      // For approved or shared cards, create a personal copy instead of modifying the original
+      if (word.approved || word._shared) {
+        // Check if user already has a personal copy
+        const existingCopy = wordRatings.find(w =>
+          !w.approved && !w._shared &&
+          (w.phonetic || w.word).toLowerCase() === (word.phonetic || word.word).toLowerCase()
+        );
+        if (existingCopy) {
+          await updateWordMutation.mutateAsync({ id: existingCopy.id, data: { image_url: imageResult.url } });
+        } else {
+          await createWordMutation.mutateAsync({
+            word: word.word,
+            translation: word.translation,
+            phonetic: word.phonetic,
+            category: 'wordbank',
+            language: word.language || userProfile?.language || 'hebrew',
+            times_practiced: word.times_practiced || 0,
+            mastered: word.mastered || false,
+            image_url: imageResult.url,
+          });
+        }
+      } else {
+        await updateWordMutation.mutateAsync({
+          id: word.id,
+          data: { image_url: imageResult.url }
+        });
+      }
+
       toast.success('Mnemonic image created! 🎨');
       setPictureWordId(null);
     } catch (e) {
@@ -721,16 +743,14 @@ Return JSON with:
                           </button>
                           ))}
                           </div>
-                    {!word.approved && (
-                      <button
+                    <button
                         onClick={() => suggestMnemonicForWord(word)}
                         disabled={suggestingMnemonic === word.id}
                         className="w-6 h-6 rounded flex items-center justify-center text-sm hover:bg-purple-500/20 transition-all"
-                        title="Generate mnemonic image"
+                        title={word.approved || word._shared ? "Generate personal mnemonic (your view only)" : "Generate mnemonic image"}
                       >
                         {suggestingMnemonic === word.id ? <Loader2 className="w-3 h-3 animate-spin text-purple-500" /> : '🎨'}
                       </button>
-                    )}
                     {isAdmin && (
                       <button
                         onClick={() => approveWordMutation.mutate({ id: word.id, approved: !word.approved })}

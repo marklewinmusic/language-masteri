@@ -41,19 +41,27 @@ export default function BackpackNotes() {
     const lang = userLanguage || "hebrew";
     const langCap = lang.charAt(0).toUpperCase() + lang.slice(1);
     try {
-      // Get translation via LLM
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `The user is learning ${langCap}. They typed: "${word}"
 
 Detect which case this is:
-1. English word/phrase → translate TO ${langCap}
-2. ${langCap} word in native script → translate TO English
-3. Transliterated/phonetic form of a ${langCap} word (Latin letters but sounds like ${langCap}) → identify the ${langCap} word and translate to English
+1. English word/phrase - translate TO ${langCap}
+2. ${langCap} word in native script - translate TO English
+3. Transliterated/phonetic form of a ${langCap} word (Latin letters but sounds like ${langCap}) - identify the ${langCap} word and translate to English
 
 Always return ALL three fields:
 - native: the word in ${langCap} WITH full native script (e.g. Hebrew with nikud vowel marks). REQUIRED.
 - transliteration: phonetic Latin-letter spelling. REQUIRED.
 - english: clear English meaning/translation. REQUIRED.`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            native: { type: "string" },
+            transliteration: { type: "string" },
+            english: { type: "string" }
+          }
+        }
+      });
 
       await base44.entities.Word.create({
         word: result.native || word,
