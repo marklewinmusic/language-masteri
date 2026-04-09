@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import EditableWord from "../components/learning/EditableWord";
+import CoreVocabTab from "../components/grammar/CoreVocabTab";
 import DeletablePictureBox from "../components/learning/DeletablePictureBox";
 import TranslatorWidget from "../components/TranslatorWidget";
 
@@ -26,6 +27,7 @@ export default function Backpack() {
   const [newWords, setNewWords] = useState([]);
   const [activeNewWord, setActiveNewWord] = useState(null);
   const [showAllEnglish, setShowAllEnglish] = useState(false);
+  const [activeSecondTab, setActiveSecondTab] = useState(null); // 'verbs' | 'corevocab' | null
   const [flippedCards, setFlippedCards] = useState({});
   const [pictureWordId, setPictureWordId] = useState(null);
   const [mnemonicDescription, setMnemonicDescription] = useState("");
@@ -530,13 +532,13 @@ Return JSON with:
         </div>
 
         {/* Tabs - Single Row */}
-        <div className="flex gap-1 mb-4 justify-center overflow-x-auto flex-wrap items-center">
+        <div className="flex gap-1 mb-2 justify-center overflow-x-auto flex-wrap items-center">
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => { setActiveTab(tab.id); setActiveSecondTab(null); }}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                activeTab === tab.id
+                activeTab === tab.id && !activeSecondTab
                   ? "bg-stone-700 text-stone-100 border border-stone-600"
                   : "bg-white/60 text-stone-500 hover:bg-white/80 border border-stone-200"
               }`}
@@ -551,6 +553,30 @@ Return JSON with:
             title="Search words"
           >
             <Search className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Second Row: Verbs + Core Vocab */}
+        <div className="flex gap-1 mb-4 justify-center">
+          <button
+            onClick={() => setActiveSecondTab(activeSecondTab === 'verbs' ? null : 'verbs')}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+              activeSecondTab === 'verbs'
+                ? "bg-stone-700 text-stone-100 border border-stone-600"
+                : "bg-white/60 text-stone-500 hover:bg-white/80 border border-stone-200"
+            }`}
+          >
+            📖 Verbs
+          </button>
+          <button
+            onClick={() => setActiveSecondTab(activeSecondTab === 'corevocab' ? null : 'corevocab')}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+              activeSecondTab === 'corevocab'
+                ? "bg-stone-700 text-stone-100 border border-stone-600"
+                : "bg-white/60 text-stone-500 hover:bg-white/80 border border-stone-200"
+            }`}
+          >
+            📚 Core Vocab
           </button>
         </div>
         {/* Search input */}
@@ -582,8 +608,32 @@ Return JSON with:
           </div>
         )}
 
+        {/* Second Tab Content */}
+        {activeSecondTab === 'verbs' && (
+          <div className="flex flex-wrap gap-3 justify-center">
+            {langFilteredRatings.filter(w => w.is_verb).length === 0 ? (
+              <p className="text-stone-400 text-center py-8 w-full">No verbs in your backpack yet.</p>
+            ) : (
+              langFilteredRatings.filter(w => w.is_verb).map((word) => (
+                <div key={word.id} className="bg-white/70 border border-stone-200 rounded-lg p-3 w-44 text-center">
+                  <p className="text-cyan-600 font-bold text-base" dir="rtl">{word.word}</p>
+                  <p className="text-cyan-500 text-sm font-medium">{word.phonetic}</p>
+                  <p className="text-stone-500 text-xs mt-0.5">{word.translation}</p>
+                  {word.verb_conjugations && (
+                    <span className="text-[10px] text-purple-500 font-semibold mt-1 block">conjugations ✓</span>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {activeSecondTab === 'corevocab' && (
+          <CoreVocabTab />
+        )}
+
         {/* Content */}
-        <div>
+        {!activeSecondTab && <div>
           {getDisplayWords().length === 0 ? (
             <div className="text-center py-12">
               <p className="text-stone-400 text-lg">No words at this level yet!</p>
@@ -722,7 +772,7 @@ Return JSON with:
               ))}
             </div>
           )}
-        </div>
+        </div>}
 
 
       </div>
