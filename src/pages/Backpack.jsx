@@ -765,10 +765,8 @@ Return JSON with:
               ))}
             </div>
           )}
-        </div>}
-
-
-      </div>
+        </div>
+      )}
 
       {/* Word Sentences Dialog */}
       <Dialog open={!!selectedWord} onOpenChange={() => setSelectedWord(null)}>
