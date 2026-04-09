@@ -17,6 +17,8 @@ import TranslatorWidget from "../components/TranslatorWidget";
 export default function Backpack() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("level0");
+  const [addWordForm, setAddWordForm] = useState({ phonetic: '', translation: '', word: '' });
+  const [addingWord, setAddingWord] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
   const [selectedWord, setSelectedWord] = useState(null);
   const [sentences, setSentences] = useState(null);
@@ -397,6 +399,23 @@ Return ONLY a 1-2 sentence image description (no explanations, no headers). Star
   const isWordLocked = (wordId) => lockedWords[wordId];
   const isAdmin = currentUser?.role === 'admin';
 
+  const handleAddNewWord = async () => {
+    if (!addWordForm.phonetic.trim() && !addWordForm.translation.trim()) return;
+    setAddingWord(true);
+    await createWordMutation.mutateAsync({
+      word: addWordForm.word || addWordForm.phonetic,
+      translation: addWordForm.translation,
+      phonetic: addWordForm.phonetic,
+      category: 'wordbank',
+      language: userProfile?.language || 'hebrew',
+      times_practiced: 0,
+      mastered: false,
+    });
+    setAddWordForm({ phonetic: '', translation: '', word: '' });
+    setAddingWord(false);
+    toast.success('Word added to backpack! 🎒');
+  };
+
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 50%, #eae6da 100%)' }}>
 
@@ -406,6 +425,42 @@ Return ONLY a 1-2 sentence image description (no explanations, no headers). Star
             <ArrowLeft className="w-6 h-6" />
           </Link>
           <h1 className="text-3xl font-bold" style={{ color: '#3a4a3a', fontFamily: 'Cormorant Garamond, serif', fontWeight: 400 }}>🎒 My Backpack</h1>
+        </div>
+
+        {/* Add new word */}
+        <div className="mb-5 bg-white/60 rounded-xl border border-stone-200 p-4">
+          <h3 className="text-sm font-semibold mb-3" style={{ color: '#3d4a2e', fontFamily: 'Jost, sans-serif' }}>+ Add New Word</h3>
+          <div className="flex gap-2 flex-wrap">
+            <Input
+              value={addWordForm.phonetic}
+              onChange={(e) => setAddWordForm(prev => ({ ...prev, phonetic: e.target.value }))}
+              placeholder="Transliteration (e.g. shalom)"
+              className="flex-1 min-w-[140px] bg-white/80 border-stone-300 text-stone-800 text-sm"
+              onKeyDown={(e) => e.key === 'Enter' && handleAddNewWord()}
+            />
+            <Input
+              value={addWordForm.translation}
+              onChange={(e) => setAddWordForm(prev => ({ ...prev, translation: e.target.value }))}
+              placeholder="English meaning"
+              className="flex-1 min-w-[140px] bg-white/80 border-stone-300 text-stone-800 text-sm"
+              onKeyDown={(e) => e.key === 'Enter' && handleAddNewWord()}
+            />
+            <Input
+              value={addWordForm.word}
+              onChange={(e) => setAddWordForm(prev => ({ ...prev, word: e.target.value }))}
+              placeholder="Native script (optional)"
+              className="flex-1 min-w-[120px] bg-white/80 border-stone-300 text-stone-800 text-sm"
+              dir="rtl"
+              onKeyDown={(e) => e.key === 'Enter' && handleAddNewWord()}
+            />
+            <Button
+              onClick={handleAddNewWord}
+              disabled={addingWord || (!addWordForm.phonetic.trim() && !addWordForm.translation.trim())}
+              style={{ background: '#5a6b5a', color: 'white' }}
+            >
+              {addingWord ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Add'}
+            </Button>
+          </div>
         </div>
 
         {/* Tabs - Single Row */}

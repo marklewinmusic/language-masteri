@@ -695,7 +695,20 @@ export default function Home() {
                             >
                               <div className="mt-1 space-y-1 pl-3">
                                 {/* Quick add video */}
-                                 {addingVideoToDayId === day.id ? (
+                                 {addingTaskToDayId === day.id ? (
+                                   <div className="flex gap-1 mb-2">
+                                     <Input
+                                       autoFocus
+                                       value={newTask.name}
+                                       onChange={(e) => setNewTask(prev => ({ ...prev, name: e.target.value }))}
+                                       onKeyDown={(e) => { if (e.key === 'Enter') handleAddTask(day.id); if (e.key === 'Escape') setAddingTaskToDayId(null); }}
+                                       placeholder="Task name..."
+                                       className="flex-1 bg-white/80 border-stone-300 text-stone-800 text-xs h-7"
+                                     />
+                                     <Button onClick={() => handleAddTask(day.id)} size="sm" className="h-7 px-2 bg-green-600 text-white text-xs">Add</Button>
+                                     <Button onClick={() => setAddingTaskToDayId(null)} size="sm" variant="ghost" className="h-7 px-2 text-xs">✕</Button>
+                                   </div>
+                                 ) : addingVideoToDayId === day.id ? (
                                    <div className="flex gap-1 mb-2">
                                      <Input
                                        autoFocus
@@ -709,13 +722,22 @@ export default function Home() {
                                      <Button onClick={() => setAddingVideoToDayId(null)} size="sm" variant="ghost" className="h-7 px-2 text-xs">✕</Button>
                                    </div>
                                  ) : (
-                                   <button
-                                     onClick={() => setAddingVideoToDayId(day.id)}
-                                     className="w-full text-left px-3 py-1 text-xs rounded-lg mb-1 transition-all flex items-center gap-1"
-                                     style={{ color: '#6b7c5a', background: '#5a6b5a10', border: '1px dashed #5a6b5a40' }}
-                                   >
-                                     <Video className="w-3 h-3" /> + Add video to this session
-                                   </button>
+                                   <div className="flex gap-1 mb-1">
+                                     <button
+                                       onClick={() => setAddingTaskToDayId(day.id)}
+                                       className="flex-1 text-left px-3 py-1 text-xs rounded-lg transition-all flex items-center gap-1"
+                                       style={{ color: '#6b7c5a', background: '#5a6b5a10', border: '1px dashed #5a6b5a40' }}
+                                     >
+                                       <Plus className="w-3 h-3" /> + Add task
+                                     </button>
+                                     <button
+                                       onClick={() => setAddingVideoToDayId(day.id)}
+                                       className="flex-1 text-left px-3 py-1 text-xs rounded-lg transition-all flex items-center gap-1"
+                                       style={{ color: '#6b7c5a', background: '#5a6b5a10', border: '1px dashed #5a6b5a40' }}
+                                     >
+                                       <Video className="w-3 h-3" /> + Add video
+                                     </button>
+                                   </div>
                                  )}
                                 {(day.subsections || []).filter(task => {
                                    // Hide generic "Watch a video" if a specific video task exists
@@ -871,45 +893,22 @@ export default function Home() {
             {/* BACKPACK SECTION */}
             <div className="text-center">
               <h2 className="text-3xl font-bold mb-4 cursor-pointer hover:opacity-80 transition-opacity inline-flex items-center gap-1" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }} onClick={() => navigate(createPageUrl("Backpack"))}>🎒 Words Backpack <ChevronRight className="w-5 h-5 mb-1" /></h2>
-              <div className="flex flex-wrap gap-4 justify-center">
+              <div className="grid grid-cols-4 gap-2">
                 {[
-                  { name: 'New', color: '#999999' },
-                  { name: 'Recognized', color: '#dc2626' },
-                  { name: 'Familiar', color: '#eab308' },
-                  { name: 'Can Use', color: '#86efac' },
-                  { name: 'Mastered', color: '#16a34a' },
+                  { name: 'New', color: '#999999', count: (wordRatings || []).filter(w => (w.times_practiced || 0) === 0).length },
+                  { name: 'Recognized', color: '#dc2626', count: (wordRatings || []).filter(w => w.times_practiced === 1).length },
+                  { name: 'Familiar', color: '#eab308', count: (wordRatings || []).filter(w => w.times_practiced === 2).length },
+                  { name: 'Can Use', color: '#16a34a', count: (wordRatings || []).filter(w => w.times_practiced === 3 || w.times_practiced === 4).length },
+                  { name: 'Mastered', color: '#0d7a0d', count: (wordRatings || []).filter(w => (w.times_practiced || 0) >= 5).length },
+                  { name: 'Total', color: '#5a6b5a', count: (wordRatings || []).length },
                 ].map((level) => (
                   <Link key={level.name} to={createPageUrl("Backpack")} className="no-underline">
-                    <motion.div
-                      whileHover={{ scale: 1.08 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="w-24 h-24 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all shadow-lg"
-                      style={{ background: `${level.color}15`, border: `2px solid ${level.color}50` }}
-                    >
-                      <p className="text-center text-sm font-bold" style={{ color: level.color }}>{level.name}</p>
-                    </motion.div>
+                    <div className="rounded-xl p-3 text-center hover:opacity-80 transition-all" style={{ background: `${level.color}10`, border: `1px solid ${level.color}30` }}>
+                      <p className="text-2xl font-bold" style={{ color: level.color }}>{level.count}</p>
+                      <p className="text-xs mt-0.5" style={{ color: '#6b7c5a' }}>{level.name}</p>
+                    </div>
                   </Link>
                 ))}
-                <Link to={createPageUrl("MediaLibrary")} className="no-underline">
-                  <motion.div
-                    whileHover={{ scale: 1.08 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-24 h-24 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all shadow-lg"
-                    style={{ background: '#8b5cf615', border: '2px solid #8b5cf650' }}
-                  >
-                    <p className="text-center text-sm font-bold" style={{ color: '#8b5cf6' }}>Verbs</p>
-                  </motion.div>
-                </Link>
-                <Link to={createPageUrl("MediaLibrary")} className="no-underline">
-                  <motion.div
-                    whileHover={{ scale: 1.08 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-24 h-24 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all shadow-lg"
-                    style={{ background: '#06b6d415', border: '2px solid #06b6d450' }}
-                  >
-                    <p className="text-center text-sm font-bold" style={{ color: '#06b6d4' }}>Core Vocab</p>
-                  </motion.div>
-                </Link>
               </div>
             </div>
 
