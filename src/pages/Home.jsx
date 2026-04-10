@@ -906,28 +906,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* BACKPACK SECTION */}
-            <div className="text-center">
-              <h2 className="text-3xl font-bold mb-4 cursor-pointer hover:opacity-80 transition-opacity inline-flex items-center gap-1" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }} onClick={() => navigate(createPageUrl("Backpack"))}>🎒 Words Backpack <ChevronRight className="w-5 h-5 mb-1" /></h2>
-              <div className="grid grid-cols-4 gap-2">
-                {[
-                  { name: 'New', color: '#999999', count: (wordRatings || []).filter(w => (w.times_practiced || 0) === 0).length },
-                  { name: 'Recognized', color: '#dc2626', count: (wordRatings || []).filter(w => w.times_practiced === 1).length },
-                  { name: 'Familiar', color: '#eab308', count: (wordRatings || []).filter(w => w.times_practiced === 2).length },
-                  { name: 'Can Use', color: '#16a34a', count: (wordRatings || []).filter(w => w.times_practiced === 3 || w.times_practiced === 4).length },
-                  { name: 'Mastered', color: '#0d7a0d', count: (wordRatings || []).filter(w => (w.times_practiced || 0) >= 5).length },
-                  { name: 'Total', color: '#5a6b5a', count: (wordRatings || []).length },
-                ].map((level) => (
-                  <Link key={level.name} to={createPageUrl("Backpack")} className="no-underline">
-                    <div className="rounded-xl p-3 text-center hover:opacity-80 transition-all" style={{ background: `${level.color}10`, border: `1px solid ${level.color}30` }}>
-                      <p className="text-2xl font-bold" style={{ color: level.color }}>{level.count}</p>
-                      <p className="text-xs mt-0.5" style={{ color: '#6b7c5a' }}>{level.name}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
             {/* PROGRESS SECTION */}
             <div className="text-center">
               <h2 className="text-3xl font-bold mb-4 cursor-pointer hover:opacity-80 transition-opacity inline-flex items-center gap-1" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }} onClick={() => navigate(createPageUrl("Progress"))}>🏆 Progress <ChevronRight className="w-5 h-5 mb-1" /></h2>
