@@ -580,6 +580,7 @@ Return JSON with:
             📚 Core Vocab
           </button>
         </div>
+        </div>
         {/* Search input */}
         {searchOpen && (
           <div className="mb-4 max-w-xs mx-auto">
@@ -765,8 +766,7 @@ Return JSON with:
               ))}
             </div>
           )}
-        </div>
-      )}
+        </div>}
 
       {/* Word Sentences Dialog */}
       <Dialog open={!!selectedWord} onOpenChange={() => setSelectedWord(null)}>
@@ -923,5 +923,6 @@ Return JSON with:
       {/* Translator Widget */}
       <TranslatorWidget />
     </div>
+  </div>
   );
 }
