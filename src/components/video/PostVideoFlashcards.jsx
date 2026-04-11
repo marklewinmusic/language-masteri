@@ -5,17 +5,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
-const STEPS = [
-  { key: "intro", label: "" },
-  { key: "flashcards", label: "" },
-  { key: "done", label: "" },
-];
-
 const RATINGS = [
-  { value: 1, label: "Just saw it", color: "#ef4444" },
-  { value: 2, label: "Vaguely familiar", color: "#f97316" },
-  { value: 3, label: "Getting it", color: "#eab308" },
-  { value: 5, label: "I know it! ⭐", color: "#22c55e" },
+  { value: 1, label: "1", color: "#ef4444" },
+  { value: 2, label: "2", color: "#f97316" },
+  { value: 3, label: "3", color: "#eab308" },
+  { value: 5, label: "Mastered ⭐", color: "#22c55e" },
 ];
 
 export default function PostVideoFlashcards({ words, onClose, onJournal, videoTitle, userProfile }) {
@@ -86,7 +80,7 @@ export default function PostVideoFlashcards({ words, onClose, onJournal, videoTi
               <ul className="space-y-2 text-white/60 text-sm">
                 <li>📖 Each word from the video will appear on a card</li>
                 <li>👆 Tap the card to reveal the English meaning</li>
-                <li>⭐ Rate how well you know it (1–4)</li>
+                <li>⭐ Rate how well you know it (1–Mastered)</li>
                 <li>🎒 Your ratings are saved to your Backpack</li>
               </ul>
             </div>
@@ -169,14 +163,14 @@ export default function PostVideoFlashcards({ words, onClose, onJournal, videoTi
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="grid grid-cols-2 gap-3"
+                  className="flex gap-2"
                 >
                   {RATINGS.map(r => (
                     <button
                       key={r.value}
                       onClick={() => handleRate(currentWord, r.value)}
                       disabled={saving}
-                      className="py-3 px-4 rounded-xl font-semibold text-sm transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                      className="flex-1 py-3 px-2 rounded-xl font-semibold text-sm transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
                       style={{ background: `${r.color}20`, border: `1px solid ${r.color}50`, color: r.color }}
                     >
                       {saving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : r.label}
