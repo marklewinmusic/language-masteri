@@ -34,6 +34,8 @@ export default function Journal() {
   const [translatingEntry, setTranslatingEntry] = useState(false);
   const [translatedText, setTranslatedText] = useState("");
   const [showTranslated, setShowTranslated] = useState(false);
+  const [exercises, setExercises] = useState([]); // [{english, answer, userInput, revealed}]
+  const [generatingExercises, setGeneratingExercises] = useState(false);
   const today = new Date().toISOString().split('T')[0];
 
   const { data: userProfile } = useQuery({
@@ -256,6 +258,36 @@ export default function Journal() {
 
   const langName = languageNames[userProfile?.language] || 'target language';
 
+  const generateExercises = async () => {
+    if (!suggestedVocab.length) return;
+    setGeneratingExercises(true);
+    try {
+      const lang = userProfile?.language || 'hebrew';
+      const langNameFull = languageNames[lang] || lang;
+      const wordList = suggestedVocab.slice(0, 10).map(w => `${w.phonetic || w.word} (${w.translation})`).join(', ');
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Create one simple English sentence for each of these ${langNameFull} vocabulary words. The sentence should clearly illustrate the word's meaning. For each, also provide the ${langNameFull} translation of the full sentence.
+
+Words: ${wordList}
+
+Return JSON with an array "exercises" where each item has: word (the vocab word in ${langNameFull}), english (the English sentence), answer (the ${langNameFull} translation of the sentence).`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            exercises: {
+              type: 'array',
+              items: { type: 'object', properties: { word: { type: 'string' }, english: { type: 'string' }, answer: { type: 'string' } } }
+            }
+          }
+        }
+      });
+      setExercises((result.exercises || []).map(ex => ({ ...ex, userInput: '', revealed: false })));
+    } catch (e) {
+      toast.error('Failed to generate exercises');
+    }
+    setGeneratingExercises(false);
+  };
+
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 50%, #eae6da 100%)' }}>
       <div className="max-w-3xl mx-auto px-4 py-6">
@@ -407,6 +439,63 @@ export default function Journal() {
                   );
                 })}
               </div>
+            </div>
+          )}
+
+          {/* Translation Exercises */}
+          {suggestedVocab.length > 0 && (
+            <div className="relative z-10 px-6 pb-4 pt-2" style={{ borderTop: '1px dashed rgba(200,180,140,0.5)' }}>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-semibold tracking-wide uppercase" style={{ color: '#9b7e5a', fontFamily: 'Jost, sans-serif' }}>
+                  📝 Translate these sentences ({langName})
+                </p>
+                {exercises.length === 0 ? (
+                  <button
+                    onClick={generateExercises}
+                    disabled={generatingExercises}
+                    className="text-xs px-3 py-1 rounded-full font-semibold transition-all disabled:opacity-50 flex items-center gap-1"
+                    style={{ background: 'rgba(90,107,90,0.15)', color: '#5a6b5a', border: '1px solid rgba(90,107,90,0.3)', fontFamily: 'Jost, sans-serif' }}
+                  >
+                    {generatingExercises ? <><Loader2 className="w-3 h-3 animate-spin" /> Generating...</> : '✨ Generate exercises'}
+                  </button>
+                ) : (
+                  <button onClick={() => setExercises([])} className="text-xs" style={{ color: '#9b7e5a' }}>✕ Clear</button>
+                )}
+              </div>
+              {exercises.length > 0 && (
+                <div className="space-y-3">
+                  {exercises.map((ex, i) => (
+                    <div key={i} className="rounded-xl p-3 space-y-2" style={{ background: 'rgba(255,252,240,0.8)', border: '1px solid rgba(200,180,140,0.4)' }}>
+                      <div className="flex items-start gap-2">
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: 'rgba(90,107,90,0.12)', color: '#5a6b5a', fontFamily: 'Jost, sans-serif' }}>{ex.word}</span>
+                        <p className="text-sm" style={{ color: '#3d4a2e', fontFamily: 'Georgia, serif' }}>{ex.english}</p>
+                      </div>
+                      <input
+                        type="text"
+                        value={ex.userInput}
+                        onChange={e => setExercises(prev => prev.map((item, idx) => idx === i ? { ...item, userInput: e.target.value } : item))}
+                        placeholder={`Translate to ${langName}...`}
+                        className="w-full px-3 py-1.5 rounded-lg text-sm outline-none"
+                        style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(200,180,140,0.5)', fontFamily: 'Georgia, serif', color: '#2d3a1e' }}
+                        dir={userProfile?.language === 'hebrew' ? 'rtl' : 'ltr'}
+                      />
+                      {ex.revealed ? (
+                        <p className="text-xs px-2 py-1 rounded-lg" style={{ background: 'rgba(90,160,90,0.1)', color: '#3a7a3a', fontFamily: 'Georgia, serif' }}>
+                          ✅ {ex.answer}
+                        </p>
+                      ) : (
+                        <button
+                          onClick={() => setExercises(prev => prev.map((item, idx) => idx === i ? { ...item, revealed: true } : item))}
+                          className="text-xs px-2 py-0.5 rounded-full transition-all"
+                          style={{ color: '#9b7e5a', fontFamily: 'Jost, sans-serif', background: 'rgba(200,180,140,0.2)' }}
+                        >
+                          👁 Reveal answer
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
