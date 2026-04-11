@@ -249,9 +249,8 @@ Return JSON with:
 
             {/* Card */}
             <div
-              className="w-full rounded-3xl overflow-hidden cursor-pointer select-none shadow-lg"
+              className="w-full rounded-3xl overflow-hidden select-none shadow-lg"
               style={{ background: '#ffffff', border: '1px solid #e5e7eb' }}
-              onClick={() => setFlipped(true)}
             >
               {/* Approved badge */}
               {currentWord.approved && (
@@ -279,30 +278,35 @@ Return JSON with:
                 )}
               </div>
 
-              {/* Mnemonic explanation */}
-              {currentMnemonic?.explanation && (
-                <div className="px-5 py-2 bg-purple-50 border-t border-purple-100">
+              {/* Mnemonic explanation — always shown */}
+              <div className="px-5 py-2 bg-purple-50 border-t border-purple-100" style={{ minHeight: 36 }}>
+                {currentMnemonic?.explanation ? (
                   <p className="text-purple-600 text-xs text-center italic">💡 {currentMnemonic.explanation}</p>
-                </div>
-              )}
+                ) : currentMnemonic?.loading ? (
+                  <p className="text-purple-300 text-xs text-center italic">Crafting mnemonic...</p>
+                ) : null}
+              </div>
 
               {/* Word info */}
-              <div className="flex flex-col items-center px-6 pt-4 pb-2 gap-1">
+              <div className="flex flex-col items-center px-6 pt-4 pb-2 gap-1" onClick={() => !flipped && setFlipped(true)}>
+                {/* Phonetic always shown */}
                 <p className="text-cyan-500 font-bold text-2xl">{currentWord.phonetic}</p>
 
-                {showEnglish && (
+                {/* English: shown if toggle ON, or revealed after tap */}
+                {(showEnglish || flipped) && (
                   <p className="text-stone-500 text-base">= {currentWord.translation}</p>
                 )}
 
+                {/* Hebrew: shown if toggle ON, always */}
                 {showHebrew && currentWord.word && (
                   <p className="text-cyan-700 font-bold text-xl" dir="rtl" style={{ fontFamily: 'serif' }}>
                     {currentWord.word}
                   </p>
                 )}
 
-                {/* Tap to reveal hint */}
+                {/* Tap hint */}
                 {!flipped && (
-                  <p className="text-stone-300 text-xs mt-2">tap to reveal & rate</p>
+                  <p className="text-stone-300 text-xs mt-2">tap to reveal translation & rate</p>
                 )}
 
                 {/* Rating buttons inside card, shown after tap */}
