@@ -20,6 +20,7 @@ import TranslatorWidget from "../components/TranslatorWidget";
 
 import ContinuousTranscript from "../components/video/ContinuousTranscript";
 import AddVideoDialog from "../components/media/AddVideoDialog";
+import PostVideoFlashcards from "../components/video/PostVideoFlashcards";
 
 const topics = [
   "Religion / Spirituality",
@@ -75,6 +76,8 @@ export default function MediaLibrary() {
   const [extractingVocab, setExtractingVocab] = useState(false);
   const [recommendations, setRecommendations] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+  const [showPostVideoFlashcards, setShowPostVideoFlashcards] = useState(false);
+  const [sessionVocabWords, setSessionVocabWords] = useState([]);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -977,7 +980,34 @@ For each segment:
       new window.YT.Player('youtube-player', {
         videoId,
         playerVars: { enablejsapi: 1, autoplay: 0, controls: 1 },
-        events: { onReady: (event) => setVideoPlayer(event.target) }
+        events: {
+          onReady: (event) => setVideoPlayer(event.target),
+          onStateChange: async (event) => {
+            if (event.data === 0) {
+              try {
+                const vid = selectedVideo;
+                const sessionLabel = vid?.default_day ? `Session ${vid.default_day}` : vid?.title;
+                const words = await base44.entities.Word.filter({ example_sentence: sessionLabel });
+                if (words.length > 0) {
+                  setSessionVocabWords(words);
+                  setShowPostVideoFlashcards(true);
+                } else if (transcript.length > 0) {
+                  const fullText = transcript.map(s => s.transliteration || s.text).join(' ');
+                  const lang = vid?.language || userProfile?.language || 'hebrew';
+                  const langCap = lang.charAt(0).toUpperCase() + lang.slice(1);
+                  const result = await base44.integrations.Core.InvokeLLM({
+                    prompt: `Extract 8-12 key vocabulary words from this ${langCap} transcript for a language learner. Only meaningful content words. Transcript: "${fullText.slice(0, 2000)}". Return JSON with words array, each having: word (native script), phonetic (Latin), translation (English).`,
+                    response_json_schema: { type: 'object', properties: { words: { type: 'array', items: { type: 'object', properties: { word: { type: 'string' }, phonetic: { type: 'string' }, translation: { type: 'string' } } } } } }
+                  });
+                  if (result.words?.length) {
+                    setSessionVocabWords(result.words);
+                    setShowPostVideoFlashcards(true);
+                  }
+                }
+              } catch (e) { console.error('Failed to load session vocab', e); }
+            }
+          }
+        }
       });
     };
 
@@ -1909,6 +1939,14 @@ Return a JSON with a "videos" array. Each video must have:
       )}
     </div>
 
+    {showPostVideoFlashcards && sessionVocabWords.length > 0 && (
+      <PostVideoFlashcards
+        words={sessionVocabWords}
+        videoTitle={selectedVideo?.title}
+        userProfile={userProfile}
+        onClose={() => { setShowPostVideoFlashcards(false); setSessionVocabWords([]); }}
+      />
+    )}
     <TranslatorWidget />
     </>
     );
