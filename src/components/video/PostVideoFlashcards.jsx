@@ -75,7 +75,7 @@ export default function PostVideoFlashcards({ words, onClose, onJournal, videoTi
 Find an English word/phrase that SOUNDS like "${word.phonetic}" and connect it visually to the meaning "${word.translation}".
 Return JSON with:
 - sound_anchor: English word/phrase that sounds like the target word
-- explanation: one punchy memorable sentence (e.g. "NET-inah → picture a NET catching GIFTS — giving!")
+- explanation: one punchy memorable sentence that uses the sound_anchor and hints at the meaning WITHOUT using the exact English translation word "${word.translation}" or the exact phonetic "${word.phonetic}". Use synonyms or indirect references instead. (e.g. for "netinah" = "giving": "A NET catches things falling — just like handing something over!")
 - image_prompt: vivid cartoon scene description (no text in image, single clear subject, bright colors)`,
         response_json_schema: {
           type: "object",
