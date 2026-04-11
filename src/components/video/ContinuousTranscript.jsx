@@ -33,6 +33,8 @@ export default function ContinuousTranscript({
   const [wasPlayingBeforeEdit, setWasPlayingBeforeEdit] = useState(false);
 
   const [editingCell, setEditingCell] = useState(null);
+  const [editingSegment, setEditingSegment] = useState(null); // segIdx
+  const [editSegmentData, setEditSegmentData] = useState({});
   const [editCellValue, setEditCellValue] = useState("");
   const [savingCell, setSavingCell] = useState(false);
   const [activeWordKey, setActiveWordKey] = useState(null); // "segIdx-field-wordIdx"
@@ -120,6 +122,20 @@ export default function ContinuousTranscript({
     }
 
     setSavingCell(false);
+  };
+
+  const startEditSegment = (segIdx) => {
+    const seg = transcript[segIdx];
+    setEditingSegment(segIdx);
+    setEditSegmentData({ transliteration: seg.transliteration || '', english: seg.english || '', hebrew: seg.hebrew || '' });
+  };
+
+  const saveEditSegment = (segIdx) => {
+    Object.entries(editSegmentData).forEach(([field, value]) => {
+      applyLocalEdit(segIdx, field, value);
+      if (onEditWord) onEditWord(segIdx, field, value);
+    });
+    setEditingSegment(null);
   };
 
   const deleteSegment = (segIdx) => {
@@ -368,23 +384,68 @@ export default function ContinuousTranscript({
 
               {/* Text Block */}
               <div className="flex-1 space-y-0">
-                {showPhonetics ? (
-                  segment.hebrew && (
-                    <p className="text-cyan-300 text-base font-medium leading-tight text-left" dir="rtl">
-                      {renderWords(segIdx, 'hebrew', segment.hebrew, 'text-cyan-300 text-base font-medium')}
-                    </p>
-                  )
+                {editingSegment === segIdx ? (
+                  <div className="space-y-1.5">
+                    <textarea
+                      value={editSegmentData.transliteration}
+                      onChange={e => setEditSegmentData(prev => ({ ...prev, transliteration: e.target.value }))}
+                      placeholder="Transliteration..."
+                      rows={2}
+                      className="w-full bg-white/10 border border-yellow-400/50 text-white text-sm rounded-lg px-2 py-1 outline-none resize-none"
+                    />
+                    <textarea
+                      value={editSegmentData.english}
+                      onChange={e => setEditSegmentData(prev => ({ ...prev, english: e.target.value }))}
+                      placeholder="English..."
+                      rows={1}
+                      className="w-full bg-white/10 border border-yellow-400/30 text-white/70 text-sm rounded-lg px-2 py-1 outline-none resize-none"
+                    />
+                    <textarea
+                      value={editSegmentData.hebrew}
+                      onChange={e => setEditSegmentData(prev => ({ ...prev, hebrew: e.target.value }))}
+                      placeholder="Hebrew..."
+                      rows={1}
+                      dir="rtl"
+                      className="w-full bg-white/10 border border-cyan-400/30 text-cyan-300 text-sm rounded-lg px-2 py-1 outline-none resize-none"
+                    />
+                    <div className="flex gap-2">
+                      <button onClick={() => saveEditSegment(segIdx)} className="flex items-center gap-1 px-2 py-1 bg-green-500/20 border border-green-500/40 text-green-400 rounded text-xs hover:bg-green-500/30">
+                        <Check className="w-3 h-3" /> Save
+                      </button>
+                      <button onClick={() => setEditingSegment(null)} className="flex items-center gap-1 px-2 py-1 bg-white/10 border border-white/20 text-white/60 rounded text-xs hover:bg-white/20">
+                        <X className="w-3 h-3" /> Cancel
+                      </button>
+                    </div>
+                  </div>
                 ) : (
-                  !hideTranslit && (
-                    <p className="text-white text-base font-medium leading-tight text-left">
-                      {renderWords(segIdx, 'transliteration', segment.transliteration, 'text-white text-base font-medium')}
-                    </p>
-                  )
-                )}
-                {!hideEnglish && segment.english && (
-                  <p className="text-white/60 text-sm leading-tight text-left">
-                    {renderWords(segIdx, 'english', segment.english, 'text-white/60 text-sm')}
-                  </p>
+                  <>
+                    {showPhonetics ? (
+                      segment.hebrew && (
+                        <p className="text-cyan-300 text-base font-medium leading-tight text-left" dir="rtl">
+                          {renderWords(segIdx, 'hebrew', segment.hebrew, 'text-cyan-300 text-base font-medium')}
+                        </p>
+                      )
+                    ) : (
+                      !hideTranslit && (
+                        <p className="text-white text-base font-medium leading-tight text-left">
+                          {renderWords(segIdx, 'transliteration', segment.transliteration, 'text-white text-base font-medium')}
+                        </p>
+                      )
+                    )}
+                    {!hideEnglish && segment.english && (
+                      <p className="text-white/60 text-sm leading-tight text-left">
+                        {renderWords(segIdx, 'english', segment.english, 'text-white/60 text-sm')}
+                      </p>
+                    )}
+                    {canEdit && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); startEditSegment(segIdx); }}
+                        className="mt-0.5 text-[10px] text-white/30 hover:text-yellow-300 transition-colors"
+                      >
+                        ✏️ edit sentence
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </div>
