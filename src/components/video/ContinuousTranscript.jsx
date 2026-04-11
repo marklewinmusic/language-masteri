@@ -12,7 +12,7 @@ export default function ContinuousTranscript({
   canEdit,
   isPlaying: isPlayingProp = false,
 }) {
-  const [showPhonetics, setShowPhonetics] = useState(false);
+  const [showPhonetics, setShowPhonetics] = useState(true);
   const [hideEnglish, setHideEnglish] = useState(true);
   const [hideTranslit, setHideTranslit] = useState(false);
   const [localTranscript, setLocalTranscript] = useState(transcriptProp);
