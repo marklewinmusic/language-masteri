@@ -14,6 +14,7 @@ import ActivityCard from "../components/game/ActivityCard";
 import RecommendedForYou from "@/components/home/RecommendedForYou";
 import BabyGame from "../components/game/BabyGame";
 import AvatarMenu from "../components/game/AvatarMenu";
+import PostVideoFlashcards from "../components/video/PostVideoFlashcards";
 
 
 
@@ -70,6 +71,22 @@ export default function Home() {
   const [addingTaskToDayId, setAddingTaskToDayId] = useState(null);
   const [quickVideoUrl, setQuickVideoUrl] = useState({});
   const [addingVideoToDayId, setAddingVideoToDayId] = useState(null);
+  const [sessionModal, setSessionModal] = useState(null); // day object
+
+  const handleSessionDone = async (day) => {
+    setLoadingSessionWords(true);
+    try {
+      const sessionLabel = `Session ${day.day_number}`;
+      const words = await base44.entities.Word.filter({ example_sentence: sessionLabel });
+      setSessionFlashcardWords(words.length > 0 ? words : []);
+      setSessionModal(null);
+      setShowSessionFlashcards(true);
+    } catch (e) {}
+    setLoadingSessionWords(false);
+  };
+  const [showSessionFlashcards, setShowSessionFlashcards] = useState(false);
+  const [sessionFlashcardWords, setSessionFlashcardWords] = useState([]);
+  const [loadingSessionWords, setLoadingSessionWords] = useState(false);
 
 
   // Get current user
@@ -695,7 +712,7 @@ export default function Home() {
                         <div
                           className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-3 flex items-center justify-between cursor-pointer hover:border-white/20 transition-all"
                           style={{ backgroundColor: dayColor.bg + '40' }}
-                          onClick={() => setExpandedDay(isExpanded ? null : day.day_number)}
+                          onClick={() => setSessionModal(day)}
                         >
                           <h3 className="font-bold text-sm" style={{ color: '#3d4a2e' }}>Session {day.day_number}</h3>
                           <ChevronDown className={`w-4 h-4 transition-transform ml-auto ${isExpanded ? 'rotate-180' : ''}`} style={{ color: '#6b7c5a' }} />
@@ -932,7 +949,93 @@ export default function Home() {
         )}
                 </div>
 
-      {/* Buy Coins Dialog */}
+      {/* Session Instruction Modal */}
+      {sessionModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center px-4" onClick={() => setSessionModal(null)}>
+          <div
+            className="bg-stone-50 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="text-center">
+              <div className="text-4xl mb-2">🎬</div>
+              <h2 className="text-2xl font-bold" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, serif' }}>Session {sessionModal.day_number}</h2>
+              <p className="text-stone-500 text-sm mt-1">Follow the steps below to complete this session</p>
+            </div>
+            <div className="bg-white rounded-xl border border-stone-200 p-4 space-y-3">
+              <p className="font-semibold text-stone-700 text-sm">📋 Instructions</p>
+              <ol className="space-y-2 text-stone-600 text-sm list-decimal list-inside">
+                <li>Watch the video for this session</li>
+                <li>Follow along with the transcript</li>
+                <li>When you're done, click <strong>"I'm Done"</strong> below</li>
+                <li>Rank the key vocabulary words from the session</li>
+              </ol>
+            </div>
+            {/* Video tasks */}
+            {(sessionModal.subsections || []).filter(t => t.video_id || extractYouTubeId(t.youtube_url)).map(task => {
+              const ytId = task.video_id || extractYouTubeId(task.youtube_url);
+              return (
+                <a
+                  key={task.id}
+                  href={`https://www.youtube.com/watch?v=${ytId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 bg-stone-100 rounded-xl p-3 border border-stone-200 hover:border-stone-400 transition-all no-underline"
+                >
+                  <img src={`https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`} alt="" className="w-20 h-14 rounded-lg object-cover flex-shrink-0" />
+                  <div>
+                    <p className="text-stone-700 font-semibold text-sm">{task.name}</p>
+                    <p className="text-stone-400 text-xs mt-0.5">▶ Open on YouTube</p>
+                  </div>
+                </a>
+              );
+            })}
+            <div className="flex gap-3 pt-1">
+              <button
+                onClick={() => setSessionModal(null)}
+                className="flex-1 py-2.5 rounded-xl border border-stone-300 text-stone-500 text-sm font-medium hover:bg-stone-100 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleSessionDone(sessionModal)}
+                disabled={loadingSessionWords}
+                className="flex-1 py-2.5 rounded-xl text-white text-sm font-bold transition-all disabled:opacity-60"
+                style={{ background: 'linear-gradient(135deg, #5a6b5a, #3d4a2e)' }}
+              >
+                {loadingSessionWords ? '...' : "✅ I'm Done — Rank Words"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Post-video flashcards */}
+      {showSessionFlashcards && sessionFlashcardWords.length > 0 && (
+        <PostVideoFlashcards
+          words={sessionFlashcardWords}
+          videoTitle={sessionModal?.day_number ? `Session ${sessionModal.day_number}` : 'this session'}
+          userProfile={userProfile}
+          onClose={() => { setShowSessionFlashcards(false); setSessionFlashcardWords([]); }}
+        />
+      )}
+      {showSessionFlashcards && sessionFlashcardWords.length === 0 && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center px-4">
+          <div className="bg-stone-50 rounded-2xl max-w-sm w-full p-6 text-center space-y-4">
+            <div className="text-4xl">🎒</div>
+            <h3 className="text-xl font-bold" style={{ color: '#3d4a2e' }}>No vocab words yet</h3>
+            <p className="text-stone-500 text-sm">Vocab words will appear here once they've been added to this session.</p>
+            <button
+              onClick={() => setShowSessionFlashcards(false)}
+              className="w-full py-3 rounded-xl text-white font-bold"
+              style={{ background: '#5a6b5a' }}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+
+        {/* Buy Coins Dialog */}
       <Dialog open={buyCoinsDialog} onOpenChange={setBuyCoinsDialog}>
         <DialogContent className="bg-slate-900 border-white/20 text-white">
           <DialogHeader>
