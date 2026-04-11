@@ -171,13 +171,7 @@ Return JSON with:
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center px-4 py-6 overflow-y-auto"
       style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 100%)' }}>
 
-      {/* Pause button */}
-      <button
-        onClick={() => setConfirmLeave(true)}
-        className="absolute top-4 right-4 text-stone-400 hover:text-stone-700 transition-colors p-2 rounded-full hover:bg-stone-200 z-10"
-      >
-        <Pause className="w-6 h-6" />
-      </button>
+
 
       {/* Confirm leave dialog */}
       {confirmLeave && (
@@ -262,6 +256,17 @@ Return JSON with:
               className="w-full rounded-3xl overflow-hidden select-none shadow-lg"
               style={{ background: '#ffffff', border: '1px solid #e5e7eb' }}
             >
+              {/* Pause button top-right of card */}
+              <div className="flex justify-end px-3 pt-3">
+                <button
+                  onClick={() => setConfirmLeave(true)}
+                  className="text-stone-300 hover:text-stone-600 transition-colors p-1.5 rounded-full hover:bg-stone-100"
+                  title="Exit session"
+                >
+                  <Pause className="w-4 h-4" />
+                </button>
+              </div>
+
               {/* Approved badge - always shown at top if approved */}
               {(approvedState[currentWord.id] !== undefined ? approvedState[currentWord.id] : currentWord.approved) && (
                 <div className="flex items-center justify-center gap-1 px-4 py-2 bg-green-50 border-b border-green-100">
