@@ -38,6 +38,21 @@ export default function ContinuousTranscript({
   const [editCellValue, setEditCellValue] = useState("");
   const [savingCell, setSavingCell] = useState(false);
   const [activeWordKey, setActiveWordKey] = useState(null); // "segIdx-field-wordIdx"
+  const [wordTranslations, setWordTranslations] = useState({}); // key -> translation string
+  const [translatingKey, setTranslatingKey] = useState(null);
+
+  const fetchWordTranslation = async (wordKey, word) => {
+    if (wordTranslations[wordKey]) return;
+    setTranslatingKey(wordKey);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Translate this single Hebrew word to English: "${word}". Return JSON with: english (string, short 1-3 word translation).`,
+        response_json_schema: { type: 'object', properties: { english: { type: 'string' } } }
+      });
+      setWordTranslations(prev => ({ ...prev, [wordKey]: result.english }));
+    } catch (e) {}
+    setTranslatingKey(null);
+  };
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -197,6 +212,7 @@ export default function ContinuousTranscript({
                     setActiveWordKey(null);
                   } else {
                     setActiveWordKey(wordKey);
+                    fetchWordTranslation(wordKey, word);
                   }
                 }}
                 className={`${textClassName} cursor-pointer hover:opacity-80 transition-opacity ${isWordActive ? 'underline' : ''}`}
@@ -205,34 +221,37 @@ export default function ContinuousTranscript({
               </span>
               {/* Popup on click */}
               {isWordActive && (
-                <span className="absolute -top-8 left-1/2 -translate-x-1/2 flex gap-1 z-20 bg-slate-800 rounded-lg px-1.5 py-1 shadow-xl border border-white/10 whitespace-nowrap">
-                  {onAddWord && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); onAddWord(word); setActiveWordKey(null); }}
-                      className="text-sm hover:scale-110 transition-transform"
-                      title="Add to backpack"
-                    >
-                      🎒
-                    </button>
-                  )}
-                  {canEdit && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); startEditWord(segIdx, field, wordIdx, words); setActiveWordKey(null); }}
-                      className="text-xs text-yellow-300 hover:text-yellow-200 px-1"
-                      title="Edit word"
-                    >
-                      ✏️
-                    </button>
-                  )}
-                  {canEdit && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); addWordToSegment(segIdx, field, wordIdx); setActiveWordKey(null); }}
-                      className="text-xs text-cyan-400 hover:text-cyan-300 px-1"
-                      title="Add word after"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </button>
-                  )}
+                <span className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center z-20 bg-slate-800 rounded-xl px-2 py-1.5 shadow-xl border border-white/10 whitespace-nowrap gap-1">
+                  <span className="text-green-300 text-xs font-semibold">
+                    {translatingKey === wordKey ? '...' : (wordTranslations[wordKey] || '...')}
+                  </span>
+                  <span className="flex gap-1">
+                    {onAddWord && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onAddWord(word); setActiveWordKey(null); }}
+                        className="text-sm hover:scale-110 transition-transform"
+                        title="Add to backpack"
+                      >
+                        🎒
+                      </button>
+                    )}
+                    {canEdit && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); startEditWord(segIdx, field, wordIdx, words); setActiveWordKey(null); }}
+                        className="text-xs text-yellow-300 hover:text-yellow-200 px-1"
+                      >
+                        ✏️
+                      </button>
+                    )}
+                    {canEdit && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); addWordToSegment(segIdx, field, wordIdx); setActiveWordKey(null); }}
+                        className="text-xs text-cyan-400 hover:text-cyan-300 px-1"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    )}
+                  </span>
                 </span>
               )}
             </span>
