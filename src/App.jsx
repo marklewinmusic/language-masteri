@@ -10,6 +10,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Session1Journal from '@/pages/Session1Journal';
+import SpeakingSession from '@/pages/SpeakingSession';
 import FluentPath from '@/pages/FluentPath';
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -66,6 +67,7 @@ const AuthenticatedApp = () => {
       ))}
       <Route path="/Session1Journal" element={<LayoutWrapper currentPageName="Session1Journal"><Session1Journal /></LayoutWrapper>} />
       <Route path="/FluentPath" element={<FluentPath />} />
+      <Route path="/SpeakingSession" element={<SpeakingSession />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
