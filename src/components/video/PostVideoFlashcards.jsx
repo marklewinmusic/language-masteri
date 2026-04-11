@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Loader2, X } from "lucide-react";
+import { Loader2, Pause } from "lucide-react";
 
 const RATINGS = [
   { value: 1, label: "1", color: "#ef4444" },
@@ -20,6 +20,7 @@ export default function PostVideoFlashcards({ words, onClose, onJournal, videoTi
   const [saving, setSaving] = useState(false);
   const [results, setResults] = useState([]);
   const [generatingMnemonic, setGeneratingMnemonic] = useState(false);
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const [wordImages, setWordImages] = useState({}); // wordId/phonetic -> image url
 
   const updateWordMutation = useMutation({
@@ -92,13 +93,40 @@ export default function PostVideoFlashcards({ words, onClose, onJournal, videoTi
 
   return (
     <div className="fixed inset-0 z-[100] bg-slate-950/95 flex flex-col items-center justify-center px-4">
-      {/* Exit button always visible */}
+      {/* Pause button always visible */}
       <button
-        onClick={onClose}
+        onClick={() => setConfirmLeave(true)}
         className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors p-2 rounded-full hover:bg-white/10"
       >
-        <X className="w-6 h-6" />
+        <Pause className="w-6 h-6" />
       </button>
+
+      {/* Confirm leave dialog */}
+      {confirmLeave && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 rounded-none">
+          <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 max-w-sm w-full mx-4 text-center space-y-4">
+            <div className="text-4xl">⏸️</div>
+            <h3 className="text-white font-bold text-lg">Leave this session?</h3>
+            <p className="text-white/50 text-sm">Your progress so far will be saved, but you'll exit the flashcard session.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmLeave(false)}
+                className="flex-1 py-3 rounded-xl font-semibold text-sm"
+                style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}
+              >
+                Keep Going
+              </button>
+              <button
+                onClick={onClose}
+                className="flex-1 py-3 rounded-xl font-semibold text-sm"
+                style={{ background: '#ef444420', border: '1px solid #ef444450', color: '#f87171' }}
+              >
+                Leave Session
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <AnimatePresence mode="wait">
         {step === "intro" && (
