@@ -18,7 +18,7 @@ const RATINGS = [
   { value: 5, label: "I know it! ⭐", color: "#22c55e" },
 ];
 
-export default function PostVideoFlashcards({ words, onClose, videoTitle, userProfile }) {
+export default function PostVideoFlashcards({ words, onClose, onJournal, videoTitle, userProfile }) {
   const queryClient = useQueryClient();
   const [step, setStep] = useState("intro");
   const [cardIdx, setCardIdx] = useState(0);
@@ -210,13 +210,24 @@ export default function PostVideoFlashcards({ words, onClose, videoTitle, userPr
                 </div>
               ))}
             </div>
-            <button
-              onClick={onClose}
-              className="w-full py-4 rounded-2xl text-white font-bold text-lg"
-              style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}
-            >
-              Done 🎉
-            </button>
+            <div className="space-y-3">
+              {onJournal && (
+                <button
+                  onClick={onJournal}
+                  className="w-full py-4 rounded-2xl text-white font-bold text-lg transition-all"
+                  style={{ background: 'linear-gradient(135deg, #5a6b5a, #3d4a2e)' }}
+                >
+                  📓 Write in Journal →
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className="w-full py-3 rounded-2xl font-semibold text-sm"
+                style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}
+              >
+                Done
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

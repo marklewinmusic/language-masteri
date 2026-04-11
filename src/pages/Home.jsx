@@ -984,7 +984,7 @@ export default function Home() {
                   <img src={`https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`} alt="" className="w-20 h-14 rounded-lg object-cover flex-shrink-0" />
                   <div>
                     <p className="text-stone-700 font-semibold text-sm">{task.name}</p>
-                    <p className="text-stone-400 text-xs mt-0.5">▶ Open on YouTube</p>
+                    <p className="text-stone-400 text-xs mt-0.5">▶ Watch video</p>
                   </div>
                 </a>
               );
@@ -1016,6 +1016,7 @@ export default function Home() {
           videoTitle={sessionModal?.day_number ? `Session ${sessionModal.day_number}` : 'this session'}
           userProfile={userProfile}
           onClose={() => { setShowSessionFlashcards(false); setSessionFlashcardWords([]); }}
+          onJournal={() => { setShowSessionFlashcards(false); setSessionFlashcardWords([]); navigate(createPageUrl('Journal')); }}
         />
       )}
       {showSessionFlashcards && sessionFlashcardWords.length === 0 && (
