@@ -38,17 +38,29 @@ export default function PostVideoFlashcards({ words, onClose, onJournal, videoTi
 
   const getKey = (word) => word.id || word.phonetic;
 
+  // Pre-generate mnemonics for current + next 2 cards in parallel
   useEffect(() => {
     if (step !== "flashcards") return;
-    const word = words[cardIdx];
-    if (!word) return;
-    const key = getKey(word);
-    if (word.image_url && !mnemonicData[key]) {
-      setMnemonicData(prev => ({ ...prev, [key]: { image_url: word.image_url, explanation: null, loading: false } }));
-      return;
-    }
-    if (mnemonicData[key]) return;
-    generateMnemonic(word);
+    const toGenerate = words.slice(cardIdx, cardIdx + 3);
+    toGenerate.forEach(word => {
+      if (!word) return;
+      const key = getKey(word);
+      if (mnemonicData[key]) return;
+      // Seed from existing DB data first
+      if (word.image_url || word.mnemonic_explanation) {
+        setMnemonicData(prev => ({
+          ...prev,
+          [key]: {
+            image_url: word.image_url || null,
+            explanation: word.mnemonic_explanation || null,
+            loading: !word.image_url // still generate image if missing
+          }
+        }));
+        if (!word.image_url) generateMnemonic(word);
+      } else {
+        generateMnemonic(word);
+      }
+    });
   }, [cardIdx, step]);
 
   const generateMnemonic = async (word) => {
@@ -73,7 +85,7 @@ Return JSON with:
       });
 
       const imageResult = await base44.integrations.Core.GenerateImage({
-        prompt: `${concept.image_prompt}. Cartoon style, vibrant colors, fun and memorable, white or plain background, single clear subject. ABSOLUTELY NO TEXT, NO LETTERS, NO WORDS anywhere in the image.`
+        prompt: `${concept.image_prompt}. Cartoon illustration, bright vivid colors, solid WHITE background (not transparent, not checkered), single clear subject centered. ABSOLUTELY NO TEXT, NO LETTERS, NO WORDS anywhere in the image. White background only.`
       });
 
       setMnemonicData(prev => ({
@@ -288,17 +300,22 @@ Return JSON with:
               {/* Mnemonic explanation — always shown */}
               <div className="px-5 py-2 bg-purple-50 border-t border-purple-100" style={{ minHeight: 36 }}>
                 {currentMnemonic?.explanation ? (
-                  <div className="flex items-start gap-1 justify-center">
-                    <p className="text-purple-600 text-xs text-center italic flex-1">💡 {currentMnemonic.explanation}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-purple-600 text-xs italic flex-1">💡 {currentMnemonic.explanation}</p>
                     <button
                       onClick={(e) => { e.stopPropagation(); setCustomMnemonicInput(currentKey); setCustomMnemonicText(currentMnemonic.customExplanation || ""); }}
-                      className="text-sm hover:scale-110 transition-transform flex-shrink-0"
+                      className="flex-shrink-0 w-7 h-7 rounded-full bg-purple-100 hover:bg-purple-200 flex items-center justify-center text-base transition-all"
                       title="Write your own mnemonic"
                     >✏️</button>
                   </div>
                 ) : currentMnemonic?.loading ? (
                   <p className="text-purple-300 text-xs text-center italic">Crafting mnemonic...</p>
-                ) : null}
+                ) : (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setCustomMnemonicInput(currentKey); setCustomMnemonicText(""); }}
+                    className="w-full text-xs text-purple-400 hover:text-purple-600 text-center"
+                  >✏️ Write your own mnemonic</button>
+                )}
 
                 {/* Custom mnemonic inline input */}
                 {customMnemonicInput === currentKey && (
