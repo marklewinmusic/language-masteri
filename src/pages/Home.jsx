@@ -729,18 +729,33 @@ export default function Home() {
                             >
                               <div className="mt-1 space-y-1 pl-3">
                                 {/* Quick add video */}
-                                {isMasterUser && addingTaskToDayId === day.id ? (
+                                {isMasterUser && (addingTaskToDayId === day.id || addingVideoToDayId === day.id) ? (
                                    <div className="flex gap-1 mb-2">
                                      <Input
                                        autoFocus
                                        value={quickVideoUrl[day.id] || ""}
                                        onChange={(e) => setQuickVideoUrl(prev => ({ ...prev, [day.id]: e.target.value }))}
-                                       onKeyDown={(e) => { if (e.key === 'Enter') handleQuickAddVideo(day.id, day.day_number); if (e.key === 'Escape') setAddingVideoToDayId(null); }}
+                                       onKeyDown={(e) => { if (e.key === 'Enter') handleQuickAddVideo(day.id, day.day_number); if (e.key === 'Escape') { setAddingTaskToDayId(null); setAddingVideoToDayId(null); } }}
                                        placeholder="Paste YouTube URL..."
                                        className="flex-1 bg-white/80 border-stone-300 text-stone-800 text-xs h-7"
                                      />
+                                     <label className="h-7 px-2 flex items-center justify-center rounded-md text-xs font-medium cursor-pointer bg-amber-500 hover:bg-amber-600 text-white" title="Upload MP3">
+                                       🎵
+                                       <input type="file" accept="audio/*,.mp3" className="hidden" onChange={async (e) => {
+                                         const file = e.target.files?.[0];
+                                         if (!file) return;
+                                         toast.info('Uploading audio...');
+                                         const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                                         const currentDay = days.find(d => d.id === day.id);
+                                         const taskId = `audio_${Date.now()}`;
+                                         const updatedSubsections = [...(currentDay?.subsections || []), { id: taskId, name: `🎵 ${file.name.replace(/\.mp3$/i, '')}`, page: '' }];
+                                         updateDayMutation.mutate({ id: day.id, data: { subsections: updatedSubsections } });
+                                         setAddingTaskToDayId(null); setAddingVideoToDayId(null);
+                                         toast.success('Audio added!');
+                                       }} />
+                                     </label>
                                      <Button onClick={() => handleQuickAddVideo(day.id, day.day_number)} size="sm" className="h-7 px-2 bg-green-600 text-white text-xs">Add</Button>
-                                     <Button onClick={() => setAddingVideoToDayId(null)} size="sm" variant="ghost" className="h-7 px-2 text-xs">✕</Button>
+                                     <Button onClick={() => { setAddingTaskToDayId(null); setAddingVideoToDayId(null); }} size="sm" variant="ghost" className="h-7 px-2 text-xs">✕</Button>
                                    </div>
                                  ) : isMasterUser ? (
                                    <div className="flex gap-1 mb-1">
@@ -774,24 +789,13 @@ export default function Home() {
                                         {isEditing ? (
                                          <div className="flex gap-2 px-3 py-2 bg-white/10 rounded-lg border border-cyan-400/50">
                                             <Input
+                                              autoFocus
                                               value={editingTaskData.name}
                                               onChange={(e) => setEditingTaskData({ ...editingTaskData, name: e.target.value })}
-                                              placeholder="Task name"
+                                              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveEditedTask(day.id); if (e.key === 'Escape') handleCancelEdit(); }}
+                                              placeholder="Title"
                                               className="flex-1 bg-white/10 border-white/20 text-white text-sm"
                                             />
-                                            <Input
-                                              value={editingTaskData.youtube_url}
-                                              onChange={(e) => setEditingTaskData({ ...editingTaskData, youtube_url: e.target.value })}
-                                              placeholder="YouTube URL (optional)"
-                                              className="w-48 bg-white/10 border-white/20 text-white text-sm"
-                                            />
-                                            <Button
-                                              onClick={() => handleSaveEditedTask(day.id)}
-                                              size="sm"
-                                              className="bg-green-500/30 text-green-400 hover:bg-green-500/40 border border-green-500/50"
-                                            >
-                                              ✓
-                                            </Button>
                                             <Button
                                               onClick={handleCancelEdit}
                                               size="sm"
