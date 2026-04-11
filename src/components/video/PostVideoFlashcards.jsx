@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import PostSessionJournal from "./PostSessionJournal";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -20,6 +21,7 @@ export default function PostVideoFlashcards({ words, onClose, onJournal, videoTi
   const [saving, setSaving] = useState(false);
   const [results, setResults] = useState([]);
   const [confirmLeave, setConfirmLeave] = useState(false);
+  const [showJournal, setShowJournal] = useState(false);
   const [showHebrew, setShowHebrew] = useState(true);
   const [showEnglish, setShowEnglish] = useState(false);
   const [mnemonicData, setMnemonicData] = useState({});
@@ -130,7 +132,7 @@ Return JSON with:
 
     setSaving(false);
     if (cardIdx + 1 >= words.length) {
-      setStep("done");
+      setShowJournal(true);
     } else {
       setCardIdx(i => i + 1);
       setFlipped(false);
@@ -151,6 +153,15 @@ Return JSON with:
   const currentWord = words[cardIdx];
   const currentKey = currentWord ? getKey(currentWord) : null;
   const currentMnemonic = currentKey ? mnemonicData[currentKey] : null;
+
+  if (showJournal) {
+    return (
+      <PostSessionJournal
+        words={words}
+        onClose={() => { setShowJournal(false); setStep("done"); }}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center px-4 py-6 overflow-y-auto"
