@@ -242,39 +242,15 @@ Return JSON with:
               <span className="text-stone-400 text-xs">{cardIdx + 1} / {words.length}</span>
             </div>
 
-            {/* Show/hide toggles */}
-            <div className="flex gap-2 justify-center">
-              <button
-                onClick={() => setShowHebrew(v => !v)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
-                  showHebrew
-                    ? 'bg-cyan-100 border-cyan-300 text-cyan-700'
-                    : 'bg-white border-stone-200 text-stone-400'
-                }`}
-              >
-                {showHebrew ? '👁 Hebrew' : '🙈 Hebrew'}
-              </button>
-              <button
-                onClick={() => setShowEnglish(v => !v)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
-                  showEnglish
-                    ? 'bg-green-100 border-green-300 text-green-700'
-                    : 'bg-white border-stone-200 text-stone-400'
-                }`}
-              >
-                {showEnglish ? '👁 English' : '🙈 English'}
-              </button>
-            </div>
-
             {/* Card */}
             <div
               className="w-full rounded-3xl overflow-hidden select-none shadow-lg"
               style={{ background: '#ffffff', border: '1px solid #e5e7eb' }}
             >
-              {/* Approved badge */}
+              {/* Approved badge - always shown at top if approved */}
               {currentWord.approved && (
-                <div className="flex items-center gap-1 px-4 py-2 bg-green-50 border-b border-green-100">
-                  <span className="text-green-600 text-xs font-semibold">✅ Approved card</span>
+                <div className="flex items-center justify-center gap-1 px-4 py-2 bg-green-50 border-b border-green-100">
+                  <span className="text-green-600 text-sm font-bold">✅ Approved card</span>
                 </div>
               )}
 
@@ -406,7 +382,8 @@ Return JSON with:
 
               {/* Bottom action row inside card */}
               <div className="flex items-center justify-between px-4 py-3 border-t border-stone-100">
-                <div className="flex gap-1.5">
+                <div className="flex gap-1.5 items-center">
+                  {/* Regenerate mnemonic */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -421,13 +398,36 @@ Return JSON with:
                     {currentMnemonic?.loading ? <Loader2 className="w-3 h-3 animate-spin" /> : '🎨'}
                   </button>
 
+                  {/* Hebrew toggle */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowHebrew(v => !v); }}
+                    className={`px-2 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+                      showHebrew ? 'bg-cyan-50 border-cyan-200 text-cyan-600' : 'bg-white border-stone-200 text-stone-300'
+                    }`}
+                    title="Toggle Hebrew"
+                  >
+                    {showHebrew ? '👁 HE' : '🙈 HE'}
+                  </button>
+
+                  {/* English toggle */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowEnglish(v => !v); }}
+                    className={`px-2 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+                      showEnglish ? 'bg-green-50 border-green-200 text-green-600' : 'bg-white border-stone-200 text-stone-300'
+                    }`}
+                    title="Toggle English"
+                  >
+                    {showEnglish ? '👁 EN' : '🙈 EN'}
+                  </button>
+
+                  {/* Approve */}
                   {currentWord.id && (
                     <button
                       onClick={(e) => { e.stopPropagation(); handleApprove(currentWord); }}
-                      className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all border ${
                         currentWord.approved
-                          ? 'bg-green-100 text-green-600'
-                          : 'text-stone-400 hover:text-green-500 hover:bg-green-50'
+                          ? 'bg-green-100 border-green-200 text-green-600'
+                          : 'bg-white border-stone-200 text-stone-300 hover:text-green-500 hover:bg-green-50'
                       }`}
                       title={currentWord.approved ? "Approved" : "Approve card"}
                     >
