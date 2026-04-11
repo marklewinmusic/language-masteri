@@ -714,7 +714,11 @@ export default function Home() {
                         <div
                           className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-3 flex items-center justify-between cursor-pointer hover:border-white/20 transition-all"
                           style={{ backgroundColor: dayColor.bg + '40' }}
-                          onClick={() => isMasterUser ? setExpandedDay(expandedDay === day.day_number ? null : day.day_number) : setSessionModal(day)}
+                          onClick={() => {
+                            if (isMasterUser) { setExpandedDay(expandedDay === day.day_number ? null : day.day_number); return; }
+                            if (day.day_number === 3) { navigate('/SingingHome'); return; }
+                            setSessionModal(day);
+                          }}
                         >
                           <h3 className="font-bold text-sm" style={{ color: '#3d4a2e' }}>Session {day.day_number}</h3>
                           <ChevronDown className={`w-4 h-4 transition-transform ml-auto ${isExpanded ? 'rotate-180' : ''}`} style={{ color: '#6b7c5a' }} />
