@@ -161,6 +161,14 @@
       "type": "string",
       "format": "date-time"
     },
+    "assigned_by_coach": {
+      "type": "string",
+      "description": "Email of coach who assigned this word to the student"
+    },
+    "coach_folder": {
+      "type": "string",
+      "description": "Label/folder name for coach-assigned words"
+    },
     "verb_conjugations": {
       "type": "object",
       "properties": {

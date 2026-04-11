@@ -278,8 +278,11 @@ Return JSON with:
   const level3Words = langFilteredRatings.filter(w => w.times_practiced === 3 || w.times_practiced === 4);
   const level5Words = langFilteredRatings.filter(w => w.times_practiced >= 5);
 
+  const coachWords = langFilteredRatings.filter(w => w.coach_folder === 'From Coach' && (w.times_practiced || 0) === 0);
+
   const tabs = [
     { id: "level0", label: "✨ New", color: "gray" },
+    { id: "coach", label: `👨‍🏫 From Coach${coachWords.length > 0 ? ` (${coachWords.length})` : ''}`, color: "yellow" },
     { id: "level1", label: "Level 1", color: "orange" },
     { id: "level2", label: "Level 2", color: "yellow" },
     { id: "level3", label: "Level 3", color: "purple" },
@@ -294,6 +297,7 @@ Return JSON with:
     else if (activeTab === "level2") words = level2Words;
     else if (activeTab === "level1") words = level1Words;
     else if (activeTab === "level0") words = level0Words;
+    else if (activeTab === "coach") words = coachWords;
     else return [];
     
     // Deduplicate by phonetic (keep highest times_practiced)
@@ -557,6 +561,20 @@ Return JSON with:
 
         {/* Tabs - Single Row + Phonetics Toggle */}
         <div className="flex gap-1 mb-2 justify-center overflow-x-auto flex-wrap items-center">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                activeTab === tab.id
+                  ? tab.id === 'coach' ? 'bg-amber-500 text-white border border-amber-400' : 'bg-stone-700 text-stone-100 border border-stone-600'
+                  : 'bg-white/60 text-stone-500 hover:bg-white/80 border border-stone-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
         {/* Second Row: Verbs + Core Vocab */}
         <div className="flex gap-1 mb-4 justify-center">
@@ -580,7 +598,6 @@ Return JSON with:
           >
             📚 Core Vocab
           </button>
-        </div>
         </div>
         {/* Search input */}
         {searchOpen && (

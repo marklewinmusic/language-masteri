@@ -59,11 +59,34 @@ export default function ManageCoaches() {
     enabled: currentUser?.role === 'admin',
   });
 
-  const { data: allWords = [] } = useQuery({
-    queryKey: ['allWords'],
-    queryFn: () => base44.entities.Word.filter({ category: "wordbank" }),
-    enabled: currentUser?.role === 'admin',
-  });
+  const [assigningWords, setAssigningWords] = useState({});
+
+  const assignWordsToStudent = async (studentEmail, words, profile) => {
+    if (!words.length) return;
+    setAssigningWords(prev => ({ ...prev, [studentEmail]: true }));
+    const lang = profile?.language || 'hebrew';
+    for (const word of words) {
+      await base44.integrations.Core.InvokeLLM({
+        prompt: `Translate the word "${word}" to English and provide its transliteration. Return JSON with: translation (English meaning), phonetic (transliteration), word (the original Hebrew/target script if applicable).`,
+        response_json_schema: { type: 'object', properties: { translation: { type: 'string' }, phonetic: { type: 'string' }, word: { type: 'string' } } }
+      }).then(result => {
+        return base44.entities.Word.create({
+          word: result.word || word,
+          translation: result.translation || word,
+          phonetic: result.phonetic || word,
+          category: 'wordbank',
+          language: lang,
+          times_practiced: 0,
+          mastered: false,
+          assigned_by_coach: currentUser.email,
+          coach_folder: 'From Coach',
+          created_by: studentEmail,
+        });
+      }).catch(() => {});
+    }
+    setAssigningWords(prev => ({ ...prev, [studentEmail]: false }));
+    toast.success(`${words.length} word(s) pushed to ${studentEmail}'s flashcards!`);
+  };
 
   const deleteNoteMutation = useMutation({
     mutationFn: (id) => base44.entities.CoachNote.delete(id),
@@ -149,10 +172,9 @@ export default function ManageCoaches() {
       n.student_email === user.email ||
       (user.full_name && n.student_name.toLowerCase() === (user.full_name || "").toLowerCase())
     );
-    const userWords = allWords.filter(w => w.created_by === user.email);
     const myCoach = assignments.find(a => a.student_email === user.email);
     const myStudents = assignments.filter(a => a.coach_email === user.email);
-    return { user, isCoach, isStudent, profile, userNotes, userWords, myCoach, myStudents };
+    return { user, isCoach, isStudent, profile, userNotes, myCoach, myStudents };
   });
 
   // Sort: admins first, then coaches, then students
@@ -217,7 +239,7 @@ export default function ManageCoaches() {
 
         {/* People list */}
         <div className="space-y-2">
-          {sortedPeople.map(({ user, isCoach, isStudent, profile, userNotes, userWords, myCoach, myStudents }) => {
+          {sortedPeople.map(({ user, isCoach, isStudent, profile, userNotes, myCoach, myStudents }) => {
             const badge = getRoleBadge({ user, isCoach, isStudent });
             const BadgeIcon = badge.icon;
             const isExpanded = expandedPerson === user.id;
@@ -247,11 +269,6 @@ export default function ManageCoaches() {
                     {userNotes.length > 0 && (
                       <span className="text-xs text-yellow-300/70 flex items-center gap-0.5">
                         <StickyNote className="w-3 h-3" />{userNotes.length}
-                      </span>
-                    )}
-                    {userWords.length > 0 && (
-                      <span className="text-xs text-cyan-300/70 flex items-center gap-0.5">
-                        <BookOpen className="w-3 h-3" />{userWords.length} words
                       </span>
                     )}
                   </div>
@@ -306,22 +323,21 @@ export default function ManageCoaches() {
                       </div>
                     )}
 
-                    {/* Words in backpack */}
-                    {userWords.length > 0 && (
-                      <div>
-                        <p className="text-white/40 text-xs mb-1 flex items-center gap-1"><BookOpen className="w-3 h-3" /> Backpack Words ({userWords.length})</p>
-                        <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto">
-                          {userWords.map(w => (
-                            <span key={w.id} className="bg-cyan-500/20 text-cyan-300 text-xs px-2 py-0.5 rounded-full">{w.word}</span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Words from coach notes */}
+                    {/* Words from coach notes → assign to flashcards */}
                     {allNoteWords.length > 0 && (
-                      <div>
-                        <p className="text-white/40 text-xs mb-1 flex items-center gap-1"><StickyNote className="w-3 h-3" /> Words from Notes</p>
+                      <div className="bg-yellow-400/5 border border-yellow-400/20 rounded-xl p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-yellow-300 text-xs font-semibold flex items-center gap-1"><StickyNote className="w-3 h-3" /> Coach-tagged words ({allNoteWords.length})</p>
+                          <Button
+                            size="sm"
+                            onClick={() => assignWordsToStudent(user.email, allNoteWords, profile)}
+                            disabled={assigningWords[user.email]}
+                            className="text-xs bg-yellow-400/20 hover:bg-yellow-400/30 text-yellow-300 border border-yellow-400/30 h-7"
+                            variant="ghost"
+                          >
+                            {assigningWords[user.email] ? '...' : '🎒 Push to flashcards'}
+                          </Button>
+                        </div>
                         <div className="flex flex-wrap gap-1">
                           {allNoteWords.map((w, i) => (
                             <span key={i} className="bg-yellow-400/20 text-yellow-300 text-xs px-2 py-0.5 rounded-full">{w}</span>
