@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { ArrowLeft, Star, Loader2, X, Wand2, Check, Search } from "lucide-react";
+import { ArrowLeft, Star, Loader2, X, Wand2, Check, Search, RefreshCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -45,7 +45,7 @@ export default function Backpack() {
   const [suggestingMnemonic, setSuggestingMnemonic] = useState(null); // wordId currently suggesting
   const [showPhonetics, setShowPhonetics] = useState(false); // global toggle for all cards
   const [cardSentences, setCardSentences] = useState({});
-  const [generatingSentence, setGeneratingSentence] = useState(null);
+  const [generatingSentence, setGeneratingSentence] = useState({});
 
   // Load current user
   useEffect(() => {
@@ -274,6 +274,21 @@ Return JSON with:
     setSuggestingMnemonic(null);
   };
 
+  // Auto-generate sentences for displayed words
+  const displayWords = React.useMemo(() => {
+    const words = getDisplayWords ? getDisplayWords() : [];
+    return words;
+  }, [activeTab, wordRatings, searchQuery]); // eslint-disable-line
+
+  useEffect(() => {
+    const words = getDisplayWords();
+    words.forEach(word => {
+      if (word.id && !cardSentences[word.id] && !generatingSentence[word.id]) {
+        generateCardSentence(word);
+      }
+    });
+  }, [activeTab, wordRatings]); // eslint-disable-line
+
   const userLang = userProfile?.language || 'hebrew';
   const langFilteredRatings = wordRatings.filter(w => !w.language || w.language === userLang);
   const level0Words = langFilteredRatings.filter(w => (w.times_practiced || 0) === 0);
@@ -488,7 +503,7 @@ Return JSON with:
   };
 
   const generateCardSentence = async (word) => {
-    setGeneratingSentence(word.id);
+    setGeneratingSentence(prev => ({ ...prev, [word.id]: true }));
     try {
       const result = await base44.integrations.Core.InvokeLLM({
         model: 'claude_sonnet_4_6',
@@ -511,7 +526,7 @@ Return JSON with:
     } catch (e) {
       toast.error('Failed to generate sentence');
     }
-    setGeneratingSentence(null);
+    setGeneratingSentence(prev => ({ ...prev, [word.id]: false }));
   };
 
   const handleAddWordFromSentence = async (wordText, meaning) => {
@@ -792,32 +807,39 @@ Return JSON with:
 
                   {/* Example sentence */}
                   <div className="px-2 pb-2">
-                    {cardSentences[word.id] ? (
-                      <div className="bg-stone-50 rounded-lg p-2 border border-stone-100">
-                        <p className="text-[10px] text-stone-400 mb-1">tap a word to add it:</p>
-                        <div className="flex flex-wrap gap-x-1 gap-y-0.5 justify-center">
-                          {cardSentences[word.id].words?.map((w, i) => (
-                            <button
-                              key={i}
-                              onClick={() => handleAddWordFromSentence(w.word, w.meaning)}
-                              className="text-[11px] text-cyan-600 font-medium hover:bg-cyan-100 rounded px-0.5 transition-all underline decoration-dotted"
-                              title={w.meaning}
-                            >
-                              {w.word}
-                            </button>
-                          ))}
+                    <div className="bg-stone-50 rounded-lg p-2 border border-stone-100 min-h-[52px] flex flex-col justify-center">
+                      {generatingSentence[word.id] ? (
+                        <div className="flex items-center justify-center gap-1 py-1">
+                          <Loader2 className="w-3 h-3 animate-spin text-stone-300" />
+                          <span className="text-[10px] text-stone-300">generating...</span>
                         </div>
-                        <p className="text-[10px] text-stone-400 mt-1 text-center italic">{cardSentences[word.id].english}</p>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => generateCardSentence(word)}
-                        disabled={generatingSentence === word.id}
-                        className="w-full text-[10px] text-stone-300 hover:text-stone-500 transition-colors py-1"
-                      >
-                        {generatingSentence === word.id ? <Loader2 className="w-3 h-3 animate-spin inline" /> : '📝 example sentence'}
-                      </button>
-                    )}
+                      ) : cardSentences[word.id] ? (
+                        <>
+                          <div className="flex flex-wrap gap-x-1 gap-y-0.5 justify-center mb-1">
+                            {cardSentences[word.id].words?.map((w, i) => (
+                              <button
+                                key={i}
+                                onClick={() => handleAddWordFromSentence(w.word, w.meaning)}
+                                className="text-[11px] text-cyan-600 font-medium hover:bg-cyan-100 rounded px-0.5 transition-all underline decoration-dotted"
+                                title={`Add "${w.meaning}" to backpack`}
+                              >
+                                {w.word}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="flex items-center justify-between gap-1">
+                            <p className="text-[10px] text-stone-400 italic flex-1">{cardSentences[word.id].english}</p>
+                            <button
+                              onClick={() => generateCardSentence(word)}
+                              className="text-stone-300 hover:text-stone-500 flex-shrink-0 p-0.5 rounded hover:bg-stone-100 transition-all"
+                              title="Regenerate sentence"
+                            >
+                              <RefreshCw className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </>
+                      ) : null}
+                    </div>
                   </div>
 
                             {/* Bottom row: ratings + edit/delete buttons */}
