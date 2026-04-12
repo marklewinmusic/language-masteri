@@ -174,9 +174,9 @@ export default function TranslatorWidget() {
                   onClick={handleTranslate}
                   disabled={!inputText.trim() || isTranslating}
                   size="sm"
-                  className="bg-blue-500 hover:bg-blue-600 flex-shrink-0"
+                  className="bg-amber-500 hover:bg-amber-600 flex-shrink-0 text-lg"
                 >
-                  {isTranslating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Go"}
+                  {isTranslating ? <Loader2 className="w-4 h-4 animate-spin" /> : "🎒"}
                 </Button>
               </div>
 
