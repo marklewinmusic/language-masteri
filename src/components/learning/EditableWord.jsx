@@ -7,7 +7,8 @@ export default function EditableWord({
   language = "en",
   className = "",
   editable = true,
-  onClick 
+  onClick,
+  placeholder = "click to edit"
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(text);
@@ -79,7 +80,7 @@ export default function EditableWord({
       dir={language === "he" ? "rtl" : "ltr"}
       style={{ unicodeBidi: language === "he" ? "isolate" : "normal" }}
     >
-      {text}
+      {text || <span className="opacity-40 italic text-[10px]">{placeholder}</span>}
     </motion.span>
   );
 }

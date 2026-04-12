@@ -47,6 +47,7 @@ export default function Backpack() {
   const [showPhonetics, setShowPhonetics] = useState(false); // global toggle for all cards
   const [cardSentences, setCardSentences] = useState({});
   const [generatingSentence, setGeneratingSentence] = useState({});
+  const [fetchingTranslation, setFetchingTranslation] = useState({});
 
   // Load current user
   useEffect(() => {
@@ -328,6 +329,27 @@ Return JSON with:
     }
     return result;
   };
+
+  // Auto-fetch missing translations
+  useEffect(() => {
+    const words = getDisplayWords();
+    words.forEach(word => {
+      if (!word.id || fetchingTranslation[word.id]) return;
+      const missingTranslation = !word.translation || word.translation.toLowerCase() === (word.phonetic || word.word).toLowerCase();
+      if (!missingTranslation) return;
+      setFetchingTranslation(prev => ({ ...prev, [word.id]: true }));
+      base44.integrations.Core.InvokeLLM({
+        prompt: `What is the English meaning of the Hebrew word "${word.phonetic || word.word}"? Return JSON with just: translation (English meaning, 1-4 words max).`,
+        response_json_schema: { type: 'object', properties: { translation: { type: 'string' } } }
+      }).then(result => {
+        if (result?.translation) {
+          updateWordMutation.mutate({ id: word.id, data: { translation: result.translation } });
+        }
+      }).finally(() => {
+        setFetchingTranslation(prev => ({ ...prev, [word.id]: false }));
+      });
+    });
+  }, [activeTab, wordRatings]); // eslint-disable-line
 
   // Auto-generate sentences for displayed words when tab changes
   useEffect(() => {
@@ -776,13 +798,19 @@ Return JSON with:
                        />
                      )}
                     </p>
-                    <p className="text-stone-500 text-xs text-center mt-1">
-                      = <EditableWord
-                        text={word.translation}
-                        editable={isContentEditable(word)}
-                        onSave={(newTranslation) => updateWordMutation.mutate({ id: word.id, data: { translation: newTranslation } })}
-                        className="text-stone-600 text-xs"
-                      />
+                    <p className="text-stone-500 text-xs text-center mt-1 flex items-center justify-center gap-0.5">
+                      <span>=</span>
+                      {fetchingTranslation[word.id] ? (
+                        <Loader2 className="w-3 h-3 animate-spin text-stone-300" />
+                      ) : (
+                        <EditableWord
+                          text={word.translation && word.translation.toLowerCase() !== (word.phonetic || word.word).toLowerCase() ? word.translation : ''}
+                          editable={true}
+                          onSave={(newTranslation) => updateWordMutation.mutate({ id: word.id, data: { translation: newTranslation } })}
+                          className={`text-xs ${!word.translation || word.translation.toLowerCase() === (word.phonetic || word.word).toLowerCase() ? 'text-stone-300 italic' : 'text-stone-600'}`}
+                          placeholder="add translation"
+                        />
+                      )}
                     </p>
                     <p className="text-cyan-600 font-bold text-sm text-center mt-1" dir="rtl">
                       <EditableWord
