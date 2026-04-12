@@ -874,7 +874,7 @@ Return JSON with: translation (English, 1-4 words), phonetic (clean Latin transl
                         </div>
                       ) : cardSentences[word.id] ? (
                         <>
-                          <div className="flex flex-wrap gap-x-1 gap-y-0.5 justify-center mb-1">
+                          <div className="flex flex-wrap gap-x-0.5 gap-y-0.5 justify-center mb-1">
                             {cardSentences[word.id].words?.map((w, i) => (
                               <button
                                 key={i}
