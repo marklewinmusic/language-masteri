@@ -69,12 +69,14 @@ export default function TranslatorWidget() {
       const sl = "auto";
       const tl = hasHebrew ? "en" : learningLanguage;
 
-      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`;
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&dt=rm&q=${encodeURIComponent(text)}`;
       const res = await fetch(url);
       const data = await res.json();
 
       const translatedText = data[0]?.map(seg => seg[0]).join("") || "";
       const detectedLang = data[2] || sl;
+      // Google Translate returns romanization in segment index [2] when dt=rm is set
+      const romanization = tl === "he" ? (data[0]?.map(seg => seg[2] || "").join("").trim() || null) : null;
 
       setTranslation({
         original: text,
@@ -82,6 +84,7 @@ export default function TranslatorWidget() {
         fromLang: detectedLang,
         toLang: tl,
         isToTarget: !hasHebrew,
+        romanization,
       });
     } catch (e) {
       toast.error("Translation failed");
@@ -148,7 +151,7 @@ Return JSON with: hebrew (with nikud), transliteration, english, is_verb (boolea
 
     const hebrew = resolvedDetails?.hebrew || (translation.toLang === "he" ? translation.result : translation.original);
     const english = resolvedDetails?.english || (translation.toLang === "en" ? translation.result : translation.original);
-    const phonetic = resolvedDetails?.transliteration || (translation.toLang === "he" ? translation.result : translation.original);
+    const phonetic = translation.romanization || resolvedDetails?.transliteration || (translation.toLang === "he" ? translation.result : translation.original);
 
     createWordMutation.mutate({
       word: hebrew,
@@ -203,7 +206,7 @@ Return JSON with: hebrew (with nikud), transliteration, english, is_verb (boolea
                     activeTab === "backpack" ? "bg-amber-500 text-white" : "text-white/60 hover:text-white"
                   }`}
                 >
-                  🎒 Backpack {backpackWords.length > 0 && <span className="bg-white/20 rounded-full px-1.5 text-[10px]">{backpackWords.length}</span>}
+                  🎒 Backpack
                 </button>
               </div>
               <button onClick={() => setIsOpen(false)} className="text-white/60 hover:text-white ml-2">
@@ -243,8 +246,8 @@ Return JSON with: hebrew (with nikud), transliteration, english, is_verb (boolea
                           <p className="text-cyan-300 text-xl font-bold" dir={translation.toLang === "he" ? "rtl" : "ltr"}>
                             {translation.result}
                           </p>
-                          {details?.transliteration && (
-                            <p className="text-white/60 text-sm">{details.transliteration}</p>
+                          {(translation.romanization || details?.transliteration) && (
+                            <p className="text-white/60 text-sm">{translation.romanization || details?.transliteration}</p>
                           )}
                         </div>
                         <button
