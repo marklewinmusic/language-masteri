@@ -48,15 +48,31 @@ export default function TranslatorWidget() {
 
     try {
       const text = inputText.trim();
-      const hasHebrew = /[\u0590-\u05FF]/.test(text);
-      const tl = hasHebrew ? "en" : learningLanguage;
-      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${tl}&dt=t&dt=rm&q=${encodeURIComponent(text)}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      const translatedText = data[0]?.map(seg => seg[0]).join("") || "";
-      const romanization = tl === "he" ? (data[0]?.map(seg => seg[2] || "").join("").trim() || null) : null;
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `The user typed: "${text}"
 
-      setTranslation({ original: text, result: translatedText, toLang: tl, romanization });
+This could be a Hebrew word (in Hebrew script), an English word, or a transliteration of a Hebrew word (e.g. "leishtapesh", "shalom", "todah").
+
+Return JSON with:
+- hebrew: the word in Hebrew script
+- transliteration: phonetic Latin spelling of the Hebrew word
+- english: English meaning
+- example_sentence_hebrew: one short example sentence in Hebrew script
+- example_sentence_transliteration: transliteration of the example sentence
+- example_sentence_english: English translation of the example sentence`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            hebrew: { type: "string" },
+            transliteration: { type: "string" },
+            english: { type: "string" },
+            example_sentence_hebrew: { type: "string" },
+            example_sentence_transliteration: { type: "string" },
+            example_sentence_english: { type: "string" },
+          }
+        }
+      });
+      setTranslation({ original: text, result: result });
     } catch (e) {
       toast.error("Translation failed");
     }
@@ -93,35 +109,13 @@ export default function TranslatorWidget() {
   };
 
   const handleAddToBackpack = async () => {
-    if (!translation) return;
-    let d = details;
-    if (!d) {
-      try {
-        d = await base44.integrations.Core.InvokeLLM({
-          prompt: `Translate and analyze: "${translation.original}". Return JSON with: hebrew, transliteration, english, is_verb.`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              hebrew: { type: "string" },
-              transliteration: { type: "string" },
-              english: { type: "string" },
-              is_verb: { type: "boolean" },
-            }
-          }
-        });
-        setDetails(d);
-      } catch (e) {}
-    }
-    const hebrew = d?.hebrew || (translation.toLang === "he" ? translation.result : translation.original);
-    const english = d?.english || (translation.toLang === "en" ? translation.result : translation.original);
-    const phonetic = translation.romanization || d?.transliteration || hebrew;
-
+    if (!translation?.result) return;
+    const r = translation.result;
     createWordMutation.mutate({
-      word: hebrew,
-      translation: english,
-      phonetic,
+      word: r.hebrew,
+      translation: r.english,
+      phonetic: r.transliteration || r.hebrew,
       category: "wordbank",
-      is_verb: d?.is_verb || false,
       times_practiced: 0,
       mastered: false,
       vocab_level: 0,
@@ -179,46 +173,20 @@ export default function TranslatorWidget() {
                 </Button>
               </form>
 
-              {translation && (
-                <div className="relative bg-white/10 border border-white/20 rounded-xl p-3 space-y-2">
+              {translation && translation.result && (
+                <div className="bg-white/10 border border-white/20 rounded-xl p-3 space-y-2">
+                  <p className="text-white/50 text-[10px] uppercase mb-0.5">{translation.original}</p>
+                  <p className="text-cyan-300 text-xl font-bold" dir="rtl">{translation.result.hebrew}</p>
+                  <p className="text-white/70 text-sm">{translation.result.transliteration}</p>
+                  <p className="text-white font-semibold text-base">{translation.result.english}</p>
 
-
-                  <div className="pr-10">
-                    <p className="text-white/50 text-[10px] uppercase mb-0.5">{translation.original}</p>
-                    <p className="text-cyan-300 text-xl font-bold" dir={translation.toLang === "he" ? "rtl" : "ltr"}>
-                      {translation.result}
-                    </p>
-                    {(translation.romanization || details?.transliteration) && (
-                      <p className="text-white/60 text-sm">{translation.romanization || details?.transliteration}</p>
-                    )}
-                  </div>
-
-                  {showDetails && details && (
-                    <div className="space-y-2 pt-2 border-t border-white/10">
-                      {details.part_of_speech && (
-                        <span className="text-[10px] text-white/40 uppercase tracking-wide">{details.part_of_speech}</span>
-                      )}
-                      {details.example_sentence_hebrew && (
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-2">
-                          <p className="text-emerald-300 text-sm" dir="rtl">{details.example_sentence_hebrew}</p>
-                          <p className="text-white/50 text-xs mt-0.5">"{details.example_sentence_english}"</p>
-                        </div>
-                      )}
-                      {details.notes && (
-                        <p className="text-blue-300/80 text-xs">💡 {details.notes}</p>
-                      )}
+                  {translation.result.example_sentence_hebrew && (
+                    <div className="mt-2 pt-2 border-t border-white/10 space-y-1">
+                      <p className="text-white/40 text-[10px] uppercase">Example</p>
+                      <p className="text-emerald-300 text-sm" dir="rtl">{translation.result.example_sentence_hebrew}</p>
+                      <p className="text-white/60 text-xs">{translation.result.example_sentence_transliteration}</p>
+                      <p className="text-white/50 text-xs italic">"{translation.result.example_sentence_english}"</p>
                     </div>
-                  )}
-
-                  {!showDetails && (
-                    <button
-                      onClick={handleGetDetails}
-                      disabled={isLoadingDetails}
-                      className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium text-white/50 hover:text-white/80 hover:bg-white/5 transition-all"
-                    >
-                      {isLoadingDetails ? <Loader2 className="w-3 h-3 animate-spin" /> : <ChevronDown className="w-3 h-3" />}
-                      {isLoadingDetails ? "Loading..." : "More details"}
-                    </button>
                   )}
                 </div>
               )}
