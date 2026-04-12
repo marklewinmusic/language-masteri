@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -274,21 +274,6 @@ Return JSON with:
     setSuggestingMnemonic(null);
   };
 
-  // Auto-generate sentences for displayed words
-  const displayWords = React.useMemo(() => {
-    const words = getDisplayWords ? getDisplayWords() : [];
-    return words;
-  }, [activeTab, wordRatings, searchQuery]); // eslint-disable-line
-
-  useEffect(() => {
-    const words = getDisplayWords();
-    words.forEach(word => {
-      if (word.id && !cardSentences[word.id] && !generatingSentence[word.id]) {
-        generateCardSentence(word);
-      }
-    });
-  }, [activeTab, wordRatings]); // eslint-disable-line
-
   const userLang = userProfile?.language || 'hebrew';
   const langFilteredRatings = wordRatings.filter(w => !w.language || w.language === userLang);
   const level0Words = langFilteredRatings.filter(w => (w.times_practiced || 0) === 0);
@@ -340,6 +325,16 @@ Return JSON with:
     }
     return result;
   };
+
+  // Auto-generate sentences for displayed words when tab changes
+  useEffect(() => {
+    const words = getDisplayWords();
+    words.forEach(word => {
+      if (word.id && !cardSentences[word.id] && !generatingSentence[word.id]) {
+        generateCardSentence(word);
+      }
+    });
+  }, [activeTab, wordRatings]); // eslint-disable-line
 
   const handleWordClick = async (word) => {
     setSelectedWord(word);
