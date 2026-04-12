@@ -119,19 +119,44 @@ Return JSON with: hebrew (with nikud), transliteration, english, part_of_speech,
     setIsLoadingDetails(false);
   };
 
-  const handleAddToBackpack = () => {
+  const handleAddToBackpack = async () => {
     if (!translation) return;
-    const hebrew = details?.hebrew || (translation.toLang === "he" ? translation.result : translation.original);
-    const english = details?.english || (translation.toLang === "en" ? translation.result : translation.original);
-    const phonetic = details?.transliteration || translation.result;
+
+    // Auto-fetch details if not loaded yet so we have proper phonetic + translation
+    let resolvedDetails = details;
+    if (!resolvedDetails) {
+      try {
+        resolvedDetails = await base44.integrations.Core.InvokeLLM({
+          prompt: `Translate and analyze the word/phrase: "${translation.original}"
+Return JSON with: hebrew (with nikud), transliteration, english, is_verb (boolean).`,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              hebrew: { type: "string" },
+              transliteration: { type: "string" },
+              english: { type: "string" },
+              is_verb: { type: "boolean" },
+            }
+          }
+        });
+        setDetails(resolvedDetails);
+        setShowDetails(true);
+      } catch (e) {
+        // fallback to basic data
+      }
+    }
+
+    const hebrew = resolvedDetails?.hebrew || (translation.toLang === "he" ? translation.result : translation.original);
+    const english = resolvedDetails?.english || (translation.toLang === "en" ? translation.result : translation.original);
+    const phonetic = resolvedDetails?.transliteration || (translation.toLang === "he" ? translation.result : translation.original);
 
     createWordMutation.mutate({
       word: hebrew,
       translation: english,
       phonetic,
       category: "wordbank",
-      is_verb: details?.is_verb || false,
-      example_sentence: details?.example_sentence_hebrew || "",
+      is_verb: resolvedDetails?.is_verb || false,
+      example_sentence: resolvedDetails?.example_sentence_hebrew || "",
       times_practiced: 0,
       mastered: false,
       vocab_level: 0,
