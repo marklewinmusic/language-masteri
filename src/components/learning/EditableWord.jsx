@@ -25,7 +25,7 @@ export default function EditableWord({
   }, [isEditing]);
 
   const handleSave = () => {
-    if (value.trim() && value !== text) {
+    if (value !== text) {
       onSave(value.trim());
     }
     setIsEditing(false);
