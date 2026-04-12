@@ -696,13 +696,20 @@ export default function Home() {
             {/* SCHEDULE SECTION */}
             <div className="flex justify-center">
               <div className="w-full max-w-md">
-                <h2
-                  className="text-3xl font-bold mb-4 text-center cursor-pointer hover:opacity-80 transition-opacity"
-                  style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}
-                  onClick={() => navigate(createPageUrl("Days"))}
-                >
-                  📅 Schedule <ChevronRight className="inline w-5 h-5 mb-1" />
-                </h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2
+                    className="text-3xl font-bold cursor-pointer hover:opacity-80 transition-opacity"
+                    style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}
+                    onClick={() => navigate(createPageUrl("Days"))}
+                  >
+                    📅 Schedule <ChevronRight className="inline w-5 h-5 mb-1" />
+                  </h2>
+                  <Link to={createPageUrl('Backpack')} className="no-underline">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all" style={{ background: '#ffffff', color: '#3d4a2e', boxShadow: '0 1px 4px rgba(0,0,0,0.08)', border: '1px solid #e0dcd4' }}>
+                      <span>🎒</span><span>Backpack</span>
+                    </div>
+                  </Link>
+                </div>
                 {sortedDays.length === 0 ? (
                   <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-4 text-center">
                     <p style={{ color: '#6b7c5a' }} className="text-sm">No sessions available yet</p>
@@ -960,7 +967,6 @@ export default function Home() {
                   { label: 'Videos', emoji: '📹', to: 'MediaLibrary', active: true },
                   { label: 'Songs', emoji: '🎵', to: 'Songs' },
                   { label: 'Audio Training', emoji: '🎧', to: 'MediaLibrary' },
-                  { label: 'Words Backpack', emoji: '🎒', to: 'Backpack', chevron: true },
                 ].map((item) => (
                   <Link key={item.label} to={createPageUrl(item.to)} className="no-underline">
                     <div
