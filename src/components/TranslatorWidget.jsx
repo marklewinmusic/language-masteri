@@ -181,7 +181,7 @@ export default function TranslatorWidget() {
               </div>
 
               {translation && (
-                <div className="relative bg-white/5 border border-white/15 rounded-xl p-3 space-y-2">
+                <div className="relative bg-white/10 border border-white/20 rounded-xl p-3 space-y-2">
                   <button
                     onClick={handleAddToBackpack}
                     disabled={createWordMutation.isPending || wordAdded}
