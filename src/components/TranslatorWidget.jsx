@@ -202,27 +202,28 @@ Return JSON with: hebrew (with nikud), transliteration, english, is_verb (boolea
 
               {/* Translation result */}
               {translation && (
-                <div className="bg-white/8 border border-white/15 rounded-xl p-3 space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="text-white/50 text-[10px] uppercase mb-0.5">{translation.original}</p>
-                      <p className="text-cyan-300 text-xl font-bold" dir={translation.toLang === "he" ? "rtl" : "ltr"}>
-                        {translation.result}
-                      </p>
-                      {(translation.romanization || details?.transliteration) && (
-                        <p className="text-white/60 text-sm">{translation.romanization || details?.transliteration}</p>
-                      )}
-                    </div>
-                    <button
-                      onClick={handleAddToBackpack}
-                      disabled={createWordMutation.isPending || wordAdded}
-                      className={`flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-md text-lg transition-all ${
-                        wordAdded ? 'bg-green-500/30 text-green-400' : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300'
-                      } disabled:opacity-50`}
-                      title="Add to backpack"
-                    >
-                      {wordAdded ? '✓' : '🎒'}
-                    </button>
+                <div className="bg-white/8 border border-white/15 rounded-xl p-3 space-y-2 relative">
+                  {/* Backpack button top-right */}
+                  <button
+                    onClick={handleAddToBackpack}
+                    disabled={createWordMutation.isPending || wordAdded}
+                    className={`absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-md text-base transition-all ${
+                      wordAdded ? 'bg-green-500/30 text-green-400' : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300'
+                    } disabled:opacity-50`}
+                    title="Add to backpack"
+                  >
+                    {wordAdded ? '✓' : '🎒'}
+                  </button>
+
+                  {/* Word display */}
+                  <div className="pr-10">
+                    <p className="text-white/50 text-[10px] uppercase mb-0.5">{translation.original}</p>
+                    <p className="text-cyan-300 text-xl font-bold" dir={translation.toLang === "he" ? "rtl" : "ltr"}>
+                      {translation.result}
+                    </p>
+                    {(translation.romanization || details?.transliteration) && (
+                      <p className="text-white/60 text-sm">{translation.romanization || details?.transliteration}</p>
+                    )}
                   </div>
 
                   {/* Details section */}
