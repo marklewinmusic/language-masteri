@@ -13,7 +13,7 @@ function looksLikeVerb(word) {
 const TENSES = ["past", "present", "future"];
 const TENSE_LABELS = { past: "Past", present: "Present", future: "Future" };
 
-function ConjugationTable({ conjugations }) {
+function ConjugationTable({ conjugations, onEdit }) {
   if (!conjugations) return null;
   const persons = [
     { key: "i", label: "I" },
@@ -32,17 +32,51 @@ function ConjugationTable({ conjugations }) {
           <p className="text-[10px] font-bold text-stone-400 uppercase mb-1">{TENSE_LABELS[tense]}</p>
           {persons.map(({ key, label }) => {
             const val = conjugations[tense]?.[key];
-            if (!val) return null;
+            if (!val && val !== '') return null;
             return (
               <div key={key} className="flex justify-between items-baseline gap-1 py-0.5 border-b border-stone-50 last:border-0">
                 <span className="text-[9px] text-stone-400 shrink-0">{label}</span>
-                <span className="text-[11px] text-cyan-600 font-medium text-right">{val}</span>
+                <EditableConjugation
+                  value={val || ''}
+                  onChange={(newVal) => onEdit(tense, key, newVal)}
+                />
               </div>
             );
           })}
         </div>
       ))}
     </div>
+  );
+}
+
+function EditableConjugation({ value, onChange }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+
+  const commit = () => {
+    setEditing(false);
+    if (draft !== value) onChange(draft);
+  };
+
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { setDraft(value); setEditing(false); } }}
+        className="text-[11px] text-cyan-600 font-medium text-right bg-cyan-50 border border-cyan-300 rounded px-1 outline-none w-full"
+      />
+    );
+  }
+  return (
+    <span
+      onClick={() => { setDraft(value); setEditing(true); }}
+      className="text-[11px] text-cyan-600 font-medium text-right cursor-pointer hover:underline hover:bg-cyan-50 rounded px-0.5"
+    >
+      {value || <span className="text-stone-300 italic">—</span>}
+    </span>
   );
 }
 
@@ -99,10 +133,20 @@ Values should be the transliterated (Latin letters) conjugated form only.`,
     setGenerating(prev => ({ ...prev, [word.id]: false }));
   };
 
+  const handleEditConjugation = async (word, conj, tense, personKey, newVal) => {
+    const updated = {
+      ...conj,
+      [tense]: { ...conj[tense], [personKey]: newVal }
+    };
+    setLocalConjugations(prev => ({ ...prev, [word.id]: updated }));
+    if (word.id) {
+      await updateWordMutation.mutateAsync({ id: word.id, data: { verb_conjugations: updated } });
+    }
+  };
+
   const toggleExpand = async (word) => {
     const isExpanded = expanded[word.id];
     setExpanded(prev => ({ ...prev, [word.id]: !isExpanded }));
-    // Auto-generate if expanding and no conjugations yet
     if (!isExpanded && !word.verb_conjugations && !localConjugations[word.id] && !generating[word.id]) {
       await generateConjugations(word);
     }
@@ -149,7 +193,10 @@ Values should be the transliterated (Latin letters) conjugated form only.`,
                     <span className="text-stone-400 text-sm">Generating conjugations...</span>
                   </div>
                 ) : conj ? (
-                  <ConjugationTable conjugations={conj} />
+                  <ConjugationTable
+                    conjugations={conj}
+                    onEdit={(tense, key, val) => handleEditConjugation(word, conj, tense, key, val)}
+                  />
                 ) : (
                   <button
                     onClick={() => generateConjugations(word)}
