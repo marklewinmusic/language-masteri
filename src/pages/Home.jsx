@@ -909,6 +909,7 @@ export default function Home() {
                                             </div>
                                             <div className="flex items-center gap-2">
                                              {(task.video_id || extractYouTubeId(task.youtube_url)) && <span className="text-xs" style={{ color: '#6b7c5a' }}>▶ video</span>}
+                                             {task.mediaUrl && <span className="text-xs" style={{ color: '#6b7c5a' }}>🎵 audio</span>}
                                              {isMasterUser && (
                                                 <button
                                                   onClick={(e) => { e.stopPropagation(); handleStartEditTask(day.id, task); }}
