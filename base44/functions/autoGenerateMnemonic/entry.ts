@@ -30,14 +30,14 @@ Deno.serve(async (req) => {
     const soundPhonetic = isVerb && /^l/i.test(phonetic) ? phonetic.slice(1) : phonetic;
 
     const verbNote = isVerb
-      ? `\n\nIMPORTANT: This is a Hebrew verb. The leading "l" in "${phonetic}" is just the infinitive prefix — ignore it for sound matching. Find an English word/phrase that SOUNDS like "${soundPhonetic}" (without the leading l) and connect it visually to the meaning "${translation}".`
-      : `\nFind an English word/phrase that SOUNDS like "${phonetic}" and connect it visually to the meaning "${translation}".`;
+      ? `\n\nIMPORTANT: This is a Hebrew verb. The "l" prefix is just the infinitive — it has NO meaning. Find an English word/phrase that SOUNDS like "${soundPhonetic}" (NOT "${phonetic}") and connect it visually to the meaning "${translation}". Do NOT use the full word "${phonetic}" as your sound anchor.`
+      : `\nFind an English word/phrase that SOUNDS like "${phonetic}" and connect it visually to the meaning "${translation}"."`;
 
     // Generate mnemonic concept via LLM
     const concept = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `Create a mnemonic to remember the word "${phonetic}" meaning "${translation}".${verbNote}
+      prompt: `Create a mnemonic to remember the word "${isVerb ? soundPhonetic : phonetic}" meaning "${translation}".${verbNote}
 Return JSON with:
-- explanation: one punchy memorable sentence using a sound-alike English word that hints at the meaning WITHOUT using the exact English translation "${translation}" or the exact phonetic "${phonetic}". Use synonyms or indirect references.
+- explanation: one punchy memorable sentence using a sound-alike English word (based on "${soundPhonetic}") that hints at the meaning WITHOUT using the exact English translation "${translation}". Use synonyms or indirect references.
 - image_prompt: vivid cartoon scene description (no text in image, single clear subject, bright colors, white background)`,
       response_json_schema: {
         type: "object",

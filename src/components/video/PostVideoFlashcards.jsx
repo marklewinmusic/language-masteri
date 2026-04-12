@@ -70,12 +70,14 @@ export default function PostVideoFlashcards({ words, onClose, onJournal, videoTi
     const key = getKey(word);
     setMnemonicData(prev => ({ ...prev, [key]: { ...(prev[key] || {}), loading: true } }));
     try {
+      const isVerb = word.is_verb === true;
+      const soundPhonetic = isVerb && /^l/i.test(word.phonetic) ? word.phonetic.slice(1) : word.phonetic;
       const concept = await base44.integrations.Core.InvokeLLM({
-        prompt: `Create a mnemonic to remember the word "${word.phonetic}" meaning "${word.translation}".
-Find an English word/phrase that SOUNDS like "${word.phonetic}" and connect it visually to the meaning "${word.translation}".
+        prompt: `Create a mnemonic to remember the word "${soundPhonetic}" meaning "${word.translation}".
+Find an English word/phrase that SOUNDS like "${soundPhonetic}"${isVerb ? ` (the "l" at the start of "${word.phonetic}" is just the Hebrew infinitive prefix — completely ignore it, base the sound only on "${soundPhonetic}")` : ''} and connect it visually to the meaning "${word.translation}".
 Return JSON with:
-- sound_anchor: English word/phrase that sounds like the target word
-- explanation: one punchy memorable sentence that uses the sound_anchor and hints at the meaning WITHOUT using the exact English translation word "${word.translation}" or the exact phonetic "${word.phonetic}". Use synonyms or indirect references instead. (e.g. for "netinah" = "giving": "A NET catches things falling — just like handing something over!")
+- sound_anchor: English word/phrase that sounds like "${soundPhonetic}"
+- explanation: one punchy memorable sentence using the sound_anchor that hints at the meaning WITHOUT using the exact English translation "${word.translation}" or "${word.phonetic}". Use synonyms or indirect references.
 - image_prompt: vivid cartoon scene description (no text in image, single clear subject, bright colors)`,
         response_json_schema: {
           type: "object",
