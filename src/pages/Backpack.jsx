@@ -532,10 +532,17 @@ Return JSON with:
     setCardSentences(prev => { const next = { ...prev }; delete next[word.id]; return next; });
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Create one short, natural, commonly-used Hebrew sentence that a native speaker would actually say, using the word "${word.phonetic || word.word}" (meaning: "${word.translation}"). The sentence should feel real and practical, not textbook.
+        prompt: `You are a native Hebrew speaker and expert linguist. Create one short, grammatically correct, natural Hebrew sentence using the word "${word.phonetic || word.word}" (meaning: "${word.translation}").
+
+CRITICAL RULES:
+- The sentence MUST be grammatically correct Hebrew as a native Israeli would say it
+- Use proper Hebrew grammar: correct gender agreement, verb conjugation, word order (VSO or SVO as natural)
+- The transliteration must accurately reflect how it sounds in modern Israeli Hebrew
+- Keep it simple (5-8 words max)
+- Do NOT translate word-for-word from English
 
 Return JSON with:
-- transliteration: the full sentence in Latin phonetic spelling
+- transliteration: the full sentence in Latin phonetic spelling (modern Israeli pronunciation)
 - english: natural English translation
 - words: array of each word in the sentence as {word: transliteration of that word, meaning: English meaning of that word}`,
         response_json_schema: {
