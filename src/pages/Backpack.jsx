@@ -229,7 +229,7 @@ export default function Backpack() {
 
 Target word: "${targetWord}" (meaning: "${meaning}")
 
-STEP 1 — SOUND MATCH: Find a real, common English noun whose spelling/pronunciation sounds like "${targetWord}" or its first 1-2 syllables. Think of words that rhyme or start the same way. Examples: "ask" → "Ask-him" → "eskimo", "shalom" → "shallow", "kelev" → "collar". The noun must be a physical, concrete, everyday object or creature.
+STEP 1 — SOUND MATCH: Find a real, common English noun whose spelling/pronunciation sounds like "${targetWord}" or its first 1-2 syllables. Think of words that rhyme or start the same way. Examples: "ask" → "Ask-him" → "eskimo", "shalom" → "shallow", "kelev" → "collar". The noun must be a physical, concrete, everyday object or creature. IMPORTANT: Do NOT use colors (like ivory, red, blue, gold, etc.) as the sound anchor — use objects or animals only.
 
 STEP 2 — SCENE: Place that physical noun object in a funny visual scene that ALSO shows the meaning "${meaning}". The object itself (not speech bubbles, not labels) should remind you of the sound.
 
@@ -658,7 +658,7 @@ Return JSON with: translation (English, 1-4 words), phonetic (clean Latin transl
 
 Target word: "${soundWord}" (meaning: "${finalTranslation}")
 
-STEP 1 — SOUND MATCH: Find a real, common English noun whose spelling/pronunciation sounds like "${soundWord}" or its first 1-2 syllables. Think of words that rhyme or start the same way. The noun must be a physical, concrete, everyday object or creature.
+STEP 1 — SOUND MATCH: Find a real, common English noun whose spelling/pronunciation sounds like "${soundWord}" or its first 1-2 syllables. Think of words that rhyme or start the same way. The noun must be a physical, concrete, everyday object or creature. IMPORTANT: Do NOT use colors (like ivory, red, blue, gold, etc.) as the sound anchor — use objects or animals only.
 
 STEP 2 — SCENE: Place that physical noun object in a funny visual scene that ALSO shows the meaning "${finalTranslation}". The object itself (not speech bubbles, not labels) should remind you of the sound.
 
