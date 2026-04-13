@@ -543,19 +543,20 @@ Return JSON:
     setCardSentences(prev => { const next = { ...prev }; delete next[word.id]; return next; });
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a native Hebrew speaker and expert linguist. Create one short, grammatically correct, natural Hebrew sentence using the word "${word.phonetic || word.word}" (meaning: "${word.translation}").
+        model: 'claude_sonnet_4_6',
+        prompt: `You are a native Israeli Hebrew speaker. Create one short, completely natural Hebrew sentence using the word "${word.phonetic || word.word}" (meaning: "${word.translation}").
 
-CRITICAL RULES:
-- The sentence MUST be grammatically correct Hebrew as a native Israeli would say it
-- Use proper Hebrew grammar: correct gender agreement, verb conjugation, word order (VSO or SVO as natural)
-- The transliteration must accurately reflect how it sounds in modern Israeli Hebrew
-- Keep it simple (5-8 words max)
-- Do NOT translate word-for-word from English
+CRITICAL — write as a native Israeli would actually say it in daily conversation:
+- Correct gender agreement for all nouns, adjectives, and verbs
+- Natural Israeli word order and rhythm — NOT translated from English
+- Correct verb binyan and conjugation
+- 5–8 words max
+- Avoid formal or biblical registers — use spoken modern Hebrew
 
-Return JSON with:
-- transliteration: the full sentence in Latin phonetic spelling (modern Israeli pronunciation)
-- english: natural English translation
-- words: array of each word in the sentence as {word: transliteration of that word, meaning: English meaning of that word}`,
+Return JSON:
+- transliteration: full sentence in Latin letters (modern Israeli pronunciation, e.g. "ani ohev et ha-yeled")
+- english: natural English equivalent (not word-for-word)
+- words: array of {word: transliteration of that single word, meaning: its English meaning}`,
         response_json_schema: {
           type: 'object',
           properties: {
