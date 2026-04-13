@@ -215,20 +215,20 @@ export default function Backpack() {
       const meaning = word.translation || '';
 
       const concept = await base44.integrations.Core.InvokeLLM({
-        prompt: `You help create mnemonics for language learning.
+        prompt: `You create sound-based visual mnemonics for language learning.
 
 Target word: "${targetWord}" (meaning: "${meaning}")
 
-Step 1: Find a COMMON EVERYDAY English noun (something anyone would instantly recognize — like "cow", "door", "sun", "car", "shoe", "key", "cup", "box") whose pronunciation STARTS WITH or closely SOUNDS LIKE the beginning sounds of "${targetWord}". Prioritize simple, concrete, universally-known objects over abstract or rare words. The sound match must be at the START of the English word.
+STEP 1 — SOUND MATCH: Find a real, common English noun whose spelling/pronunciation sounds like "${targetWord}" or its first 1-2 syllables. Think of words that rhyme or start the same way. Examples: "ask" → "Ask-him" → "eskimo", "shalom" → "shallow", "kelev" → "collar". The noun must be a physical, concrete, everyday object or creature.
 
-Step 2: Create a vivid, funny scene where that everyday object is doing something that represents the meaning "${meaning}".
+STEP 2 — SCENE: Place that physical noun object in a funny visual scene that ALSO shows the meaning "${meaning}". The object itself (not speech bubbles, not labels) should remind you of the sound.
 
-Step 3: Write a 1-sentence visual description for image generation.
+STEP 3 — The image must show the OBJECT doing something related to the meaning. NO speech bubbles, NO text, NO words spoken by characters.
 
-Return JSON with:
-- sound_anchor: the common everyday English noun that sounds like the start of "${targetWord}"
-- explanation: one punchy sentence connecting the sound anchor to the meaning (e.g. "A SHOE (shu=ask) asking a question")
-- image_prompt: detailed description for generating the image (no text, simple funny scene, one main everyday object as subject, bright colors)`,
+Return JSON:
+- sound_anchor: the English noun that sounds like "${targetWord}" (e.g. "eskimo" for "askeem")
+- explanation: one punchy sentence like "An ESKIMO (askeem=agree) shaking hands in the snow"
+- image_prompt: vivid scene description with the sound_anchor object + action showing the meaning. NO text or speech in the image.`,
         response_json_schema: {
           type: 'object',
           properties: {
@@ -643,12 +643,20 @@ Return JSON with: translation (English, 1-4 words), phonetic (clean Latin transl
         const rawWord = addWordForm.phonetic;
         const soundWord = /^l[aeiou]/i.test(rawWord) ? rawWord.slice(1) : rawWord;
         const concept = await base44.integrations.Core.InvokeLLM({
-          prompt: `Create a mnemonic for the word "${soundWord}" meaning "${addWordForm.translation || translation}".
+          prompt: `You create sound-based visual mnemonics for language learning.
 
-Find a COMMON EVERYDAY English noun (something anyone instantly recognizes — like "cow", "door", "sun", "car", "shoe", "key", "cup", "box") whose pronunciation STARTS WITH or closely SOUNDS LIKE the beginning sounds of "${soundWord}". Prioritize simple, concrete, universally-known objects. The sound match must be at the START of the English word.
-Then imagine that everyday object doing something funny that represents the meaning.
+Target word: "${soundWord}" (meaning: "${addWordForm.translation || translation}")
 
-Return JSON with: sound_anchor (the common everyday English noun), explanation (one punchy sentence connecting sound to meaning), image_prompt (vivid funny cartoon scene, no text, bright colors, one main everyday object as subject).`,
+STEP 1 — SOUND MATCH: Find a real, common English noun whose spelling/pronunciation sounds like "${soundWord}" or its first 1-2 syllables. Think of words that rhyme or start the same way. The noun must be a physical, concrete, everyday object or creature.
+
+STEP 2 — SCENE: Place that physical noun object in a funny visual scene that ALSO shows the meaning "${addWordForm.translation || translation}". The object itself (not speech bubbles, not labels) should remind you of the sound.
+
+STEP 3 — The image must show the OBJECT doing something related to the meaning. NO speech bubbles, NO text, NO words spoken by characters.
+
+Return JSON:
+- sound_anchor: the English noun that sounds like "${soundWord}"
+- explanation: one punchy sentence like "An ESKIMO (askeem=agree) shaking hands in the snow"
+- image_prompt: vivid scene description with the sound_anchor object + action showing the meaning. NO text or speech in the image.`,
           response_json_schema: { type: 'object', properties: { sound_anchor: { type: 'string' }, explanation: { type: 'string' }, image_prompt: { type: 'string' } } }
         });
         const img = await base44.integrations.Core.GenerateImage({
