@@ -635,10 +635,11 @@ Return JSON with: translation (English, 1-4 words), phonetic (clean Latin transl
     }
 
     const phonetic = addWordForm.phonetic.trim();
+    const finalTranslation = translation; // capture before form clear
     const isVerb = /^l[aeiou]/i.test(phonetic);
     const newWord = await createWordMutation.mutateAsync({
       word: hebrewWord || phonetic,
-      translation,
+      translation: finalTranslation,
       phonetic,
       category: 'wordbank',
       language: userProfile?.language || 'hebrew',
@@ -651,16 +652,16 @@ Return JSON with: translation (English, 1-4 words), phonetic (clean Latin transl
     // Auto-generate mnemonic image
     if (newWord?.id) {
       try {
-        const rawWord = addWordForm.phonetic;
+        const rawWord = phonetic; // use captured value, not cleared form
         const soundWord = /^l[aeiou]/i.test(rawWord) ? rawWord.slice(1) : rawWord;
         const concept = await base44.integrations.Core.InvokeLLM({
           prompt: `You create sound-based visual mnemonics for language learning.
 
-Target word: "${soundWord}" (meaning: "${addWordForm.translation || translation}")
+Target word: "${soundWord}" (meaning: "${finalTranslation}")
 
 STEP 1 — SOUND MATCH: Find a real, common English noun whose spelling/pronunciation sounds like "${soundWord}" or its first 1-2 syllables. Think of words that rhyme or start the same way. The noun must be a physical, concrete, everyday object or creature.
 
-STEP 2 — SCENE: Place that physical noun object in a funny visual scene that ALSO shows the meaning "${addWordForm.translation || translation}". The object itself (not speech bubbles, not labels) should remind you of the sound.
+STEP 2 — SCENE: Place that physical noun object in a funny visual scene that ALSO shows the meaning "${finalTranslation}". The object itself (not speech bubbles, not labels) should remind you of the sound.
 
 STEP 3 — The image must show the OBJECT doing something related to the meaning. NO speech bubbles, NO text, NO words spoken by characters.
 
@@ -674,9 +675,11 @@ Return JSON:
           prompt: `${concept.image_prompt}. 3D Pixar-style render, high definition, glossy and vibrant, expressive cartoon character with big eyes, cinematic lighting, ultra-detailed textures, colorful and fun. Plain white background. ABSOLUTELY NO TEXT anywhere.`
         });
         await updateWordMutation.mutateAsync({ id: newWord.id, data: { image_url: img.url, mnemonic_explanation: concept.explanation } });
+        queryClient.invalidateQueries({ queryKey: ['wordRatings'] });
         toast.success('Mnemonic created! 🎨');
       } catch (e) {
         console.error('Mnemonic generation failed', e);
+        toast.error('Mnemonic generation failed');
       }
     }
     setAddingWord(false);
