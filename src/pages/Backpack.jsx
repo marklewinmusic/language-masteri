@@ -233,12 +233,12 @@ STEP 1 — SOUND MATCH: Find a real, common English noun whose spelling/pronunci
 
 STEP 2 — SCENE: Place that physical noun object in a funny visual scene that ALSO shows the meaning "${meaning}". The object itself (not speech bubbles, not labels) should remind you of the sound.
 
-STEP 3 — The image must show the OBJECT doing something related to the meaning. NO speech bubbles, NO text, NO words spoken by characters.
+STEP 3 — The image must show the OBJECT doing something related to the meaning. NO speech bubbles, NO text, NO characters speaking or calling out. PURE VISUAL ACTION ONLY — no mouths open to speak, no gesturing as if calling out.
 
 Return JSON:
 - sound_anchor: the English noun that sounds like "${targetWord}" (e.g. "eskimo" for "askeem")
 - explanation: one punchy sentence like "An ESKIMO (askeem=agree) shaking hands in the snow"
-- image_prompt: vivid scene description with the sound_anchor object + action showing the meaning. NO text or speech in the image.`,
+- image_prompt: vivid scene description with the sound_anchor object + visual action showing the meaning. No talking, no speech, no text.`,
         response_json_schema: {
           type: 'object',
           properties: {
@@ -250,7 +250,7 @@ Return JSON:
       });
 
       const imageResult = await base44.integrations.Core.GenerateImage({
-        prompt: `${concept.image_prompt}. 3D Pixar-style render, high definition, glossy and vibrant, expressive cartoon character with big eyes, cinematic lighting, ultra-detailed textures, colorful and fun. Plain white background. ABSOLUTELY NO TEXT, NO LETTERS, NO WORDS anywhere in the image.`
+        prompt: `${concept.image_prompt}. 3D Pixar-style render, high definition, glossy and vibrant, expressive cartoon character with big eyes, cinematic lighting, ultra-detailed textures, colorful and fun. Plain white background. ABSOLUTELY NO TEXT, NO LETTERS, NO WORDS, NO SPEECH BUBBLES, NO TALKING, NO DIALOGUE, NO CHARACTERS SPEAKING OR CALLING OUT anywhere in the image. Pure visual action only.`
       });
 
       setMnemonicExplanations(prev => ({ ...prev, [word.id]: concept.explanation }));
@@ -663,16 +663,16 @@ STEP 1 — SOUND MATCH: Find a real, common English noun whose spelling/pronunci
 
 STEP 2 — SCENE: Place that physical noun object in a funny visual scene that ALSO shows the meaning "${finalTranslation}". The object itself (not speech bubbles, not labels) should remind you of the sound.
 
-STEP 3 — The image must show the OBJECT doing something related to the meaning. NO speech bubbles, NO text, NO words spoken by characters.
+STEP 3 — The image must show the OBJECT doing something related to the meaning. NO speech bubbles, NO text, NO characters speaking or calling out. PURE VISUAL ACTION ONLY — no mouths open to speak, no gesturing as if calling out.
 
 Return JSON:
 - sound_anchor: the English noun that sounds like "${soundWord}"
 - explanation: one punchy sentence like "An ESKIMO (askeem=agree) shaking hands in the snow"
-- image_prompt: vivid scene description with the sound_anchor object + action showing the meaning. NO text or speech in the image.`,
+- image_prompt: vivid scene description with the sound_anchor object + visual action showing the meaning. No talking, no speech, no text.`,
           response_json_schema: { type: 'object', properties: { sound_anchor: { type: 'string' }, explanation: { type: 'string' }, image_prompt: { type: 'string' } } }
         });
         const img = await base44.integrations.Core.GenerateImage({
-          prompt: `${concept.image_prompt}. 3D Pixar-style render, high definition, glossy and vibrant, expressive cartoon character with big eyes, cinematic lighting, ultra-detailed textures, colorful and fun. Plain white background. ABSOLUTELY NO TEXT anywhere.`
+          prompt: `${concept.image_prompt}. 3D Pixar-style render, high definition, glossy and vibrant, expressive cartoon character with big eyes, cinematic lighting, ultra-detailed textures, colorful and fun. Plain white background. ABSOLUTELY NO TEXT, NO LETTERS, NO SPEECH BUBBLES, NO TALKING, NO DIALOGUE, NO CHARACTERS SPEAKING OR CALLING OUT anywhere in the image. Pure visual action only.`
         });
         await updateWordMutation.mutateAsync({ id: newWord.id, data: { image_url: img.url, mnemonic_explanation: concept.explanation } });
         queryClient.invalidateQueries({ queryKey: ['wordRatings'] });

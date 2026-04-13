@@ -50,7 +50,7 @@ Return JSON with:
 
     // Generate image
     const imageResult = await base44.asServiceRole.integrations.Core.GenerateImage({
-      prompt: `${concept.image_prompt}. Cartoon illustration, bright vivid colors, solid WHITE background, single clear subject centered. ABSOLUTELY NO TEXT, NO LETTERS, NO WORDS anywhere in the image.`
+      prompt: `${concept.image_prompt}. Cartoon illustration, bright vivid colors, solid WHITE background, single clear subject centered. ABSOLUTELY NO TEXT, NO LETTERS, NO WORDS, NO SPEECH BUBBLES, NO TALKING, NO DIALOGUE, NO CHARACTERS SPEAKING OR CALLING OUT anywhere in the image. Pure visual action only.`
     });
 
     // Update the word with mnemonic data
