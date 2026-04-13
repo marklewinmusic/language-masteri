@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import EditableWord from "../components/learning/EditableWord";
 import CoreVocabTab from "../components/grammar/CoreVocabTab";
 import VerbsTab from "../components/backpack/VerbsTab";
+import WordCard from "../components/backpack/WordCard";
 import DeletablePictureBox from "../components/learning/DeletablePictureBox";
 import TranslatorWidget from "../components/TranslatorWidget";
 
@@ -28,6 +29,8 @@ export default function Backpack() {
   const [newWords, setNewWords] = useState([]);
   const [activeNewWord, setActiveNewWord] = useState(null);
   const [showAllEnglish, setShowAllEnglish] = useState(false);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'single'
+  const [singleCardIndex, setSingleCardIndex] = useState(0);
   const [activeSecondTab, setActiveSecondTab] = useState(null); // 'verbs' | 'corevocab' | null
   const [flippedCards, setFlippedCards] = useState({});
   const [pictureWordId, setPictureWordId] = useState(null);
@@ -738,10 +741,21 @@ Return JSON with: translation (English, 1-4 words), phonetic (clean Latin transl
           </div>
         )}
 
-        {/* Show All English Toggle */}
+        {/* View Mode + Show All English Toggle */}
         {(
-          <div className="mb-4 flex justify-end">
-            <button
+          <div className="mb-4 flex justify-between items-center">
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setViewMode(viewMode === 'grid' ? 'single' : 'grid'); setSingleCardIndex(0); }}
+                className={`px-4 py-2 rounded-xl font-medium transition-all ${
+                  viewMode === 'single'
+                    ? "bg-stone-600 text-stone-100 border border-stone-500"
+                    : "bg-white/60 text-stone-500 hover:bg-white/80 border border-stone-200"
+                }`}
+              >
+                {viewMode === 'single' ? '☰ Grid' : '⊡ One by One'}
+              </button>
+              <button
               onClick={() => setShowAllEnglish(!showAllEnglish)}
               className={`px-4 py-2 rounded-xl font-medium transition-all ${
                 showAllEnglish 
@@ -750,7 +764,8 @@ Return JSON with: translation (English, 1-4 words), phonetic (clean Latin transl
               }`}
             >
               {showAllEnglish ? "✓ Show English" : "Show English"}
-            </button>
+              </button>
+            </div>
           </div>
         )}
 
@@ -769,188 +784,65 @@ Return JSON with: translation (English, 1-4 words), phonetic (clean Latin transl
             <div className="text-center py-12">
               <p className="text-stone-400 text-lg">No words at this level yet!</p>
             </div>
-          ) : (
+          ) : viewMode === 'single' ? (() => {
+            const words = getDisplayWords();
+            const idx = Math.min(singleCardIndex, words.length - 1);
+            const word = words[idx];
+            return (
+              <div className="flex flex-col items-center gap-4">
+                <div className="flex items-center gap-4 w-full max-w-xs justify-between">
+                  <button onClick={() => setSingleCardIndex(i => Math.max(0, i - 1))} disabled={idx === 0} className="px-4 py-2 rounded-xl bg-white/60 border border-stone-200 text-stone-500 disabled:opacity-30 font-bold text-lg">←</button>
+                  <span className="text-stone-400 text-sm">{idx + 1} / {words.length}</span>
+                  <button onClick={() => setSingleCardIndex(i => Math.min(words.length - 1, i + 1))} disabled={idx === words.length - 1} className="px-4 py-2 rounded-xl bg-white/60 border border-stone-200 text-stone-500 disabled:opacity-30 font-bold text-lg">→</button>
+                </div>
+                <WordCard
+                  word={word}
+                  showAllEnglish={showAllEnglish}
+                  showPhonetics={showPhonetics}
+                  isContentEditable={isContentEditable}
+                  mnemonicExplanations={mnemonicExplanations}
+                  setMnemonicExplanations={setMnemonicExplanations}
+                  cardSentences={cardSentences}
+                  generatingSentence={generatingSentence}
+                  fetchingTranslation={fetchingTranslation}
+                  suggestingMnemonic={suggestingMnemonic}
+                  isAdmin={isAdmin}
+                  updateWordMutation={updateWordMutation}
+                  handleRateWord={handleRateWord}
+                  suggestMnemonicForWord={suggestMnemonicForWord}
+                  approveWordMutation={approveWordMutation}
+                  handleDismissWord={handleDismissWord}
+                  deleteWordMutation={deleteWordMutation}
+                  handleAddWordFromSentence={handleAddWordFromSentence}
+                  generateCardSentence={generateCardSentence}
+                />
+              </div>
+            );
+          })() : (
             <div className="flex flex-wrap gap-4 justify-center">
               {getDisplayWords().map((word) => (
-                <motion.div
+                <WordCard
                   key={word.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="bg-white/70 border border-stone-200 rounded-lg overflow-hidden w-48 flex flex-col"
-                >
-                  {/* Approved badge */}
-                  {word.approved && (
-                    <div className="flex items-center gap-1 px-2 py-0.5 bg-green-100 border-b border-green-200">
-                      <span className="text-green-600 text-[10px] font-semibold">✅ Approved card</span>
-                    </div>
-                  )}
-                  {word._shared && (
-                    <div className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 border-b border-blue-200">
-                      <span className="text-blue-600 text-[10px] font-semibold">⭐ New — tap to rank</span>
-                    </div>
-                  )}
-                  {/* Large mnemonic image */}
-                  <div className="h-40 bg-stone-100 flex items-center justify-center overflow-hidden">
-                    {word.image_url ? (
-                      <img src={word.image_url} alt={word.phonetic} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-cyan-400/20 via-purple-400/20 to-pink-400/20 flex flex-col items-center justify-center text-center px-4">
-                        <p className="text-cyan-600 font-bold text-xl mb-2" dir="rtl">{word.word}</p>
-                        <p className="text-stone-500 text-sm">{word.phonetic}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Word info */}
-                  <div className="p-3 flex-1 flex flex-col">
-                    <p className="text-cyan-400 font-semibold text-sm text-center">
-                     {showPhonetics ? (
-                       <span>{word.phonetic || word.word}</span>
-                     ) : (
-                       <EditableWord
-                         text={word.phonetic}
-                         editable={isContentEditable(word)}
-                         onSave={(newPhonetic) => updateWordMutation.mutate({ id: word.id, data: { phonetic: newPhonetic } })}
-                         className="text-cyan-400 font-semibold text-sm"
-                       />
-                     )}
-                    </p>
-                    <p className="text-stone-500 text-xs text-center mt-1 flex items-center justify-center gap-0.5">
-                      <span>=</span>
-                      {fetchingTranslation[word.id] ? (
-                        <Loader2 className="w-3 h-3 animate-spin text-stone-300" />
-                      ) : (
-                        <EditableWord
-                          text={word.translation && word.translation.toLowerCase() !== (word.phonetic || word.word).toLowerCase() ? word.translation : ''}
-                          editable={true}
-                          onSave={(newTranslation) => updateWordMutation.mutate({ id: word.id, data: { translation: newTranslation } })}
-                          className={`text-xs ${!word.translation || word.translation.toLowerCase() === (word.phonetic || word.word).toLowerCase() ? 'text-stone-300 italic' : 'text-stone-600'}`}
-                          placeholder="add translation"
-                        />
-                      )}
-                    </p>
-                    <p className="text-cyan-600 font-bold text-sm text-center mt-1" dir="rtl">
-                      <EditableWord
-                       text={word.word}
-                       language="he"
-                       editable={isContentEditable(word)}
-                        onSave={(newWord) => updateWordMutation.mutate({ id: word.id, data: { word: newWord } })}
-                        className="text-cyan-600 font-bold text-sm"
-                      />
-                    </p>
-                  </div>
-
-                  {/* Verb infinitive badge */}
-                  {(word.is_verb || /^l[aeiou]/i.test(word.phonetic || '')) && (
-                    <div className="px-3 py-1 bg-purple-50 border-b border-purple-100 flex items-center gap-1">
-                      <span className="text-[10px] text-purple-500 font-semibold">verb</span>
-                      <span className="text-[10px] text-stone-400 mx-1">·</span>
-                      <span className="text-[10px] text-purple-600 font-medium">∞ {word.phonetic}</span>
-                    </div>
-                  )}
-
-                  {/* Mnemonic explanation under image */}
-                  {(mnemonicExplanations[word.id] || word.mnemonic_explanation) && (
-                    <p className="text-[10px] text-center px-2 pb-1 italic line-clamp-2 overflow-hidden" style={{ color: '#6b7c5a' }}>
-                      💡 <EditableWord
-                        text={mnemonicExplanations[word.id] || word.mnemonic_explanation}
-                        editable={true}
-                        className="text-[10px] italic"
-                        onSave={(val) => {
-                          setMnemonicExplanations(prev => ({ ...prev, [word.id]: val }));
-                          updateWordMutation.mutate({ id: word.id, data: { mnemonic_explanation: val } });
-                        }}
-                      />
-                    </p>
-                  )}
-
-                  {/* Example sentence */}
-                  <div className="px-2 pb-2">
-                    <div className="bg-stone-50 rounded-lg p-2 border border-stone-100 min-h-[52px] flex flex-col justify-center">
-                      {generatingSentence[word.id] ? (
-                        <div className="flex items-center justify-center gap-1 py-1">
-                          <Loader2 className="w-3 h-3 animate-spin text-stone-300" />
-                          <span className="text-[10px] text-stone-300">generating...</span>
-                        </div>
-                      ) : cardSentences[word.id] ? (
-                        <>
-                          <div className="flex flex-wrap gap-x-0.5 gap-y-0.5 justify-center mb-1">
-                            {cardSentences[word.id].words?.map((w, i) => (
-                              <button
-                                key={i}
-                                onClick={() => handleAddWordFromSentence(w.word, w.meaning)}
-                                className="text-[10px] text-cyan-600 italic hover:bg-cyan-100 rounded px-0.5 transition-all underline decoration-dotted"
-                                title={`Add "${w.meaning}" to backpack`}
-                              >
-                                {w.word}
-                              </button>
-                            ))}
-                          </div>
-                          <div className="flex items-center justify-between gap-1">
-                            <p className="text-[10px] text-stone-400 italic flex-1">{cardSentences[word.id].english}</p>
-                            <button
-                              onClick={() => generateCardSentence(word)}
-                              className="text-stone-300 hover:text-stone-500 flex-shrink-0 p-0.5 rounded hover:bg-stone-100 transition-all"
-                              title="Regenerate sentence"
-                            >
-                              <RefreshCw className="w-3 h-3" />
-                            </button>
-                          </div>
-                        </>
-                      ) : null}
-                    </div>
-                  </div>
-
-                            {/* Bottom row: ratings + edit/delete buttons */}
-                  <div className="px-2 pb-2 flex gap-1 items-center">
-                    <div className="flex gap-0.5 flex-1">
-                      {[{ value: 1, label: "1" }, { value: 2, label: "2" }, { value: 3, label: "3" }, { value: 5, label: "M" }].map(({ value, label }) => (
-                        <button
-                          key={value}
-                          onClick={(e) => handleRateWord(word.id, value, e)}
-                          className={`flex-1 h-6 rounded text-xs font-bold transition-all ${
-                            word.times_practiced === value || (value === 3 && word.times_practiced === 4)
-                              ? value === 5 ? 'bg-green-600 text-white' : 'bg-stone-600 text-white'
-                              : 'bg-stone-100 text-stone-400 hover:bg-stone-200'
-                          }`}
-                        >
-                          {label}
-                          </button>
-                          ))}
-                          </div>
-                    <button
-                        onClick={() => suggestMnemonicForWord(word)}
-                        disabled={suggestingMnemonic === word.id}
-                        className="w-6 h-6 rounded flex items-center justify-center text-sm hover:bg-purple-500/20 transition-all"
-                        title={word.approved || word._shared ? "Generate personal mnemonic (your view only)" : "Generate mnemonic image"}
-                      >
-                        {suggestingMnemonic === word.id ? <Loader2 className="w-3 h-3 animate-spin text-purple-500" /> : '🎨'}
-                      </button>
-                    {isAdmin && (
-                      <button
-                        onClick={() => approveWordMutation.mutate({ id: word.id, approved: !word.approved })}
-                        disabled={approveWordMutation.isPending}
-                        className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold transition-all ${
-                          word.approved
-                            ? 'bg-green-500/30 hover:bg-red-500/20 text-green-700'
-                            : 'bg-stone-100 hover:bg-green-500/20 text-stone-400'
-                        }`}
-                        title={word.approved ? "Unapprove card" : "Approve card for all users"}
-                      >
-                        ✅
-                      </button>
-                    )}
-
-                    <button
-                        onClick={() => word.approved && !isAdmin ? handleDismissWord(word.id) : deleteWordMutation.mutate(word.id)}
-                        className="w-6 h-6 rounded flex items-center justify-center text-sm hover:bg-red-500/20 transition-all"
-                        title={word.approved && !isAdmin ? "Remove from my view" : "Delete word"}
-                      >
-                        🗑️
-                      </button>
-                  </div>
-
-                </motion.div>
+                  word={word}
+                  showAllEnglish={showAllEnglish}
+                  showPhonetics={showPhonetics}
+                  isContentEditable={isContentEditable}
+                  mnemonicExplanations={mnemonicExplanations}
+                  setMnemonicExplanations={setMnemonicExplanations}
+                  cardSentences={cardSentences}
+                  generatingSentence={generatingSentence}
+                  fetchingTranslation={fetchingTranslation}
+                  suggestingMnemonic={suggestingMnemonic}
+                  isAdmin={isAdmin}
+                  updateWordMutation={updateWordMutation}
+                  handleRateWord={handleRateWord}
+                  suggestMnemonicForWord={suggestMnemonicForWord}
+                  approveWordMutation={approveWordMutation}
+                  handleDismissWord={handleDismissWord}
+                  deleteWordMutation={deleteWordMutation}
+                  handleAddWordFromSentence={handleAddWordFromSentence}
+                  generateCardSentence={generateCardSentence}
+                />
               ))}
             </div>
           )}
