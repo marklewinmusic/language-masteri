@@ -1,7 +1,58 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw, Plus, Pencil, Check, X } from "lucide-react";
 import EditableWord from "../learning/EditableWord";
+
+function SentenceWords({ words, onAddToBackpack }) {
+  const [editing, setEditing] = useState(null); // { index, word, meaning }
+
+  if (!words?.length) return null;
+
+  return (
+    <div className="flex flex-wrap gap-x-0.5 gap-y-1 justify-center mb-1">
+      {words.map((w, i) => (
+        <span key={i} className="inline-flex items-center gap-0.5">
+          {editing?.index === i ? (
+            <span className="flex items-center gap-0.5 bg-cyan-50 border border-cyan-200 rounded px-1 py-0.5">
+              <input
+                autoFocus
+                value={editing.word}
+                onChange={e => setEditing(prev => ({ ...prev, word: e.target.value }))}
+                className="text-[10px] text-cyan-700 w-16 outline-none bg-transparent"
+              />
+              <input
+                value={editing.meaning}
+                onChange={e => setEditing(prev => ({ ...prev, meaning: e.target.value }))}
+                placeholder="meaning"
+                className="text-[10px] text-stone-500 w-16 outline-none bg-transparent border-l border-cyan-200 pl-1"
+              />
+              <button
+                onClick={() => { onAddToBackpack(editing.word, editing.meaning); setEditing(null); }}
+                className="text-green-500 hover:text-green-700"
+                title="Add to backpack"
+              ><Plus className="w-3 h-3" /></button>
+              <button onClick={() => setEditing(null)} className="text-stone-300 hover:text-stone-500"><X className="w-3 h-3" /></button>
+            </span>
+          ) : (
+            <>
+              <span className="text-[10px] text-cyan-600 italic">{w.word}</span>
+              <button
+                onClick={() => setEditing({ index: i, word: w.word, meaning: w.meaning })}
+                className="text-stone-300 hover:text-cyan-500 transition-all"
+                title="Edit & add"
+              ><Pencil className="w-2.5 h-2.5" /></button>
+              <button
+                onClick={() => onAddToBackpack(w.word, w.meaning)}
+                className="text-stone-300 hover:text-green-500 transition-all"
+                title={`Add "${w.meaning}" to backpack`}
+              ><Plus className="w-2.5 h-2.5" /></button>
+            </>
+          )}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 export default function WordCard({
   word,
@@ -134,18 +185,10 @@ export default function WordCard({
             </div>
           ) : cardSentences[word.id] ? (
             <>
-              <div className="flex flex-wrap gap-x-0.5 gap-y-0.5 justify-center mb-1">
-                {cardSentences[word.id].words?.map((w, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleAddWordFromSentence(w.word, w.meaning)}
-                    className="text-[10px] text-cyan-600 italic hover:bg-cyan-100 rounded px-0.5 transition-all underline decoration-dotted"
-                    title={`Add "${w.meaning}" to backpack`}
-                  >
-                    {w.word}
-                  </button>
-                ))}
-              </div>
+              <SentenceWords
+                words={cardSentences[word.id].words}
+                onAddToBackpack={handleAddWordFromSentence}
+              />
               <div className="flex items-center justify-between gap-1">
                 <p className="text-[10px] text-stone-400 italic flex-1">{cardSentences[word.id].english}</p>
                 <button
