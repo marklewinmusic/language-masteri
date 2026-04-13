@@ -543,7 +543,6 @@ Return JSON:
     setCardSentences(prev => { const next = { ...prev }; delete next[word.id]; return next; });
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        model: 'claude_sonnet_4_6',
         prompt: `You are a native Israeli Hebrew speaker. Create one short, completely natural Hebrew sentence using the word "${word.phonetic || word.word}" (meaning: "${word.translation}").
 
 CRITICAL — write as a native Israeli would actually say it in daily conversation:
