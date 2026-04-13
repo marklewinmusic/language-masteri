@@ -150,9 +150,7 @@ export default function WordCard({
             />
           </p>
         )}
-        {showingHebrew && (
-          <p className="text-stone-400 text-xs text-center mt-0.5">{word.phonetic}</p>
-        )}
+
         {showingEnglish && (
           <p className="text-stone-700 font-semibold text-base text-center">
             <EditableWord
