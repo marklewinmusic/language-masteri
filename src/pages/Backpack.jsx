@@ -603,17 +603,20 @@ Return JSON:
   };
 
   const handleAddNewWord = async () => {
-    if (!addWordForm.phonetic.trim()) return;
+    if (!addWordForm.phonetic.trim() && !addWordForm.translation.trim()) return;
     setAddingWord(true);
 
     let translation = addWordForm.translation.trim();
+    let phonetic = addWordForm.phonetic.trim();
     let hebrewWord = '';
 
-    // Auto-lookup meaning + Hebrew if translation is missing
-    if (!translation) {
+    // Auto-lookup when either field is missing
+    if (!phonetic || !translation) {
       try {
+        const input = phonetic || translation;
+        const isEnglishOnly = !phonetic && !!translation;
         const lookup = await base44.integrations.Core.InvokeLLM({
-          prompt: `The user typed the transliteration "${addWordForm.phonetic}" of a Hebrew word. 
+          prompt: `The user typed "${input}" which is ${isEnglishOnly ? 'an English meaning for a Hebrew word' : 'a transliteration of a Hebrew word'}.
 Identify the Hebrew word, its correct phonetic transliteration, and its English meaning.
 Return JSON with: translation (English, 1-4 words), phonetic (clean Latin transliteration), hebrew (Hebrew script).`,
           response_json_schema: {
@@ -625,15 +628,18 @@ Return JSON with: translation (English, 1-4 words), phonetic (clean Latin transl
             }
           }
         });
-        translation = lookup.translation || '';
+        if (!translation) translation = lookup.translation || '';
+        if (!phonetic) phonetic = lookup.phonetic || '';
         hebrewWord = lookup.hebrew || '';
-        if (lookup.phonetic) setAddWordForm(prev => ({ ...prev, phonetic: lookup.phonetic }));
+        setAddWordForm(prev => ({
+          phonetic: phonetic || prev.phonetic,
+          translation: translation || prev.translation,
+        }));
       } catch (e) {
-        toast.error('Could not find meaning automatically');
+        toast.error('Could not find word automatically');
       }
     }
 
-    const phonetic = addWordForm.phonetic.trim();
     const finalTranslation = translation; // capture before form clear
     const isVerb = /^l[aeiou]/i.test(phonetic);
     const newWord = await createWordMutation.mutateAsync({
@@ -716,6 +722,7 @@ Return JSON:
             <Button
               onClick={handleAddNewWord}
               disabled={addingWord || (!addWordForm.phonetic.trim() && !addWordForm.translation.trim())}
+
               style={{ background: '#5a6b5a', color: 'white' }}
             >
               {addingWord ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Add'}
