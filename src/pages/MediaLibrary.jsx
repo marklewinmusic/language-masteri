@@ -70,7 +70,8 @@ export default function MediaLibrary() {
   const [activeBackpackTab, setActiveBackpackTab] = useState("allwords");
   const [buttonOrder, setButtonOrder] = useState(() => {
     const saved = localStorage.getItem("mediaLibraryButtonOrder");
-    return saved ? JSON.parse(saved) : ["videos", "songs", "audio", "backpack"];
+    const parsed = saved ? JSON.parse(saved) : ["videos", "songs", "audio"];
+    return parsed.filter(b => b !== "backpack");
   });
   const [selectedVerb, setSelectedVerb] = useState(null);
   const [extractingVocab, setExtractingVocab] = useState(false);
@@ -1291,148 +1292,84 @@ Return a JSON with a "videos" array. Each video must have:
     <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 50%, #eae6da 100%)' }}>
       <div className="max-w-7xl mx-auto p-6">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>📚 Library</h1>
+          <h1 className="text-4xl font-bold" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>📚 Content Library</h1>
         </div>
 
-        {/* Draggable Filter Buttons */}
-         <div className="flex items-center justify-center gap-2 mb-6 p-2 rounded-xl flex-wrap" style={{ background: '#ffffff18', border: '1px solid #ffffff20' }}>
-           {buttonOrder.map((btnId) => {
-             const config = buttonConfigs[btnId];
-             if (!config) return null;
+        {/* Tabs + Search combined */}
+        <div className="bg-white/60 rounded-2xl border border-stone-200 p-4 mb-6">
+          {/* Tab row */}
+          <div className="flex items-center gap-2 flex-wrap mb-4">
+            {[
+              { id: "videos", label: "Videos", emoji: "📹" },
+              { id: "songs", label: "Songs", emoji: "🎵" },
+              { id: "audio", label: "Audio Training", emoji: "🎧" },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveMediaTab(tab.id)}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${
+                  activeMediaTab === tab.id ? 'text-stone-800' : 'text-stone-500 hover:text-stone-700'
+                }`}
+                style={activeMediaTab === tab.id ? { background: '#ffffff' } : {}}
+              >
+                {tab.emoji} {tab.label}
+              </button>
+            ))}
+            {canEdit && (
+              <button onClick={() => { resetForm(); setEditingVideo(null); setMediaType("video"); setShowAddDialog(true); }} className="px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 text-stone-500 hover:text-stone-700">
+                <Plus className="w-4 h-4" /> Add Media
+              </button>
+            )}
+          </div>
 
-             if (btnId === 'backpack') {
-               return (
-                 <div key="backpack" className="relative">
-                   <button
-                     draggable
-                     onDragStart={(e) => handleDragStart(e, btnId)}
-                     onDragOver={handleDragOver}
-                     onDrop={(e) => handleDrop(e, btnId)}
-                     onDragEnd={handleDragEnd}
-                     onClick={() => setShowBackpackSubmenu(!showBackpackSubmenu)}
-                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 cursor-grab active:cursor-grabbing ${
-                       showBackpackSubmenu ? 'text-stone-800' : 'text-stone-500 hover:text-stone-700'
-                     } ${draggedButton === btnId ? 'opacity-50' : ''}`}
-                     style={showBackpackSubmenu ? { background: '#ffffff80' } : {}}
-                   >
-                     {config.emoji} {config.label}
-                     <span className={`text-xs transition-transform ${showBackpackSubmenu ? 'rotate-180' : ''}`}>▼</span>
-                   </button>
-                   {showBackpackSubmenu && (
-                     <div className="absolute top-full left-0 mt-1 bg-white/95 rounded-lg shadow-lg py-1 min-w-[180px] z-20">
-                       {config.submenu.map(subId => {
-                         const subConfig = backpackSubmenuConfigs[subId];
-                         return (
-                           <button
-                             key={subId}
-                             onClick={() => {
-                               setActiveMediaTab(subId);
-                               setActiveBackpackTab(subId);
-                               setShowBackpackSubmenu(false);
-                             }}
-                             className={`w-full text-left px-4 py-2 text-sm font-medium transition-all ${
-                               activeBackpackTab === subId ? 'bg-stone-200 text-stone-800' : 'text-stone-600 hover:bg-stone-100'
-                             }`}
-                           >
-                             {subConfig.emoji} {subConfig.label}
-                           </button>
-                         );
-                       })}
-                     </div>
-                   )}
-                 </div>
-               );
-             }
-
-             return (
-               <button
-                 key={btnId}
-                 draggable
-                 onDragStart={(e) => handleDragStart(e, btnId)}
-                 onDragOver={handleDragOver}
-                 onDrop={(e) => handleDrop(e, btnId)}
-                 onDragEnd={handleDragEnd}
-                 onClick={() => setActiveMediaTab(btnId)}
-                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 cursor-grab active:cursor-grabbing ${
-                   activeMediaTab === btnId ? 'text-stone-800' : 'text-stone-500 hover:text-stone-700'
-                 } ${draggedButton === btnId ? 'opacity-50' : ''}`}
-                 style={activeMediaTab === btnId ? { background: '#ffffff80' } : {}}
-               >
-                 {config.emoji} {config.label}
-               </button>
-             );
-           })}
-          {canEdit && (
-            <button onClick={() => { resetForm(); setEditingVideo(null); setMediaType("video"); setShowAddDialog(true); }} className="px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 text-stone-500 hover:text-stone-700">
-              <Plus className="w-4 h-4" /> Add Media
-            </button>
-          )}
-        </div>
-
-        {/* Filters */}
-        <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <Label className="text-white/80 mb-2">Search</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40" />
-                <Input
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search videos..."
-                  className="pl-10 bg-white/5 border-white/20 text-white"
-                />
-              </div>
+          {/* Search + filters row */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-stone-400" />
+              <Input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search videos..."
+                className="pl-10 bg-white border-stone-300 text-stone-800"
+              />
             </div>
-
-            <div>
-              <Label className="text-white/80 mb-2">Language</Label>
-              <Select value={filterLanguage} onValueChange={setFilterLanguage}>
-                <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Languages</SelectItem>
-                  <SelectItem value="hebrew">Hebrew</SelectItem>
-                  <SelectItem value="english">English</SelectItem>
-                  <SelectItem value="spanish">Spanish</SelectItem>
-                  <SelectItem value="french">French</SelectItem>
-                  <SelectItem value="portuguese">Portuguese</SelectItem>
-                  <SelectItem value="italian">Italian</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label className="text-white/80 mb-2">Difficulty</Label>
-              <Select value={filterDifficulty} onValueChange={setFilterDifficulty}>
-                <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Levels</SelectItem>
-                  <SelectItem value="Beginner">Beginner</SelectItem>
-                  <SelectItem value="Intermediate">Intermediate</SelectItem>
-                  <SelectItem value="Advanced">Advanced</SelectItem>
-                  <SelectItem value="All">All</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label className="text-white/80 mb-2">Topic</Label>
-              <Select value={filterTopic} onValueChange={setFilterTopic}>
-                <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Topics</SelectItem>
-                  {topics.map(topic => (
-                    <SelectItem key={topic} value={topic}>{topic}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={filterLanguage} onValueChange={setFilterLanguage}>
+              <SelectTrigger className="bg-white border-stone-300 text-stone-700">
+                <SelectValue placeholder="Language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Languages</SelectItem>
+                <SelectItem value="hebrew">Hebrew</SelectItem>
+                <SelectItem value="english">English</SelectItem>
+                <SelectItem value="spanish">Spanish</SelectItem>
+                <SelectItem value="french">French</SelectItem>
+                <SelectItem value="portuguese">Portuguese</SelectItem>
+                <SelectItem value="italian">Italian</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterDifficulty} onValueChange={setFilterDifficulty}>
+              <SelectTrigger className="bg-white border-stone-300 text-stone-700">
+                <SelectValue placeholder="Difficulty" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Levels</SelectItem>
+                <SelectItem value="Beginner">Beginner</SelectItem>
+                <SelectItem value="Intermediate">Intermediate</SelectItem>
+                <SelectItem value="Advanced">Advanced</SelectItem>
+                <SelectItem value="All">All</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterTopic} onValueChange={setFilterTopic}>
+              <SelectTrigger className="bg-white border-stone-300 text-stone-700">
+                <SelectValue placeholder="All Topics" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Topics</SelectItem>
+                {topics.map(topic => (
+                  <SelectItem key={topic} value={topic}>{topic}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -1510,237 +1447,75 @@ Return a JSON with a "videos" array. Each video must have:
         {/* Core Vocab Tab */}
         {activeMediaTab === 'corevocab' && <CoreVocabTab />}
 
-        {/* User's Custom Videos (from Video entity / BabyVideos) */}
-        {(activeMediaTab === 'videos' || activeMediaTab === 'audio') && userVideos.length > 0 && (
+        {/* Library Videos Grid */}
+        {(activeMediaTab === 'videos' || activeMediaTab === 'audio') && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-white mb-4">My Videos</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {userVideos.map((video) => {
-                const ytId = video.youtube_video_id || (video.video_url ? video.video_url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([^&?]+)/)?.[1] : null);
-                const thumb = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : null;
-                return (
-                  <motion.div
-                    key={video.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white/5 backdrop-blur-xl rounded-2xl border border-blue-500/30 overflow-hidden hover:border-blue-400/60 transition-all group relative"
-                  >
-                    <div className="w-full aspect-video bg-black relative">
-                      {thumb ? (
-                        <img src={thumb} alt={video.title} className="w-full h-full object-cover cursor-pointer" onClick={() => handleVideoClick({ ...video, video_id: ytId })} />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center cursor-pointer" onClick={() => handleVideoClick({ ...video, video_id: ytId })}>
-                          <Video className="w-12 h-12 text-white/40" />
-                        </div>
-                      )}
-                      <div className="absolute bottom-2 right-2 flex gap-1">
-                        {canEdit && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleEdit(video); }}
-                            className="bg-cyan-500/80 hover:bg-cyan-500 text-white p-2 rounded-full transition-all shadow-lg"
-                            title="Edit video"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                        )}
-                        <button
-                          onClick={(e) => { e.stopPropagation(); if (confirm("Delete this video?")) { base44.entities.Video.delete(video.id).then(() => queryClient.invalidateQueries({ queryKey: ['userVideos'] })); } }}
-                          className="bg-red-500/80 hover:bg-red-500 text-white p-2 rounded-full transition-all shadow-lg"
-                          title="Delete video"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="p-3" onClick={() => handleVideoClick({ ...video, video_id: ytId })}>
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="text-white font-bold text-base flex-1 cursor-pointer">{video.title}</h3>
-                        <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded flex-shrink-0">My Video</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Assigned Videos Section */}
-        {activeMediaTab === 'videos' && myVideos.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-white mb-4">My Videos</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {myVideos.map((video) => (
+              {filteredVideos.map((video) => (
                 <motion.div
                   key={video.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   onClick={() => handleVideoClick(video)}
-                  className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden hover:border-cyan-500/50 transition-all cursor-pointer"
+                  className="bg-white/70 rounded-2xl border border-stone-200 overflow-hidden hover:border-stone-400 transition-all cursor-pointer"
                 >
                   <div className="w-full aspect-video bg-black">
-                    {getThumbnailUrl(video) ? (
-                      <img 
-                        src={getThumbnailUrl(video)} 
-                        alt={video.title}
-                        className="w-full h-full object-contain"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
-                        <Video className="w-12 h-12 text-white/40" />
-                      </div>
-                    )}
+                    <img
+                      src={getThumbnailUrl(video) || `https://i.ytimg.com/vi/${extractYouTubeId(video.video_url) || 'default'}/hqdefault.jpg`}
+                      alt={video.title}
+                      className="w-full h-full object-contain"
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
                   </div>
                   <div className="p-3">
-                   <div className="flex items-start justify-between gap-2 mb-2">
-                     <h3 className="text-white font-bold text-base flex-1">{video.title}</h3>
-                     <div className="flex gap-2 flex-shrink-0">
-                       {canEdit && (
-                         <button
-                           onClick={(e) => { e.stopPropagation(); handleEdit(video); }}
-                           className="bg-cyan-500/30 hover:bg-cyan-500/50 text-cyan-300 transition-all p-1.5 rounded-md border border-cyan-500/50"
-                           title="Edit video"
-                         >
-                           <Pencil className="w-4 h-4" />
-                         </button>
-                       )}
-                       {canDelete && (
-                         <button
-                           onClick={(e) => { e.stopPropagation(); if (confirm("Delete this video from your list?")) { deleteVideoMutation.mutate(video.id); } }}
-                           className="bg-red-500/30 hover:bg-red-500/50 text-red-300 transition-all p-1.5 rounded-md border border-red-500/50"
-                           title="Delete video"
-                         >
-                           <Trash2 className="w-4 h-4" />
-                         </button>
-                       )}
-                     </div>
-                   </div>
-                   {video.completed && (
-                     <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">✓ Completed</span>
-                   )}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Library Videos Section */}
-        {(activeMediaTab === 'videos' || activeMediaTab === 'audio') && (<div className="mb-8">
-          <button
-            onClick={() => setShowLibrary(!showLibrary)}
-            className="w-full bg-cyan-600/40 hover:bg-cyan-600/50 backdrop-blur-xl rounded-2xl border border-white/10 p-4 flex items-center justify-between transition-all mb-4"
-          >
-            <h2 className="text-xl font-bold text-white">
-              Videos on my Schedule ({filteredVideos.length})
-            </h2>
-            <ChevronDown className={`w-6 h-6 text-white transition-transform ${showLibrary ? 'rotate-180' : ''}`} />
-          </button>
-          {showLibrary && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-            >
-              {filteredVideos.map((video) => (
-              <motion.div
-                key={video.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                onClick={() => handleVideoClick(video)}
-                className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden hover:border-white/30 transition-all cursor-pointer"
-              >
-                {/* Thumbnail */}
-                <div className="w-full aspect-video bg-black">
-                  <img 
-                    src={getThumbnailUrl(video) || `https://i.ytimg.com/vi/${extractYouTubeId(video.video_url) || 'default'}/hqdefault.jpg`}
-                    alt={video.title}
-                    className="w-full h-full object-contain"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.parentElement.classList.add('bg-gradient-to-br', 'from-purple-500/20', 'to-pink-500/20');
-                      e.target.parentElement.classList.remove('bg-black');
-                      const icon = document.createElement('div');
-                      icon.innerHTML = '<svg class="w-12 h-12 text-white/40" fill="currentColor" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>';
-                      icon.className = 'flex items-center justify-center h-full';
-                      e.target.parentElement.appendChild(icon);
-                    }}
-                  />
-                </div>
-
-                <div className="p-3">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="text-white font-bold text-base flex-1">{video.title}</h3>
-                    <div className="flex gap-1 flex-shrink-0">
-                      {canEdit && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleEdit(video); }}
-                          className="text-white/60 hover:text-white transition-colors p-1"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                      )}
-                      {canDelete && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); if (confirm("Delete this video from library?")) { deleteVideoMutation.mutate(video.id); } }}
-                          className="text-white/60 hover:text-white transition-colors p-1"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <h3 className="font-bold text-base flex-1" style={{ color: '#3d4a2e' }}>{video.title}</h3>
+                      <div className="flex gap-1 flex-shrink-0">
+                        {canEdit && (
+                          <button onClick={(e) => { e.stopPropagation(); handleEdit(video); }} className="text-stone-400 hover:text-stone-700 transition-colors p-1">
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button onClick={(e) => { e.stopPropagation(); if (confirm("Delete this video from library?")) { deleteVideoMutation.mutate(video.id); } }} className="text-stone-400 hover:text-red-500 transition-colors p-1">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="flex gap-2 mb-2 overflow-x-auto whitespace-nowrap items-center">
-                    <span className="text-xs bg-cyan-500/20 text-cyan-400 px-2 py-1 rounded flex-shrink-0">
-                      {video.language}
-                    </span>
-                    <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded flex-shrink-0">
-                      {video.difficulty_level}
-                    </span>
-                    {video.duration_minutes && (
-                      <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded flex-shrink-0">
-                        {video.duration_minutes} min
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
+                    <div className="flex gap-2 mb-2 flex-wrap items-center">
+                      <span className="text-xs bg-cyan-500/15 text-cyan-700 px-2 py-0.5 rounded">{video.language}</span>
+                      <span className="text-xs bg-purple-500/15 text-purple-700 px-2 py-0.5 rounded">{video.difficulty_level}</span>
+                      {video.duration_minutes && <span className="text-xs bg-stone-200 text-stone-600 px-2 py-0.5 rounded">{video.duration_minutes} min</span>}
+                    </div>
                     {canAssign && (
                       <Select onValueChange={(userEmail) => {
                         if (userEmail) {
-                          assignVideoMutation.mutate({
-                            user_email: userEmail,
-                            media_library_id: video.id,
-                            assigned_by: currentUser.email,
-                            assigned_at: new Date().toISOString(),
-                            order: 0
-                          });
+                          assignVideoMutation.mutate({ user_email: userEmail, media_library_id: video.id, assigned_by: currentUser.email, assigned_at: new Date().toISOString(), order: 0 });
                         }
                       }}>
-                        <SelectTrigger className="w-full bg-green-500/20 border-green-500/50 text-green-400 hover:bg-green-500/30">
-                          <Users className="w-4 h-4 mr-2" />
-                          <SelectValue placeholder="Assign to user..." />
+                        <SelectTrigger className="w-full bg-green-500/10 border-green-500/40 text-green-700 hover:bg-green-500/20 text-xs h-8">
+                          <Users className="w-3 h-3 mr-1" />
+                          <SelectValue placeholder="Assign to session..." />
                         </SelectTrigger>
                         <SelectContent>
                           {allUsers.map(user => (
-                            <SelectItem key={user.id} value={user.email}>
-                              {user.full_name || user.email}
-                            </SelectItem>
+                            <SelectItem key={user.id} value={user.email}>{user.full_name || user.email}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     )}
-
                   </div>
-                </div>
-              </motion.div>
+                </motion.div>
               ))}
-            </motion.div>
-          )}
-          </div>)}
+            </div>
+            {filteredVideos.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-stone-400">No videos found. Try adjusting your filters or add media above.</p>
+              </div>
+            )}
+          </div>
+        )}
 
           {/* Recommended Videos Section */}
           {activeMediaTab === 'videos' && (

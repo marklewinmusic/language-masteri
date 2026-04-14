@@ -960,7 +960,7 @@ export default function Home() {
                 style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}
                 onClick={() => navigate(createPageUrl("MediaLibrary"))}
               >
-                📚 Library
+                📚 Content Library
               </h2>
               <div className="flex flex-wrap justify-center items-center gap-1 bg-white/50 rounded-2xl px-4 py-3" style={{ border: '1px solid #5a6b5a20' }}>
                 {[
