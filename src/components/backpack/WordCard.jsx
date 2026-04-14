@@ -33,7 +33,7 @@ function SentenceWords({ words, onAddToBackpack }) {
       </p>
 
       {/* Transliteration line — centered */}
-      <p className="text-[10px] text-stone-500 text-center leading-snug">
+      <p className="text-[10px] text-stone-500 text-center leading-snug flex flex-wrap justify-center gap-x-1">
         {words.map((w, i) => (
           <span
             key={i}
@@ -41,7 +41,6 @@ function SentenceWords({ words, onAddToBackpack }) {
             className={`cursor-pointer rounded px-0.5 transition-all ${activeIndex === i ? 'bg-cyan-100 text-cyan-700' : 'hover:bg-stone-100'}`}
           >
             {w.word || ''}
-            {i < words.length - 1 ? '  ' : ''}
           </span>
         ))}
       </p>
