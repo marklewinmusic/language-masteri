@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Loader2, RefreshCw, Plus, Pencil, Check, X } from "lucide-react";
 import EditableWord from "../learning/EditableWord";
 
-function SentenceWords({ words, onAddToBackpack }) {
+function SentenceWords({ words, onAddToBackpack, showHebrew = true, showTransliteration = true }) {
   const [activeIndex, setActiveIndex] = useState(null);
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingMeaning, setEditingMeaning] = useState('');
@@ -19,31 +19,35 @@ function SentenceWords({ words, onAddToBackpack }) {
   return (
     <div className="space-y-0.5 w-full">
       {/* Hebrew line — RTL, centered */}
-      <p className="text-[11px] text-cyan-700 font-semibold text-center leading-snug" dir="rtl">
-        {words.map((w, i) => (
-          <span
-            key={i}
-            onClick={(e) => handleWordClick(e, i)}
-            className={`cursor-pointer rounded px-0.5 transition-all ${activeIndex === i ? 'bg-cyan-100' : 'hover:bg-cyan-50'}`}
-          >
-            {w.hebrew || ''}
-            {i < words.length - 1 ? ' ' : ''}
-          </span>
-        ))}
-      </p>
+      {showHebrew && (
+        <p className="text-[11px] text-cyan-700 font-semibold text-center leading-snug" dir="rtl">
+          {words.map((w, i) => (
+            <span
+              key={i}
+              onClick={(e) => handleWordClick(e, i)}
+              className={`cursor-pointer rounded px-0.5 transition-all ${activeIndex === i ? 'bg-cyan-100' : 'hover:bg-cyan-50'}`}
+            >
+              {w.hebrew || ''}
+              {i < words.length - 1 ? ' ' : ''}
+            </span>
+          ))}
+        </p>
+      )}
 
       {/* Transliteration line — centered */}
-      <p className="text-[10px] text-stone-500 text-center leading-snug flex flex-wrap justify-center gap-x-1">
-        {words.map((w, i) => (
-          <span
-            key={i}
-            onClick={(e) => handleWordClick(e, i)}
-            className={`cursor-pointer rounded px-0.5 transition-all ${activeIndex === i ? 'bg-cyan-100 text-cyan-700' : 'hover:bg-stone-100'}`}
-          >
-            {w.word || ''}
-          </span>
-        ))}
-      </p>
+      {showTransliteration && (
+        <p className="text-[10px] text-stone-500 text-center leading-snug flex flex-wrap justify-center gap-x-1">
+          {words.map((w, i) => (
+            <span
+              key={i}
+              onClick={(e) => handleWordClick(e, i)}
+              className={`cursor-pointer rounded px-0.5 transition-all ${activeIndex === i ? 'bg-cyan-100 text-cyan-700' : 'hover:bg-stone-100'}`}
+            >
+              {w.word || ''}
+            </span>
+          ))}
+        </p>
+      )}
 
       {/* Active word action popup */}
       {activeIndex !== null && (
@@ -94,6 +98,8 @@ function SentenceWords({ words, onAddToBackpack }) {
 export default function WordCard({
   word,
   showAllEnglish,
+  showHebrew = true,
+  showTransliteration = true,
   isContentEditable,
   mnemonicExplanations,
   setMnemonicExplanations,
@@ -182,7 +188,7 @@ export default function WordCard({
 
       {/* Word info — also clickable to reveal */}
       <div className="p-3 flex-1 flex flex-col cursor-pointer select-none" onClick={() => setRevealed(r => !r)}>
-        {showingHebrew && (
+        {showingHebrew && showHebrew && (
           <p className="text-cyan-600 font-bold text-base text-center" dir="rtl">
             <EditableWord
               text={word.word}
@@ -247,6 +253,8 @@ export default function WordCard({
               <SentenceWords
                 words={cardSentences[word.id].words}
                 onAddToBackpack={handleAddWordFromSentence}
+                showHebrew={showHebrew}
+                showTransliteration={showTransliteration}
               />
               {/* English + refresh */}
               <div className="flex items-center justify-between gap-1 mt-0.5">
