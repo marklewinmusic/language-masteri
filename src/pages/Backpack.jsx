@@ -348,35 +348,53 @@ Return JSON:
     return result;
   };
 
-  // Auto-fetch missing translations
+  // Auto-fetch missing translations — throttled one at a time
   useEffect(() => {
-    const words = getDisplayWords();
-    words.forEach(word => {
-      if (!word.id || fetchingTranslation[word.id]) return;
+    const words = getDisplayWords().filter(word => {
+      if (!word.id || fetchingTranslation[word.id]) return false;
       const missingTranslation = !word.translation || word.translation.toLowerCase() === (word.phonetic || word.word).toLowerCase();
-      if (!missingTranslation) return;
-      setFetchingTranslation(prev => ({ ...prev, [word.id]: true }));
-      base44.integrations.Core.InvokeLLM({
-        prompt: `What is the English meaning of the Hebrew word "${word.phonetic || word.word}"? Return JSON with just: translation (English meaning, 1-4 words max).`,
-        response_json_schema: { type: 'object', properties: { translation: { type: 'string' } } }
-      }).then(result => {
-        if (result?.translation) {
-          updateWordMutation.mutate({ id: word.id, data: { translation: result.translation } });
-        }
-      }).finally(() => {
-        setFetchingTranslation(prev => ({ ...prev, [word.id]: false }));
-      });
+      return missingTranslation;
     });
+    if (words.length === 0) return;
+    let cancelled = false;
+    const runSequentially = async () => {
+      for (const word of words) {
+        if (cancelled) break;
+        setFetchingTranslation(prev => ({ ...prev, [word.id]: true }));
+        try {
+          const result = await base44.integrations.Core.InvokeLLM({
+            prompt: `What is the English meaning of the Hebrew word "${word.phonetic || word.word}"? Return JSON with just: translation (English meaning, 1-4 words max).`,
+            response_json_schema: { type: 'object', properties: { translation: { type: 'string' } } }
+          });
+          if (result?.translation) {
+            updateWordMutation.mutate({ id: word.id, data: { translation: result.translation } });
+          }
+        } finally {
+          setFetchingTranslation(prev => ({ ...prev, [word.id]: false }));
+        }
+        await new Promise(r => setTimeout(r, 300));
+      }
+    };
+    runSequentially();
+    return () => { cancelled = true; };
   }, [activeTab, wordRatings]); // eslint-disable-line
 
-  // Auto-generate sentences for displayed words when tab changes
+  // Auto-generate sentences for displayed words when tab changes — throttled one at a time
   useEffect(() => {
-    const words = getDisplayWords();
-    words.forEach(word => {
-      if (word.id && !cardSentences[word.id] && !generatingSentence[word.id]) {
-        setTimeout(() => generateCardSentence(word), 0);
+    const words = getDisplayWords().filter(w => w.id && !cardSentences[w.id] && !generatingSentence[w.id]);
+    if (words.length === 0) return;
+    let cancelled = false;
+    const runSequentially = async () => {
+      for (const word of words) {
+        if (cancelled) break;
+        if (!cardSentences[word.id] && !generatingSentence[word.id]) {
+          await generateCardSentence(word);
+          await new Promise(r => setTimeout(r, 300));
+        }
       }
-    });
+    };
+    runSequentially();
+    return () => { cancelled = true; };
   }, [activeTab, wordRatings.length]); // eslint-disable-line
 
   const handleWordClick = async (word) => {
