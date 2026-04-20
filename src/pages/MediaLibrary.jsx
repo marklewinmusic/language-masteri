@@ -336,17 +336,17 @@ export default function MediaLibrary() {
 
   const addToLibraryMutation = useMutation({
     mutationFn: async (video) => {
-      const videoId = video.youtube_video_id || extractYouTubeId(video.video_url);
+      const videoId = video.youtube_id || video.youtube_video_id || extractYouTubeId(video.video_url || `https://youtube.com/watch?v=${video.youtube_id}`);
       return base44.entities.MediaLibrary.create({
         title: video.title,
         language: userProfile?.language || "hebrew",
-        video_url: video.video_url,
+        video_url: `https://www.youtube.com/watch?v=${videoId}`,
         video_id: videoId,
         topics: [],
         difficulty_level: "All",
-        tags: video.tags || "",
+        tags: video.tags || video.channel || "",
         is_active: true,
-        thumbnail_url: getThumbnailUrl(video),
+        thumbnail_url: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
         notes: ""
       });
     },
@@ -443,7 +443,8 @@ export default function MediaLibrary() {
       thumbnail_url: "",
       notes: "",
       default_day: "",
-      transcript_phonetics: ""
+      transcript_phonetics: "",
+      assign_to_user: "",
     });
   };
 
@@ -600,7 +601,20 @@ Keep natural sentence breaks. Return a JSON object with a "transcript" array.`,
     if (editingVideo) {
       updateVideoMutation.mutate({ id: editingVideo.id, data });
     } else {
-      createVideoMutation.mutate(data);
+      const created = await base44.entities.MediaLibrary.create(data);
+      queryClient.invalidateQueries({ queryKey: ['mediaLibrary'] });
+      toast.success("Added to library!");
+      // Assign to user if selected
+      if (formData.assign_to_user && created?.id) {
+        await base44.entities.UserProgram.create({
+          user_email: formData.assign_to_user,
+          media_library_id: created.id,
+          assigned_by: currentUser?.email,
+          assigned_at: new Date().toISOString(),
+          order: 0,
+        });
+        toast.success(`Assigned to ${formData.assign_to_user}!`);
+      }
     }
   };
 
@@ -1681,6 +1695,7 @@ Return a JSON with a "videos" array. Each video must have:
         onAudioUpload={handleAudioUpload}
         onLoadYoutube={fetchYouTubeMetadata}
         isPending={false}
+        allUsers={allUsers}
       />
 
 

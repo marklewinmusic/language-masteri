@@ -15,7 +15,7 @@ const topics = [
 
 const tagOptions = ['Learning', 'Hebrew', 'Beginner', 'Intermediate', 'Advanced', 'Grammar', 'Vocabulary', 'Conversation', 'Music', 'Stories', 'Culture', 'Daily Routine', 'Business', 'Travel', 'Food', 'Health'];
 
-export default function AddVideoDialog({ open, onOpenChange, editingVideo, formData, setFormData, mediaType, setMediaType, uploadingAudio, onSubmit, onCancel, onAudioUpload, onLoadYoutube, isPending }) {
+export default function AddVideoDialog({ open, onOpenChange, editingVideo, formData, setFormData, mediaType, setMediaType, uploadingAudio, onSubmit, onCancel, onAudioUpload, onLoadYoutube, isPending, allUsers = [] }) {
   const toggleTopic = (topic) => {
     setFormData(prev => ({
       ...prev,
@@ -72,6 +72,19 @@ export default function AddVideoDialog({ open, onOpenChange, editingVideo, formD
             <Label>Title * (editable)</Label>
             <Input value={formData.title} onChange={(e) => setFormData(p => ({ ...p, title: e.target.value }))} placeholder="Auto-populated from YouTube" className="bg-white/5 border-white/20 text-white" />
           </div>
+
+          {allUsers.length > 0 && (
+            <div>
+              <Label>Assign to User (optional)</Label>
+              <Select value={formData.assign_to_user || ""} onValueChange={(val) => setFormData(p => ({ ...p, assign_to_user: val }))}>
+                <SelectTrigger className="bg-white/5 border-white/20 text-white"><SelectValue placeholder="Select a user..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={null}>No specific user</SelectItem>
+                  {allUsers.map(u => <SelectItem key={u.id} value={u.email}>{u.full_name || u.email}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div>
             <Label>Designate to Session (Day)</Label>
