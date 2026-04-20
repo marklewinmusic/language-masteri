@@ -244,7 +244,7 @@ export default function ContinuousTranscript({
                         🎒
                       </button>
                     )}
-                    {canEdit && (
+                    {(canEdit || field === 'transliteration') && (
                       <button
                         onClick={(e) => { e.stopPropagation(); startEditWord(segIdx, field, wordIdx, words); setActiveWordKey(null); }}
                         className="text-xs text-yellow-300 hover:text-yellow-200 px-1"
