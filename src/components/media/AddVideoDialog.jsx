@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
+import { Loader2, X, ChevronDown } from "lucide-react";
 
 const topics = [
   "Religion / Spirituality", "Sports / Fitness", "Cooking / Food", "Nutrition",
@@ -16,6 +16,34 @@ const topics = [
 const tagOptions = ['Learning', 'Hebrew', 'Beginner', 'Intermediate', 'Advanced', 'Grammar', 'Vocabulary', 'Conversation', 'Music', 'Stories', 'Culture', 'Daily Routine', 'Business', 'Travel', 'Food', 'Health'];
 
 export default function AddVideoDialog({ open, onOpenChange, editingVideo, formData, setFormData, mediaType, setMediaType, uploadingAudio, onSubmit, onCancel, onAudioUpload, onLoadYoutube, isPending, allUsers = [] }) {
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // assigned_users: [{ email, session }]
+  const assignedUsers = formData.assigned_users || [];
+
+  const toggleUserAssign = (email) => {
+    const exists = assignedUsers.find(u => u.email === email);
+    if (exists) {
+      setFormData(p => ({ ...p, assigned_users: assignedUsers.filter(u => u.email !== email) }));
+    } else {
+      setFormData(p => ({ ...p, assigned_users: [...assignedUsers, { email, session: "" }] }));
+    }
+  };
+
+  const setUserSession = (email, session) => {
+    setFormData(p => ({
+      ...p,
+      assigned_users: (p.assigned_users || []).map(u => u.email === email ? { ...u, session } : u)
+    }));
+  };
+
+  useEffect(() => {
+    const handler = (e) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setUserDropdownOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   const toggleTopic = (topic) => {
     setFormData(prev => ({
       ...prev,
@@ -75,19 +103,68 @@ export default function AddVideoDialog({ open, onOpenChange, editingVideo, formD
 
           {allUsers.length > 0 && (
             <div>
-              <Label>Assign to User (optional)</Label>
-              <Select value={formData.assign_to_user || ""} onValueChange={(val) => setFormData(p => ({ ...p, assign_to_user: val }))}>
-                <SelectTrigger className="bg-white/5 border-white/20 text-white"><SelectValue placeholder="Select a user..." /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={null}>No specific user</SelectItem>
-                  {allUsers.map(u => <SelectItem key={u.id} value={u.email}>{u.full_name || u.email}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Label>Assign to Users (optional)</Label>
+              {/* Multi-select dropdown */}
+              <div className="relative mt-1" ref={dropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setUserDropdownOpen(o => !o)}
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-md border border-white/20 bg-white/5 text-white text-sm"
+                >
+                  <span className="text-white/70">
+                    {assignedUsers.length === 0 ? "Select users..." : `${assignedUsers.length} user${assignedUsers.length > 1 ? "s" : ""} selected`}
+                  </span>
+                  <ChevronDown className="w-4 h-4 text-white/50" />
+                </button>
+                {userDropdownOpen && (
+                  <div className="absolute z-50 mt-1 w-full bg-slate-800 border border-white/20 rounded-md shadow-xl max-h-48 overflow-y-auto">
+                    {allUsers.map(u => {
+                      const checked = assignedUsers.some(a => a.email === u.email);
+                      return (
+                        <button
+                          key={u.id}
+                          type="button"
+                          onClick={() => toggleUserAssign(u.email)}
+                          className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-all hover:bg-white/10 ${checked ? "text-cyan-300" : "text-white/80"}`}
+                        >
+                          <span className={`w-4 h-4 rounded border flex items-center justify-center text-[10px] flex-shrink-0 ${checked ? "bg-cyan-500 border-cyan-500 text-white" : "border-white/30"}`}>
+                            {checked ? "✓" : ""}
+                          </span>
+                          {u.full_name || u.email}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Per-user session number inputs */}
+              {assignedUsers.length > 0 && (
+                <div className="mt-2 space-y-2">
+                  {assignedUsers.map(au => (
+                    <div key={au.email} className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+                      <span className="text-xs text-white/70 flex-1 truncate">{au.email}</span>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={au.session}
+                        onChange={e => setUserSession(au.email, e.target.value)}
+                        placeholder="Session #"
+                        className="bg-white/10 border-white/20 text-white w-28 h-7 text-xs"
+                      />
+                      <button type="button" onClick={() => toggleUserAssign(au.email)} className="text-white/40 hover:text-red-400 transition-colors">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
           <div>
-            <Label>Designate to Session (Day)</Label>
+            <Label>Designate to Session (Day) — for all users</Label>
             <Input type="number" min="1" max="100" value={formData.default_day} onChange={(e) => setFormData(p => ({ ...p, default_day: e.target.value }))} placeholder="Which session? (1-100)" className="bg-white/5 border-white/20 text-white" />
             <p className="text-xs text-white/50 mt-1">Video will auto-populate in this session's schedule</p>
           </div>

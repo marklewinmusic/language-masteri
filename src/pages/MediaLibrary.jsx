@@ -445,6 +445,7 @@ export default function MediaLibrary() {
       default_day: "",
       transcript_phonetics: "",
       assign_to_user: "",
+      assigned_users: [],
     });
   };
 
@@ -604,17 +605,33 @@ Keep natural sentence breaks. Return a JSON object with a "transcript" array.`,
       const created = await base44.entities.MediaLibrary.create(data);
       queryClient.invalidateQueries({ queryKey: ['mediaLibrary'] });
       toast.success("Added to library!");
-      // Assign to user if selected
-      if (formData.assign_to_user && created?.id) {
+      // Assign to multiple users with their individual session numbers
+      const assignedUsers = formData.assigned_users || [];
+      for (const au of assignedUsers) {
+        if (!au.email) continue;
         await base44.entities.UserProgram.create({
-          user_email: formData.assign_to_user,
+          user_email: au.email,
           media_library_id: created.id,
           assigned_by: currentUser?.email,
           assigned_at: new Date().toISOString(),
-          order: 0,
+          order: au.session ? parseInt(au.session) : 0,
         });
-        toast.success(`Assigned to ${formData.assign_to_user}!`);
+        // Also inject into the user's specific session day if session # provided
+        if (au.session) {
+          const sessionNum = parseInt(au.session);
+          const matchingDays = await base44.entities.Day.filter({ day_number: sessionNum });
+          for (const day of matchingDays) {
+            const subsections = day.subsections || [];
+            const videoTaskId = `video_${data.video_id}`;
+            if (!subsections.find(s => s.id === videoTaskId)) {
+              await base44.entities.Day.update(day.id, {
+                subsections: [...subsections, { id: videoTaskId, name: `▶ ${data.title}`, video_id: data.video_id, page: "MediaLibrary" }]
+              });
+            }
+          }
+        }
       }
+      if (assignedUsers.length > 0) toast.success(`Assigned to ${assignedUsers.length} user(s)!`);
     }
   };
 
