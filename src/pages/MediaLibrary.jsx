@@ -450,8 +450,12 @@ export default function MediaLibrary() {
   };
 
   const handleSubmit = () => {
-    if (!formData.title || !formData.video_url) {
-      toast.error("Title and URL are required");
+    if (!formData.title) {
+      toast.error("Title is required");
+      return;
+    }
+    if (!formData.video_url && !formData.video_id) {
+      toast.error("Please add a video URL or upload an audio file first");
       return;
     }
 
