@@ -694,7 +694,12 @@ export default function Home() {
             )}
 
             {/* SCHEDULE SECTION */}
-            <div className="flex justify-center">
+            {(() => {
+              // For non-admin users, only show schedule if at least one session has tasks
+              const hasContent = sortedDays.some(d => (d.subsections || []).length > 0);
+              if (!isMasterUser && !hasContent) return null;
+              return (
+              <div className="flex justify-center">
               <div className="w-full max-w-md">
                 <div className="flex items-center justify-between mb-4">
                   <h2
@@ -710,11 +715,6 @@ export default function Home() {
                     </div>
                   </Link>
                 </div>
-                {sortedDays.length === 0 ? (
-                  <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-4 text-center">
-                    <p style={{ color: '#6b7c5a' }} className="text-sm">No sessions available yet</p>
-                  </div>
-                ) : (
                   <div className="space-y-2">
                     {sortedDays.slice(0, 3).map((day, idx) => {
                     const dayColors = [
@@ -947,9 +947,10 @@ export default function Home() {
                     );
                   })}
                   </div>
-                )}
               </div>
             </div>
+              );
+            })()}
 
             {/* LIBRARY SECTION */}
             <div className="text-center">
