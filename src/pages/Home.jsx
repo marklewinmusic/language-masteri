@@ -1015,24 +1015,54 @@ export default function Home() {
               </ol>
             </div>
             {/* Video tasks - open in-app with sessionDay param */}
-            {(sessionModal.subsections || []).filter(t => t.video_id || extractYouTubeId(t.youtube_url)).map(task => {
+            {(sessionModal.subsections || []).map(task => {
               const ytId = task.video_id || extractYouTubeId(task.youtube_url);
-              return (
-                <button
-                  key={task.id}
-                  onClick={() => {
-                    setSessionModal(null);
-                    navigate(createPageUrl('MediaLibrary') + `?videoId=${ytId}&sessionDay=${sessionModal.day_number}`);
-                  }}
-                  className="flex items-center gap-3 bg-stone-100 rounded-xl p-3 border border-stone-200 hover:border-stone-400 transition-all w-full text-left"
-                >
-                  <img src={`https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`} alt="" className="w-20 h-14 rounded-lg object-cover flex-shrink-0" />
-                  <div>
-                    <p className="text-stone-700 font-semibold text-sm">{task.name}</p>
-                    <p className="text-stone-400 text-xs mt-0.5">▶ Watch video</p>
-                  </div>
-                </button>
-              );
+              if (ytId) {
+                return (
+                  <button
+                    key={task.id}
+                    onClick={() => {
+                      setSessionModal(null);
+                      navigate(createPageUrl('MediaLibrary') + `?videoId=${ytId}&sessionDay=${sessionModal.day_number}`);
+                    }}
+                    className="flex items-center gap-3 bg-stone-100 rounded-xl p-3 border border-stone-200 hover:border-stone-400 transition-all w-full text-left"
+                  >
+                    <img src={`https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`} alt="" className="w-20 h-14 rounded-lg object-cover flex-shrink-0" />
+                    <div>
+                      <p className="text-stone-700 font-semibold text-sm">{task.name}</p>
+                      <p className="text-stone-400 text-xs mt-0.5">▶ Watch video</p>
+                    </div>
+                  </button>
+                );
+              } else if (task.mediaUrl) {
+                return (
+                  <button
+                    key={task.id}
+                    onClick={async () => {
+                      setSessionModal(null);
+                      let transcript = task.transcript || '';
+                      let mediaLibraryId = null;
+                      try {
+                        const results = await base44.entities.MediaLibrary.filter({ video_url: task.mediaUrl });
+                        if (results[0]) {
+                          transcript = results[0].transcript_phonetics || transcript;
+                          mediaLibraryId = results[0].id;
+                        }
+                      } catch {}
+                      sessionStorage.setItem('songListenData', JSON.stringify({ title: task.name, mediaUrl: task.mediaUrl, transcript, videoId: '', mediaLibraryId }));
+                      navigate('/SongListenPage');
+                    }}
+                    className="flex items-center gap-3 bg-stone-100 rounded-xl p-3 border border-stone-200 hover:border-stone-400 transition-all w-full text-left"
+                  >
+                    <div className="w-20 h-14 rounded-lg flex-shrink-0 flex items-center justify-center text-3xl bg-stone-200">🎵</div>
+                    <div>
+                      <p className="text-stone-700 font-semibold text-sm">{task.name}</p>
+                      <p className="text-stone-400 text-xs mt-0.5">🎧 Listen</p>
+                    </div>
+                  </button>
+                );
+              }
+              return null;
             })}
             <div className="pt-1">
               <button
