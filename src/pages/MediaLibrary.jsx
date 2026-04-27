@@ -198,7 +198,7 @@ export default function MediaLibrary() {
     },
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
-    enabled: !!currentUser && !!selected_language && !languageLoading,
+    enabled: !!currentUser && !!selected_language,
   });
 
   const { data: myProgram = [] } = useQuery({

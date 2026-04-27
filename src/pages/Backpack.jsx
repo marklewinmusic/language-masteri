@@ -143,7 +143,7 @@ export default function Backpack() {
       const sharedCards = unratedApproved.map(w => ({ ...w, _shared: true, times_practiced: 0, mastered: false }));
       return [...ownWords, ...sharedCards];
     },
-    enabled: !!userProfile && !!currentUser?.email && !!selected_language && !languageLoading,
+    enabled: !!userProfile && !!currentUser?.email && !!selected_language,
     staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
