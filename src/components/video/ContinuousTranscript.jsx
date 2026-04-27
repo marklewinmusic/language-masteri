@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Play, Pause, Loader2, Check, X, Plus } from "lucide-react";
 import { toast } from "sonner";
