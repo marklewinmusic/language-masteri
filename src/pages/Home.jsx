@@ -927,43 +927,7 @@ export default function Home() {
               );
             })()}
 
-            {/* LIBRARY SECTION */}
-            <div className="text-center">
-              <h2
-                className="text-4xl font-bold mb-6 cursor-pointer hover:opacity-80 transition-opacity"
-                style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}
-                onClick={() => navigate(createPageUrl("MediaLibrary"))}
-              >
-                📚 Content Library
-              </h2>
-              <div className="flex flex-wrap justify-center items-center gap-1 bg-white/50 rounded-2xl px-4 py-3" style={{ border: '1px solid #5a6b5a20' }}>
-                {[
-                  { label: 'Videos', emoji: '📹', to: 'MediaLibrary', active: true },
-                  { label: 'Songs', emoji: '🎵', to: 'Songs' },
-                  { label: 'Audio Training', emoji: '🎧', to: 'MediaLibrary' },
-                ].map((item) => (
-                  <Link key={item.label} to={createPageUrl(item.to)} className="no-underline">
-                    <div
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all"
-                      style={item.active
-                        ? { background: '#ffffff', color: '#3d4a2e', boxShadow: '0 1px 4px rgba(0,0,0,0.08)', border: '1px solid #e0dcd4' }
-                        : { color: '#6b7c5a' }
-                      }
-                    >
-                      <span>{item.emoji}</span>
-                      <span>{item.label}</span>
-                      {item.chevron && <span className="text-xs" style={{ color: '#6b7c5a' }}>▼</span>}
-                    </div>
-                  </Link>
-                ))}
-                <Link to={createPageUrl("MediaLibrary")} className="no-underline">
-                  <div className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium" style={{ color: '#6b7c5a' }}>
-                    <span>+</span>
-                    <span>Add Media</span>
-                  </div>
-                </Link>
-              </div>
-            </div>
+
 
             {/* PROGRESS SECTION */}
             <div className="text-center">
