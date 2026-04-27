@@ -713,9 +713,6 @@ export default function Home() {
 
             {/* SCHEDULE SECTION */}
             {(() => {
-              // For non-admin users, only show schedule if at least one session has tasks
-              const hasContent = sortedDays.some(d => (d.subsections || []).length > 0);
-              if (!isMasterUser && !hasContent) return null;
               return (
               <div className="flex justify-center">
               <div className="w-full max-w-md">
