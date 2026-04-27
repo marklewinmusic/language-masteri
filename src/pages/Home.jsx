@@ -742,8 +742,8 @@ export default function Home() {
                               className="overflow-hidden"
                             >
                               <div className="mt-1 space-y-1 pl-3">
-                                {/* Add from content library */}
-                                {isMasterUser && (
+                                {/* Add from content library — only show if no content yet */}
+                                {isMasterUser && (day.subsections || []).length === 0 && (
                                   <button
                                     onClick={() => setLibraryPickerDayId(day.id)}
                                     className="w-full text-left px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-1 mb-1"
@@ -868,8 +868,8 @@ export default function Home() {
                                                   onClick={(e) => { e.stopPropagation(); handleStartEditTask(day.id, task); }}
                                                   className="opacity-0 group-hover:opacity-100 transition-opacity text-stone-400 hover:text-stone-700 text-xs px-1"
                                                   title="Edit task"
-                                                >
-                                                  ✏️
+                                                  >
+                                                  <span style={{ display: 'inline-block', transform: 'scaleX(-1)' }}>✏️</span>
                                                 </button>
                                               )}
                                             {isMasterUser && (
