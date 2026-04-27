@@ -784,9 +784,10 @@ Return JSON:
         {userProfile && (
           <SessionFlashcardsSection 
             userProfile={userProfile}
-            onSessionSelect={(words, title) => {
+            onSessionSelect={(words, title, autoStart) => {
               setSessionFlashcardData({ words, title });
               setActiveTab("level0");
+              if (autoStart) setSingleCardIndex(0);
             }}
           />
         )}
@@ -869,55 +870,62 @@ Return JSON:
         {/* Content */}
         {!activeSecondTab && <div>
           {sessionFlashcardData && activeTab === "level0" ? (
-            // Show session flashcards when a session is selected and "New" tab is active
-            <div className="flex flex-col items-center gap-4">
-              <div className="flex items-center gap-4 w-full max-w-xs justify-between">
-                <button 
-                  onClick={() => setSessionFlashcardData(null)}
-                  className="px-4 py-2 rounded-xl bg-white/60 border border-stone-200 text-stone-500 font-bold text-lg"
-                >
-                  ←
-                </button>
-                <span className="text-stone-400 text-sm">{sessionFlashcardData.title}</span>
-                <div className="w-8" />
+            // Show session flashcards single card view
+            (sessionFlashcardData.words || []).length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-stone-400 text-lg">No words in this session yet</p>
               </div>
-              <div className="flex flex-wrap gap-4 justify-center">
-                {(sessionFlashcardData.words || []).map((word, idx) => (
-                  <WordCard
-                    key={idx}
-                    word={{
-                      id: `session_${idx}`,
-                      word: word.word || word.hebrew || word.phonetic,
-                      translation: word.translation,
-                      phonetic: word.phonetic,
-                      category: 'wordbank',
-                      times_practiced: 0,
-                      mastered: false,
-                    }}
-                    showAllEnglish={showAllEnglish}
-                    showHebrew={showHebrew}
-                    showTransliteration={showTransliteration}
-                    showPhonetics={showPhonetics}
-                    isContentEditable={() => false}
-                    mnemonicExplanations={mnemonicExplanations}
-                    setMnemonicExplanations={setMnemonicExplanations}
-                    cardSentences={cardSentences}
-                    generatingSentence={generatingSentence}
-                    fetchingTranslation={fetchingTranslation}
-                    suggestingMnemonic={suggestingMnemonic}
-                    isAdmin={isAdmin}
-                    updateWordMutation={updateWordMutation}
-                    handleRateWord={handleRateWord}
-                    suggestMnemonicForWord={suggestMnemonicForWord}
-                    approveWordMutation={approveWordMutation}
-                    handleDismissWord={handleDismissWord}
-                    deleteWordMutation={deleteWordMutation}
-                    handleAddWordFromSentence={handleAddWordFromSentence}
-                    generateCardSentence={generateCardSentence}
-                  />
-                ))}
+            ) : (
+              <div className="flex flex-col items-center gap-4">
+                <div className="flex items-center gap-4 w-full max-w-xs justify-between">
+                  <button 
+                    onClick={() => { setSessionFlashcardData(null); setSingleCardIndex(0); }}
+                    className="px-4 py-2 rounded-xl bg-white/60 border border-stone-200 text-stone-500 font-bold text-lg"
+                  >
+                    ←
+                  </button>
+                  <span className="text-stone-400 text-sm">{singleCardIndex + 1} / {sessionFlashcardData.words.length}</span>
+                  <button 
+                    onClick={() => setSingleCardIndex(i => Math.min(sessionFlashcardData.words.length - 1, i + 1))}
+                    disabled={singleCardIndex === sessionFlashcardData.words.length - 1}
+                    className="px-4 py-2 rounded-xl bg-white/60 border border-stone-200 text-stone-500 disabled:opacity-30 font-bold text-lg"
+                  >
+                    →
+                  </button>
+                </div>
+                <WordCard
+                  word={{
+                    id: `session_${singleCardIndex}`,
+                    word: sessionFlashcardData.words[singleCardIndex]?.word || sessionFlashcardData.words[singleCardIndex]?.hebrew || sessionFlashcardData.words[singleCardIndex]?.phonetic,
+                    translation: sessionFlashcardData.words[singleCardIndex]?.translation,
+                    phonetic: sessionFlashcardData.words[singleCardIndex]?.phonetic,
+                    category: 'wordbank',
+                    times_practiced: 0,
+                    mastered: false,
+                  }}
+                  showAllEnglish={showAllEnglish}
+                  showHebrew={showHebrew}
+                  showTransliteration={showTransliteration}
+                  showPhonetics={showPhonetics}
+                  isContentEditable={() => false}
+                  mnemonicExplanations={mnemonicExplanations}
+                  setMnemonicExplanations={setMnemonicExplanations}
+                  cardSentences={cardSentences}
+                  generatingSentence={generatingSentence}
+                  fetchingTranslation={fetchingTranslation}
+                  suggestingMnemonic={suggestingMnemonic}
+                  isAdmin={isAdmin}
+                  updateWordMutation={updateWordMutation}
+                  handleRateWord={handleRateWord}
+                  suggestMnemonicForWord={suggestMnemonicForWord}
+                  approveWordMutation={approveWordMutation}
+                  handleDismissWord={handleDismissWord}
+                  deleteWordMutation={deleteWordMutation}
+                  handleAddWordFromSentence={handleAddWordFromSentence}
+                  generateCardSentence={generateCardSentence}
+                />
               </div>
-            </div>
+            )
           ) : getDisplayWords().length === 0 ? (
             <div className="text-center py-12">
               <p className="text-stone-400 text-lg">No words at this level yet!</p>

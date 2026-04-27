@@ -177,22 +177,19 @@ Return JSON with a "words" array. Each item: { phonetic: Latin transliteration, 
                       </div>
                       <button
                         onClick={() => {
-                          // Store words in sessionStorage for PostVideoFlashcards
                           const flashcardWords = words.map(w => ({
                             word: w.hebrew || w.phonetic,
                             phonetic: w.phonetic,
                             translation: w.translation,
                           }));
-                          sessionStorage.setItem('pendingFlashcardWords', JSON.stringify({
-                            words: flashcardWords,
-                            title: `Session ${day.day_number}`,
-                          }));
-                          navigate('/Backpack?flashcard=session');
+                          if (onSessionSelect) {
+                            onSessionSelect(flashcardWords, `Session ${day.day_number}`, true);
+                          }
                         }}
                         className="w-full py-2 rounded-xl text-sm font-semibold text-white transition-all"
                         style={{ background: 'linear-gradient(135deg, #5a6b5a, #3d4a2e)' }}
                       >
-                        Start Flashcards →
+                        Flashcards →
                       </button>
                     </>
                   )}
