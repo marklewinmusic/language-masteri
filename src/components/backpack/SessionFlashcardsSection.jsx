@@ -142,11 +142,6 @@ Return JSON with a "words" array. Each item: { phonetic: Latin transliteration, 
                   <span className="font-semibold text-sm" style={{ color: '#3d4a2e' }}>
                     Session {day.day_number} Words
                   </span>
-                  {words.length > 0 && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-500">
-                      {words.length} words
-                    </span>
-                  )}
                 </div>
                 <ChevronRight
                   className="w-4 h-4 transition-transform"
@@ -217,13 +212,15 @@ Return JSON with a "words" array. Each item: { phonetic: Latin transliteration, 
             }));
             navigate('/Backpack?flashcard=all');
           }}
-          className="bg-white/60 border border-stone-200 rounded-xl overflow-hidden flex flex-col items-center justify-center p-6 hover:bg-white/80 transition-all"
+          className="bg-white/60 border border-stone-200 rounded-xl overflow-hidden flex items-center justify-between px-4 py-3 hover:bg-white/80 transition-all"
         >
-          <span className="text-3xl mb-2">⭐</span>
-          <span className="font-semibold text-sm text-center" style={{ color: '#3d4a2e' }}>
-            All Words
-          </span>
-          <span className="text-xs text-stone-400 mt-1">Practice & rank</span>
+          <div className="flex items-center gap-2">
+            <span className="text-base">⭐</span>
+            <span className="font-semibold text-sm" style={{ color: '#3d4a2e' }}>
+              All Words
+            </span>
+          </div>
+          <ChevronRight className="w-4 h-4" style={{ color: '#6b7c5a' }} />
         </button>
       </div>
     </div>
