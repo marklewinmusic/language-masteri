@@ -674,18 +674,7 @@ export default function Home() {
                 <ChevronRight className="w-5 h-5" />
               </motion.button>
               <br />
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate('/FluentPath')}
-                className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-base font-semibold shadow-lg transition-all"
-                style={{ background: 'linear-gradient(135deg, #c9a96e, #e8c98a)', color: '#1a1a1a' }}
-              >
-                <span className="text-xl">🗺️</span>
-                Start Your Fluency Plan
-                <ChevronRight className="w-5 h-5" />
-              </motion.button>
-              <p className="text-xs mt-2" style={{ color: '#8a9a78' }}>Free · 2 min · Personalized for you</p>
+
             </div>
 
             {/* RECOMMENDED FOR YOU */}
