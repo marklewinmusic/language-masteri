@@ -18,6 +18,7 @@ import DeletablePictureBox from "../components/learning/DeletablePictureBox";
 import TranslatorWidget from "../components/TranslatorWidget";
 import SessionFlashcardsSection from "../components/backpack/SessionFlashcardsSection";
 import PostVideoFlashcards from "../components/video/PostVideoFlashcards";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export default function Backpack() {
   const queryClient = useQueryClient();

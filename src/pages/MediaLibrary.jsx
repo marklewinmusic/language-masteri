@@ -21,6 +21,7 @@ import TranslatorWidget from "../components/TranslatorWidget";
 import ContinuousTranscript from "../components/video/ContinuousTranscript";
 import AddVideoDialog from "../components/media/AddVideoDialog";
 import PostVideoFlashcards from "../components/video/PostVideoFlashcards";
+import { useLanguage } from "@/lib/LanguageContext";
 
 const DEFAULT_TOPICS = [
   "Religion / Spirituality",
