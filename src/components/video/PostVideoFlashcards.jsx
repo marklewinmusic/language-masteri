@@ -15,7 +15,7 @@ const RATINGS = [
 
 export default function PostVideoFlashcards({ words, onClose, onJournal, videoTitle, userProfile }) {
   const queryClient = useQueryClient();
-  const [step, setStep] = useState("intro");
+  const [step, setStep] = useState("flashcards");
   const [cardIdx, setCardIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -201,38 +201,7 @@ Return JSON with:
       )}
 
       <AnimatePresence mode="wait">
-        {step === "intro" && (
-          <motion.div
-            key="intro"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -30 }}
-            className="max-w-md w-full text-center space-y-6"
-          >
-            <div className="text-5xl mb-2">🎉</div>
-            <h2 className="text-stone-800 text-2xl font-bold">Great job watching!</h2>
-            <p className="text-stone-600 text-base">
-              You just watched <span className="text-cyan-600 font-semibold">"{videoTitle}"</span>.<br/>
-              Let's lock in the key vocab words.
-            </p>
-            <div className="bg-white border border-stone-200 rounded-2xl p-5 text-left space-y-2 shadow-sm">
-              <ul className="space-y-2 text-stone-500 text-sm">
-                <li>🎨 Auto mnemonic image + explanation generated per word</li>
-                <li>👆 Tap card to reveal the meaning</li>
-                <li>⭐ Rate your knowledge — saved to your Backpack</li>
-                <li>✅ Approve a card to lock it in</li>
-              </ul>
-            </div>
-            <p className="text-stone-400 text-sm">{words.length} words to review</p>
-            <button
-              onClick={() => setStep("flashcards")}
-              className="w-full py-4 rounded-2xl text-white font-bold text-lg"
-              style={{ background: 'linear-gradient(135deg, #06b6d4, #3b82f6)' }}
-            >
-              Start Flashcards →
-            </button>
-          </motion.div>
-        )}
+
 
         {step === "flashcards" && currentWord && (
           <motion.div
