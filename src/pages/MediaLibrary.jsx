@@ -43,7 +43,7 @@ const DEFAULT_TOPICS = [
 export default function MediaLibrary() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { selected_language } = useLanguage();
+  const { selected_language, isLoading: languageLoading } = useLanguage();
   const [currentUser, setCurrentUser] = useState(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingVideo, setEditingVideo] = useState(null);
@@ -188,18 +188,17 @@ export default function MediaLibrary() {
   });
 
   const { data: userVideos = [] } = useQuery({
-    queryKey: ['userVideos', userProfile?.language],
+    queryKey: ['userVideos', selected_language],
     queryFn: async () => {
       const videos = await base44.entities.Video.list();
-      const lang = userProfile?.language;
       return videos
         .filter(v => !v.deleted_at && v.is_active !== false)
-        .filter(v => !lang || v.language === lang || v.language === lang.slice(0, 2))
+        .filter(v => !selected_language || v.language === selected_language || v.language === selected_language.slice(0, 2))
         .sort((a, b) => (a.order || 0) - (b.order || 0));
     },
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
-    enabled: !!currentUser && !!userProfile,
+    enabled: !!currentUser && !!selected_language && !languageLoading,
   });
 
   const { data: myProgram = [] } = useQuery({
