@@ -27,8 +27,18 @@ export default function SessionFlashcardsSection({ userProfile, onSessionSelect 
   });
 
   // Days that have at least one subsection with a video_id or mediaUrl (content uploaded)
+  // Only show content that matches the user's language
+  const userLang = userProfile?.language || 'hebrew';
   const sessionsWithContent = days
-    .filter(d => (d.subsections || []).some(s => s.video_id || s.mediaUrl || s.youtube_url))
+    .filter(d => {
+      const hasContent = (d.subsections || []).some(s => {
+        const taskName = s.name?.toLowerCase() || '';
+        // Filter Hebrew-only content
+        if (taskName.includes('the bride') && userLang !== 'hebrew') return false;
+        return s.video_id || s.mediaUrl || s.youtube_url;
+      });
+      return hasContent;
+    })
     .sort((a, b) => a.day_number - b.day_number)
     .slice(0, 3);
 
