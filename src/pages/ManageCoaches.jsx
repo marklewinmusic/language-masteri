@@ -320,6 +320,24 @@ export default function ManageCoaches() {
                     )}
                   </div>
                   <div className="flex items-center gap-2">
+                    {lead && (
+                      <Button
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); setViewingQuestionnaire(lead); }}
+                        className="bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30 text-xs"
+                        variant="ghost"
+                      >
+                        <FileText className="w-3.5 h-3.5 mr-1" /> Questionnaire
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); toast.info("Agreement feature coming soon"); }}
+                      className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30 text-xs"
+                      variant="ghost"
+                    >
+                      <ClipboardList className="w-3.5 h-3.5 mr-1" /> Agreement
+                    </Button>
                     {user.role !== 'admin' && (
                       <Button
                         size="sm"
