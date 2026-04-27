@@ -121,11 +121,10 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
     { id: "schedule", to: "Home", emoji: "📅", label: "Schedule" },
     { id: "backpack", to: "Backpack", emoji: "🎒", label: "Backpack" },
     { id: "videos", to: "MediaLibrary", emoji: "📚", label: "Library" },
-    { id: "progress", to: "Progress", emoji: "🏆", label: "Progress" },
     { id: "journal", to: "Journal", emoji: "📖", label: "Journal" },
   ];
 
-  const validNavIds = ["home", "schedule", "backpack", "videos", "progress", "journal", "clock"];
+  const validNavIds = ["home", "schedule", "backpack", "videos", "journal", "clock"];
   const getSavedOrder = () => {
     try {
       const saved = JSON.parse(localStorage.getItem('nav_order') || '[]');
@@ -339,11 +338,6 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
               </motion.button>
             </div>
           )}
-
-          <motion.button onClick={() => navigate(createPageUrl("Progress"))} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium cursor-pointer" style={{ background: 'rgba(90, 107, 90, 0.08)', border: '1px solid rgba(90, 107, 90, 0.2)', color: '#6b7c5a', fontFamily: 'Jost, sans-serif' }}>
-            <span className="text-sm">🏆</span>
-            <span className="hidden sm:inline">Progress</span>
-          </motion.button>
 
           <motion.button onClick={handleLogout} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium cursor-pointer" style={{ background: 'rgba(200, 50, 50, 0.08)', border: '1px solid rgba(200, 50, 50, 0.2)', color: '#8b3a3a', fontFamily: 'Jost, sans-serif' }}>
             <LogOut className="w-3.5 h-3.5" />

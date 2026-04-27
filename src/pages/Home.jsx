@@ -929,10 +929,7 @@ export default function Home() {
 
 
 
-            {/* PROGRESS SECTION */}
-            <div className="text-center">
-              <h2 className="text-3xl font-bold mb-4 cursor-pointer hover:opacity-80 transition-opacity inline-flex items-center gap-1" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }} onClick={() => navigate(createPageUrl("Progress"))}>🏆 Progress <ChevronRight className="w-5 h-5 mb-1" /></h2>
-            </div>
+
           </div>
         )}
                 </div>
