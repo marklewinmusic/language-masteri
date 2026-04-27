@@ -340,7 +340,12 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
             </div>
           )}
 
-          {/* Clock — moved to top bar */}
+          <motion.button onClick={handleLogout} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium cursor-pointer" style={{ background: 'rgba(200, 50, 50, 0.08)', border: '1px solid rgba(200, 50, 50, 0.2)', color: '#8b3a3a', fontFamily: 'Jost, sans-serif' }}>
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Logout</span>
+          </motion.button>
+
+          {/* Clock */}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -359,11 +364,6 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
           >
             <span className="text-sm">{stopwatchRunning ? '⏱️' : '🕐'}</span>
             <span className="text-xs font-bold" style={{ color: stopwatchRunning ? '#5a8a5a' : '#6b7c5a', fontFamily: 'Jost, sans-serif' }}>{formatTime(stopwatchTime)}</span>
-          </motion.button>
-
-          <motion.button onClick={handleLogout} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium cursor-pointer" style={{ background: 'rgba(200, 50, 50, 0.08)', border: '1px solid rgba(200, 50, 50, 0.2)', color: '#8b3a3a', fontFamily: 'Jost, sans-serif' }}>
-            <LogOut className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Logout</span>
           </motion.button>
         </div>
       </div>
