@@ -777,18 +777,8 @@ Return JSON:
           ))}
         </div>
 
-        {/* Second Row: Verbs + Core Vocab */}
+        {/* Second Row: Core Vocab (includes Verbs inside) */}
         <div className="flex gap-1 mb-4 justify-center">
-          <button
-            onClick={() => setActiveSecondTab(activeSecondTab === 'verbs' ? null : 'verbs')}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-              activeSecondTab === 'verbs'
-                ? "bg-stone-700 text-stone-100 border border-stone-600"
-                : "bg-white/60 text-stone-500 hover:bg-white/80 border border-stone-200"
-            }`}
-          >
-            📖 Verbs
-          </button>
           <button
             onClick={() => setActiveSecondTab(activeSecondTab === 'corevocab' ? null : 'corevocab')}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
@@ -838,12 +828,11 @@ Return JSON:
         )}
 
         {/* Second Tab Content */}
-        {activeSecondTab === 'verbs' && (
-          <VerbsTab words={langFilteredRatings} />
-        )}
-
         {activeSecondTab === 'corevocab' && (
-          <CoreVocabTab />
+          <div>
+            <VerbsTab words={langFilteredRatings} />
+            <CoreVocabTab />
+          </div>
         )}
 
         {/* Content */}

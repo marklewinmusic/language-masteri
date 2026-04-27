@@ -123,7 +123,6 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
     { id: "videos", to: "MediaLibrary", emoji: "📚", label: "Library" },
     { id: "progress", to: "Progress", emoji: "🏆", label: "Progress" },
     { id: "journal", to: "Journal", emoji: "📖", label: "Journal" },
-    { id: "clock", to: null, emoji: "🕐", label: "Clock" },
   ];
 
   const validNavIds = ["home", "schedule", "backpack", "videos", "progress", "journal", "clock"];
@@ -323,7 +322,7 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
           <p className="font-bold text-2xl tracking-widest" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif', letterSpacing: '0.08em', fontWeight: 500 }}>Language Mastery</p>
         </div>
 
-        {/* Streak + Timer + Progress + Logout */}
+        {/* Streak + Clock + Logout */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-1 px-2 py-1 rounded-lg" style={{ background: 'rgba(90, 107, 90, 0.08)', border: '1px solid rgba(90, 107, 90, 0.2)' }}>
             <Flame className="w-4 h-4" style={{ color: '#d4a574' }} />
@@ -340,12 +339,28 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
               </motion.button>
             </div>
           )}
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-1 px-2 py-1 rounded-lg cursor-pointer" style={{ background: 'rgba(90, 107, 90, 0.08)', border: '1px solid rgba(90, 107, 90, 0.2)' }}>
-            <span className="font-bold text-xs" style={{ color: '#6b7c5a', fontFamily: 'Jost, sans-serif' }}>💳 Payments</span>
+
+          {/* Clock — moved to top bar */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              setStopwatchRunning(r => {
+                if (r) {
+                  setStopwatchTime(prev => { saveSession(prev, 'manual'); return 0; });
+                } else {
+                  lastActivityRef.current = Date.now();
+                }
+                return !r;
+              });
+            }}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg cursor-pointer"
+            style={{ background: 'rgba(90, 107, 90, 0.08)', border: '1px solid rgba(90, 107, 90, 0.2)' }}
+          >
+            <span className="text-sm">{stopwatchRunning ? '⏱️' : '🕐'}</span>
+            <span className="text-xs font-bold" style={{ color: stopwatchRunning ? '#5a8a5a' : '#6b7c5a', fontFamily: 'Jost, sans-serif' }}>{formatTime(stopwatchTime)}</span>
           </motion.button>
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-1 px-2 py-1 rounded-lg cursor-pointer" style={{ background: 'rgba(90, 107, 90, 0.08)', border: '1px solid rgba(90, 107, 90, 0.2)' }}>
-            <span className="font-bold text-xs" style={{ color: '#6b7c5a', fontFamily: 'Jost, sans-serif' }}>⚙️ Settings</span>
-          </motion.button>
+
           <motion.button onClick={handleLogout} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium cursor-pointer" style={{ background: 'rgba(200, 50, 50, 0.08)', border: '1px solid rgba(200, 50, 50, 0.2)', color: '#8b3a3a', fontFamily: 'Jost, sans-serif' }}>
             <LogOut className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Logout</span>
@@ -355,7 +370,7 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
 
       {/* Nav grid */}
       <div style={{ borderTop: '1px solid rgba(90, 107, 90, 0.15)' }} className="px-4 py-2">
-        <div className="grid grid-cols-7 gap-1.5 max-w-2xl mx-auto">
+        <div className="grid grid-cols-6 gap-1.5 max-w-2xl mx-auto">
           {orderedNav.map(({ id, to, emoji, label }) => {
             const isDragging = draggingId === id;
             const isOver = dragOverId === id && !isDragging;
@@ -369,20 +384,7 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
                 onDragEnd={handleDragEnd}
                 onClick={() => {
                   if (isDraggingRef.current) return;
-                  if (id === 'clock') {
-                    setStopwatchRunning(r => {
-                      if (r) {
-                        // stopping manually
-                        setStopwatchTime(prev => { saveSession(prev, 'manual'); return 0; });
-                      } else {
-                        // restarting
-                        lastActivityRef.current = Date.now();
-                      }
-                      return !r;
-                    });
-                  } else {
-                    navigate(createPageUrl(to));
-                  }
+                  navigate(createPageUrl(to));
                 }}
                 className="flex flex-col items-center py-2 rounded-xl select-none transition-all"
                 style={{
@@ -394,17 +396,8 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
                   transition: 'all 0.15s ease',
                 }}
               >
-                {id === 'clock' ? (
-                  <>
-                    <span className="text-lg">{stopwatchRunning ? '⏱️' : '🕐'}</span>
-                    <span className="text-xs font-bold mt-0.5" style={{ color: stopwatchRunning ? '#5a8a5a' : '#6b7c5a', fontFamily: 'Jost, sans-serif' }}>{formatTime(stopwatchTime)}</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-lg">{emoji}</span>
-                    <span className="text-xs font-medium mt-0.5" style={{ color: '#6b7c5a', fontFamily: 'Jost, sans-serif', letterSpacing: '0.03em' }}>{label}</span>
-                  </>
-                )}
+                <span className="text-lg">{emoji}</span>
+                <span className="text-xs font-medium mt-0.5" style={{ color: '#6b7c5a', fontFamily: 'Jost, sans-serif', letterSpacing: '0.03em' }}>{label}</span>
               </div>
             );
           })}
