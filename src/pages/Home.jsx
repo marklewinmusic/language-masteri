@@ -496,7 +496,7 @@ export default function Home() {
 
   const handleStartEditTask = (dayId, task) => {
     setEditingTask({ dayId, taskId: task.id });
-    setEditingTaskData({ name: task.name, youtube_url: task.youtube_url || "", page: task.page || "" });
+    setEditingTaskData({ name: task.name, youtube_url: task.youtube_url || "", page: task.page || "", mediaUrl: task.mediaUrl || "" });
   };
 
   const handleSaveEditedTask = (dayId) => {
@@ -506,7 +506,7 @@ export default function Home() {
     const videoId = extractYouTubeId(editingTaskData.youtube_url);
     const updatedSubsections = day.subsections.map(s => 
       s.id === editingTask.taskId 
-        ? { ...s, name: editingTaskData.name, youtube_url: editingTaskData.youtube_url, video_id: videoId || s.video_id, page: editingTaskData.page || (videoId ? "MediaLibrary" : s.page) }
+        ? { ...s, name: editingTaskData.name, youtube_url: editingTaskData.youtube_url, video_id: videoId || (editingTaskData.mediaUrl ? null : s.video_id), page: editingTaskData.page || (videoId ? "MediaLibrary" : s.page), mediaUrl: editingTaskData.mediaUrl || s.mediaUrl }
         : s
     );
     updateDayMutation.mutate({ id: dayId, data: { subsections: updatedSubsections } });
@@ -765,22 +765,43 @@ export default function Home() {
                                     return (
                                       <div key={task.id} className="flex flex-col gap-1">
                                         {isEditing ? (
-                                         <div className="flex gap-2 px-3 py-2 bg-white/10 rounded-lg border border-cyan-400/50">
+                                         <div className="flex flex-col gap-2 px-3 py-3 bg-white/60 rounded-xl border border-cyan-400/50">
                                             <Input
                                               autoFocus
                                               value={editingTaskData.name}
                                               onChange={(e) => setEditingTaskData({ ...editingTaskData, name: e.target.value })}
                                               onKeyDown={(e) => { if (e.key === 'Enter') handleSaveEditedTask(day.id); if (e.key === 'Escape') handleCancelEdit(); }}
                                               placeholder="Title"
-                                              className="flex-1 bg-white/10 border-white/20 text-white text-sm"
+                                              className="bg-white border-stone-300 text-stone-800 text-sm"
                                             />
-                                            <Button
-                                              onClick={handleCancelEdit}
-                                              size="sm"
-                                              className="bg-red-500/30 text-red-400 hover:bg-red-500/40 border border-red-500/50"
-                                            >
-                                              ✕
-                                            </Button>
+                                            <Input
+                                              value={editingTaskData.youtube_url}
+                                              onChange={(e) => setEditingTaskData({ ...editingTaskData, youtube_url: e.target.value })}
+                                              placeholder="YouTube URL (optional)"
+                                              className="bg-white border-stone-300 text-stone-800 text-sm"
+                                            />
+                                            <div className="flex items-center gap-2">
+                                              <label className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-stone-400 cursor-pointer hover:bg-stone-100 transition-all text-xs text-stone-500">
+                                                🎵 Upload MP3
+                                                <input
+                                                  type="file"
+                                                  accept="audio/*"
+                                                  className="hidden"
+                                                  onChange={async (e) => {
+                                                    const file = e.target.files[0];
+                                                    if (!file) return;
+                                                    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                                                    setEditingTaskData(prev => ({ ...prev, mediaUrl: file_url, youtube_url: '' }));
+                                                    toast.success('MP3 uploaded!');
+                                                  }}
+                                                />
+                                              </label>
+                                              {editingTaskData.mediaUrl && <span className="text-xs text-green-600">✓ Audio ready</span>}
+                                            </div>
+                                            <div className="flex gap-2">
+                                              <Button onClick={handleCancelEdit} size="sm" variant="outline" className="flex-1 border-stone-300 text-stone-500 text-xs">Cancel</Button>
+                                              <Button onClick={() => handleSaveEditedTask(day.id)} size="sm" className="flex-1 text-xs" style={{ background: '#5a6b5a', color: 'white' }}>Save</Button>
+                                            </div>
                                           </div>
                                         ) : (
                                           <div
