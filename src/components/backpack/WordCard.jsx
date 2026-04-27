@@ -249,13 +249,21 @@ export default function WordCard({
             </div>
           ) : cardSentences[word.id] ? (
             <>
-              {/* Hebrew + Transliteration — handled by SentenceWords */}
-              <SentenceWords
-                words={cardSentences[word.id].words}
-                onAddToBackpack={handleAddWordFromSentence}
-                showHebrew={showHebrew}
-                showTransliteration={showTransliteration}
-              />
+              {/* Hebrew sentence */}
+              {showHebrew && cardSentences[word.id].hebrew_sentence && (
+                <p className="text-[11px] text-cyan-700 font-semibold text-center leading-snug" dir="rtl">
+                  {cardSentences[word.id].hebrew_sentence}
+                </p>
+              )}
+              {/* Transliteration — clickable words */}
+              {showTransliteration && (
+                <SentenceWords
+                  words={cardSentences[word.id].words}
+                  onAddToBackpack={handleAddWordFromSentence}
+                  showHebrew={false}
+                  showTransliteration={true}
+                />
+              )}
               {/* English + refresh */}
               <div className="flex items-center justify-between gap-1 mt-0.5">
                 <p className="text-[10px] text-stone-400 italic flex-1 text-center">{cardSentences[word.id].english}</p>

@@ -562,26 +562,35 @@ Return JSON:
     setGeneratingSentence(prev => ({ ...prev, [word.id]: true }));
     setCardSentences(prev => { const next = { ...prev }; delete next[word.id]; return next; });
     try {
+      const hebrewScript = word.word && /[\u0590-\u05FF]/.test(word.word) ? word.word : null;
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a native Israeli Hebrew speaker. Create one short, completely natural Hebrew sentence using the word "${word.phonetic || word.word}" (meaning: "${word.translation}").
+        prompt: `You are an expert Hebrew linguist and language teacher creating example sentences for learners.
 
-CRITICAL — write as a native Israeli would actually say it in daily conversation:
-- Correct gender agreement for all nouns, adjectives, and verbs
-- Natural Israeli word order and rhythm — NOT translated from English
-- Correct verb binyan and conjugation
-- 5–8 words max
-- Avoid formal or biblical registers — use spoken modern Hebrew
+TARGET WORD: ${hebrewScript ? `Hebrew: "${hebrewScript}"` : ''} Transliteration: "${word.phonetic || word.word}" | English meaning: "${word.translation}"
 
-Return JSON:
-- transliteration: full sentence in Latin letters (modern Israeli pronunciation, e.g. "ani ohev et ha-yeled")
-- english: natural English equivalent (not word-for-word)
-- words: array of {word: transliteration of that single word, hebrew: Hebrew script of that word, meaning: its English meaning}`,
+TASK: Write ONE grammatically perfect, natural modern Hebrew sentence that clearly demonstrates the meaning of "${word.translation}".
+
+STRICT RULES:
+1. The sentence MUST contain the word ${hebrewScript || word.phonetic} (or its correctly conjugated/declined form)
+2. The Hebrew sentence and the English translation MUST convey the EXACT same meaning — no creative liberties
+3. Use correct nikud-less Hebrew script (standard modern written Hebrew)
+4. 4–7 words only
+5. The English translation must be a direct, accurate translation of the Hebrew — not a paraphrase
+6. Each word in the "words" array must map 1-to-1 to the actual Hebrew words in the sentence in order
+7. Do NOT invent words or use placeholder meanings — every Hebrew word must have its real translation
+
+Return JSON with:
+- hebrew_sentence: the full sentence in Hebrew script
+- transliteration: the full sentence in Latin letters (Israeli pronunciation)
+- english: the direct English translation of the Hebrew sentence
+- words: array (one per Hebrew word, in order) of { hebrew: Hebrew word, word: its transliteration, meaning: its English meaning }`,
         response_json_schema: {
           type: 'object',
           properties: {
+            hebrew_sentence: { type: 'string' },
             transliteration: { type: 'string' },
             english: { type: 'string' },
-            words: { type: 'array', items: { type: 'object', properties: { word: { type: 'string' }, hebrew: { type: 'string' }, meaning: { type: 'string' } } } }
+            words: { type: 'array', items: { type: 'object', properties: { hebrew: { type: 'string' }, word: { type: 'string' }, meaning: { type: 'string' } } } }
           }
         }
       });
