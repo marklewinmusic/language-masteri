@@ -25,8 +25,8 @@ export default function SongListenPage() {
   }, [transcript]);
 
   useEffect(() => {
-    if (!mediaUrl && !videoId) navigate(-1);
-  }, [mediaUrl, videoId]);
+    if (!title && !mediaUrl && !videoId) navigate(-1);
+  }, [title, mediaUrl, videoId]);
 
   const togglePlay = () => {
     if (!audioRef.current) return;

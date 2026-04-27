@@ -896,9 +896,29 @@ export default function Home() {
                                                navigate('/SongListenPage');
                                              } else if (task.page) {
                                                navigate(createPageUrl(task.page));
-                                             } else {
-                                               toggleTaskMutation.mutate({ dayId: day.id, taskId: task.id, dayNumber: day.day_number });
-                                             }
+                                              } else {
+                                                // Try to find a matching MediaLibrary entry by title
+                                                try {
+                                                  const allMedia = await base44.entities.MediaLibrary.list();
+                                                  const match = allMedia.find(m => 
+                                                    m.title?.toLowerCase().includes(task.name?.toLowerCase()) ||
+                                                    task.name?.toLowerCase().includes(m.title?.toLowerCase())
+                                                  );
+                                                  if (match?.video_id) {
+                                                    navigate(createPageUrl('MediaLibrary') + `?videoId=${match.video_id}`);
+                                                  } else if (match?.video_url) {
+                                                    sessionStorage.setItem('songListenData', JSON.stringify({ title: match.title, mediaUrl: match.video_url, transcript: match.transcript_phonetics || '', videoId: '', mediaLibraryId: match.id }));
+                                                    navigate('/SongListenPage');
+                                                  } else {
+                                                    // No media found — open SongListenPage so user can add audio/transcript
+                                                    sessionStorage.setItem('songListenData', JSON.stringify({ title: task.name, mediaUrl: '', transcript: '', videoId: '' }));
+                                                    navigate('/SongListenPage');
+                                                  }
+                                                } catch {
+                                                  sessionStorage.setItem('songListenData', JSON.stringify({ title: task.name, mediaUrl: '', transcript: '', videoId: '' }));
+                                                  navigate('/SongListenPage');
+                                                }
+                                              }
                                             }}
                                           >
                                             <div className="flex items-center gap-2">
