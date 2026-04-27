@@ -13,17 +13,20 @@ Deno.serve(async (req) => {
     const allDays = await base44.entities.Day.list();
     let updatedCount = 0;
 
-    // For each non-Hebrew day, remove "The Bride" task
+    // For each day, remove "The Bride" task and any Hebrew-specific tasks for non-Hebrew days
     for (const day of allDays) {
-      if (day.language !== 'hebrew') {
-        const filtered = (day.subsections || []).filter(task => 
-          !task.name?.toLowerCase().includes('the bride')
-        );
-        
-        if (filtered.length < (day.subsections || []).length) {
-          await base44.entities.Day.update(day.id, { subsections: filtered });
-          updatedCount++;
-        }
+      const filtered = (day.subsections || []).filter(task => {
+        const taskName = task.name?.toLowerCase() || '';
+        // Always remove "The Bride"
+        if (taskName.includes('the bride')) return false;
+        // For non-Hebrew days, also filter out other Hebrew-only content
+        if (day.language !== 'hebrew' && taskName.includes('hebrew')) return false;
+        return true;
+      });
+      
+      if (filtered.length < (day.subsections || []).length) {
+        await base44.entities.Day.update(day.id, { subsections: filtered });
+        updatedCount++;
       }
     }
 
