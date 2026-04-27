@@ -759,13 +759,12 @@ export default function Home() {
                                   </button>
                                 )}
                                 {(day.subsections || []).filter(task => {
-                                  // Hide generic "Watch a video" if a specific video task exists
-                                  if (task.id === 'video' && (day.subsections || []).some(s => s.video_id)) return false;
-                                  // Language filter: only show tasks that match current language or have no language restriction
                                   const taskName = task.name?.toLowerCase() || '';
                                   const userLang = userProfile?.language || 'hebrew';
                                   // "The Bride" is Hebrew-only
                                   if (taskName.includes('the bride') && userLang !== 'hebrew') return false;
+                                  // Hide generic "Watch a video" if a specific video task exists
+                                  if (task.id === 'video' && (day.subsections || []).some(s => s.video_id)) return false;
                                   return true;
                                 }).map((task, idx) => {
                                   const isSong = task.song_id || (songs && songs.find(s => s.id === task.id));
