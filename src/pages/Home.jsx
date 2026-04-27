@@ -460,6 +460,9 @@ export default function Home() {
 
   const currentDay = userProfile?.current_day || 1;
   const sortedDays = [...days].sort((a, b) => a.day_number - b.day_number);
+  
+  // Deduplicate by day_number (keep first occurrence)
+  const uniqueDays = Array.from(new Map(sortedDays.map(d => [d.day_number, d])).values());
 
   const isDayUnlocked = (dayNum) => isMasterUser || dayNum <= 3 || dayNum <= currentDay;
   const getDayProgress = (dayId) => dayProgress.find(p => p.day_id === dayId);
@@ -686,7 +689,7 @@ export default function Home() {
             {/* SCHEDULE SECTION */}
             {(() => {
               // For non-admin users, only show schedule if at least one session has tasks
-              const hasContent = sortedDays.some(d => (d.subsections || []).length > 0);
+              const hasContent = uniqueDays.some(d => (d.subsections || []).length > 0);
               if (!isMasterUser && !hasContent) return null;
               return (
               <div className="flex justify-center">
@@ -706,7 +709,7 @@ export default function Home() {
                   </Link>
                 </div>
                   <div className="space-y-2">
-                    {sortedDays.filter(day => {
+                    {uniqueDays.filter(day => {
                       const userLang = userProfile?.language || 'hebrew';
                       // For non-Hebrew users, hide sessions 2 and 3
                       if (userLang !== 'hebrew' && (day.day_number === 2 || day.day_number === 3)) {
