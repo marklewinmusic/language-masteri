@@ -29,8 +29,9 @@ export default function Backpack() {
   const [newWords, setNewWords] = useState([]);
   const [activeNewWord, setActiveNewWord] = useState(null);
   const [showAllEnglish, setShowAllEnglish] = useState(false);
-  const [showHebrew, setShowHebrew] = useState(true);
-  const [showTransliteration, setShowTransliteration] = useState(true);
+  const [scriptMode, setScriptMode] = useState('hebrew'); // 'hebrew' | 'translit'
+  const showHebrew = scriptMode === 'hebrew';
+  const showTransliteration = scriptMode === 'translit';
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'single'
   const [singleCardIndex, setSingleCardIndex] = useState(0);
   const [activeSecondTab, setActiveSecondTab] = useState(null); // 'verbs' | 'corevocab' | null
@@ -827,24 +828,10 @@ Return JSON:
                 {showAllEnglish ? "✓ Show English" : "Show English"}
               </button>
               <button
-                onClick={() => setShowHebrew(!showHebrew)}
-                className={`px-4 py-2 rounded-xl font-medium transition-all ${
-                  showHebrew
-                    ? "bg-stone-600 text-stone-100 border border-stone-500"
-                    : "bg-white/60 text-stone-500 hover:bg-white/80 border border-stone-200"
-                }`}
+                onClick={() => setScriptMode(m => m === 'hebrew' ? 'translit' : 'hebrew')}
+                className="px-4 py-2 rounded-xl font-medium transition-all bg-stone-600 text-stone-100 border border-stone-500"
               >
-                {showHebrew ? "✓ Hebrew" : "Hebrew"}
-              </button>
-              <button
-                onClick={() => setShowTransliteration(!showTransliteration)}
-                className={`px-4 py-2 rounded-xl font-medium transition-all ${
-                  showTransliteration
-                    ? "bg-stone-600 text-stone-100 border border-stone-500"
-                    : "bg-white/60 text-stone-500 hover:bg-white/80 border border-stone-200"
-                }`}
-              >
-                {showTransliteration ? "✓ Translit." : "Translit."}
+                {scriptMode === 'hebrew' ? 'א Hebrew' : 'Translit.'}
               </button>
             </div>
           </div>
