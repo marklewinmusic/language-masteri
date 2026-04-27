@@ -16,6 +16,8 @@ import VerbsTab from "../components/backpack/VerbsTab";
 import WordCard from "../components/backpack/WordCard";
 import DeletablePictureBox from "../components/learning/DeletablePictureBox";
 import TranslatorWidget from "../components/TranslatorWidget";
+import SessionFlashcardsSection from "../components/backpack/SessionFlashcardsSection";
+import PostVideoFlashcards from "../components/video/PostVideoFlashcards";
 
 export default function Backpack() {
   const queryClient = useQueryClient();
@@ -55,10 +57,26 @@ export default function Backpack() {
   const [cardSentences, setCardSentences] = useState({});
   const [generatingSentence, setGeneratingSentence] = useState({});
   const [fetchingTranslation, setFetchingTranslation] = useState({});
+  const [sessionFlashcardData, setSessionFlashcardData] = useState(null); // { words, title }
 
   // Load current user
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
+  }, []);
+
+  // Check for pending session flashcard data
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('flashcard') === 'session') {
+      const stored = sessionStorage.getItem('pendingFlashcardWords');
+      if (stored) {
+        const data = JSON.parse(stored);
+        sessionStorage.removeItem('pendingFlashcardWords');
+        setSessionFlashcardData(data);
+        // Clean the URL
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
   }, []);
 
   // Migrate: move all "pictures" category words to "wordbank" level0
@@ -721,6 +739,7 @@ Return JSON:
   };
 
   return (
+    <>
     <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 50%, #eae6da 100%)' }}>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
@@ -759,6 +778,11 @@ Return JSON:
             </Button>
           </div>
         </div>
+
+        {/* Session Flashcards Section */}
+        {userProfile && (
+          <SessionFlashcardsSection userProfile={userProfile} />
+        )}
 
         {/* Tabs - Single Row + Phonetics Toggle */}
         <div className="flex gap-1 mb-2 justify-center overflow-x-auto flex-wrap items-center">
@@ -1065,5 +1089,17 @@ Return JSON:
       <TranslatorWidget />
     </div>
   </div>
+
+  {/* Session flashcard overlay */}
+  {sessionFlashcardData && (
+    <PostVideoFlashcards
+      words={sessionFlashcardData.words}
+      videoTitle={sessionFlashcardData.title}
+      userProfile={userProfile}
+      onClose={() => setSessionFlashcardData(null)}
+      onJournal={() => setSessionFlashcardData(null)}
+    />
+  )}
+  </>
   );
 }
