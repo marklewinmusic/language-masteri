@@ -809,19 +809,7 @@ Return JSON:
           ))}
         </div>
 
-        {/* Second Row: Core Vocab (includes Verbs inside) */}
-        <div className="flex gap-1 mb-4 justify-center">
-          <button
-            onClick={() => setActiveSecondTab(activeSecondTab === 'corevocab' ? null : 'corevocab')}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-              activeSecondTab === 'corevocab'
-                ? "bg-stone-700 text-stone-100 border border-stone-600"
-                : "bg-white/60 text-stone-500 hover:bg-white/80 border border-stone-200"
-            }`}
-          >
-            📚 Core Vocab
-          </button>
-        </div>
+
         {/* Search input */}
         {searchOpen && (
           <div className="mb-4 max-w-xs mx-auto">
