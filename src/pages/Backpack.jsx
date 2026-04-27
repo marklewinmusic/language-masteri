@@ -808,16 +808,6 @@ Return JSON:
           <div className="mb-4 flex justify-between items-center">
             <div className="flex gap-2">
               <button
-                onClick={() => { setViewMode(viewMode === 'grid' ? 'single' : 'grid'); setSingleCardIndex(0); }}
-                className={`px-4 py-2 rounded-xl font-medium transition-all ${
-                  viewMode === 'single'
-                    ? "bg-stone-600 text-stone-100 border border-stone-500"
-                    : "bg-white/60 text-stone-500 hover:bg-white/80 border border-stone-200"
-                }`}
-              >
-                {viewMode === 'single' ? '☰ Grid' : '⊡ One by One'}
-              </button>
-              <button
                 onClick={() => setShowAllEnglish(!showAllEnglish)}
                 className={`px-4 py-2 rounded-xl font-medium transition-all ${
                   showAllEnglish
@@ -866,7 +856,7 @@ Return JSON:
             <div className="text-center py-12">
               <p className="text-stone-400 text-lg">No words at this level yet!</p>
             </div>
-          ) : viewMode === 'single' ? (() => {
+          ) : (activeTab === 'level0' || viewMode === 'single') ? (() => {
             const words = getDisplayWords();
             const idx = Math.min(singleCardIndex, words.length - 1);
             const word = words[idx];
