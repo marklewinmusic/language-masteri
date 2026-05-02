@@ -220,6 +220,13 @@ export default function WordCard({
         )}
       </div>
 
+      {/* Source content label */}
+      {word.example_sentence && (
+        <div className="px-2 py-0.5 flex items-center justify-center">
+          <span className="text-[10px] text-stone-400 italic truncate">📺 {word.example_sentence}</span>
+        </div>
+      )}
+
       {/* Verb infinitive badge */}
       {(word.is_verb || /^l/i.test(word.phonetic || '')) && (
         <div className="px-3 py-1 bg-purple-50 border-b border-purple-100 flex items-center gap-1">
