@@ -1145,16 +1145,7 @@ Return JSON:
     </div>
   </div>
 
-  {/* Session flashcard overlay */}
-  {sessionFlashcardData && (
-    <PostVideoFlashcards
-      words={sessionFlashcardData.words}
-      videoTitle={sessionFlashcardData.title}
-      userProfile={userProfile}
-      onClose={() => setSessionFlashcardData(null)}
-      onJournal={() => setSessionFlashcardData(null)}
-    />
-  )}
+
   </>
   );
 }
