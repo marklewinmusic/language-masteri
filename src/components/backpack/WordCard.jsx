@@ -36,14 +36,14 @@ function SentenceWords({ words, onAddToBackpack, showHebrew = true, showTranslit
         </p>
       )}
 
-      {/* Transliteration line — centered */}
+      {/* Transliteration line — centered, single line */}
       {showTransliteration && (
-        <p className="text-[10px] text-stone-500 text-center leading-snug flex flex-wrap justify-center gap-x-1">
+        <p className="text-[10px] text-stone-500 text-center leading-snug flex flex-nowrap justify-center gap-x-0.5 overflow-hidden">
           {words.map((w, i) => (
             <span
               key={i}
               onClick={(e) => handleWordClick(e, i)}
-              className={`cursor-pointer rounded px-0.5 transition-all ${activeIndex === i ? 'bg-cyan-100 text-cyan-700' : 'hover:bg-stone-100'}`}
+              className={`cursor-pointer rounded px-0.5 transition-all whitespace-nowrap ${activeIndex === i ? 'bg-cyan-100 text-cyan-700' : 'hover:bg-stone-100'}`}
             >
               {w.word || ''}
             </span>
