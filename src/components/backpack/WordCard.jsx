@@ -183,7 +183,13 @@ export default function WordCard({
 
         {showingHebrew && !showHebrew && showTransliteration && (
           <p className="text-cyan-600 font-bold text-base text-center">
-            {word.phonetic || word.word}
+            <EditableWord
+              text={word.phonetic || word.word}
+              editable={true}
+              onSave={(v) => updateWordMutation.mutate({ id: word.id, data: { phonetic: v } })}
+              className="text-cyan-600 font-bold text-base"
+              onClick={(e) => e.stopPropagation()}
+            />
           </p>
         )}
 
