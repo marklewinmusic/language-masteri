@@ -101,6 +101,7 @@ export default function WordCard({
   deleteWordMutation,
   handleAddWordFromSentence,
   generateCardSentence,
+  sessionTitleMap = {},
 }) {
   const [revealed, setRevealed] = useState(false);
   const [regeneratingImage, setRegeneratingImage] = useState(false);
@@ -218,7 +219,9 @@ export default function WordCard({
       {/* Source content label */}
       {word.example_sentence && (
         <div className="px-2 py-0.5 flex items-center justify-center">
-          <span className="text-[10px] text-stone-400 italic truncate">📺 {word.example_sentence}</span>
+          <span className="text-[10px] text-stone-400 italic truncate">
+            📺 {sessionTitleMap[word.example_sentence] || word.example_sentence}
+          </span>
         </div>
       )}
 

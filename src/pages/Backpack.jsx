@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -126,6 +126,22 @@ export default function Backpack() {
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });
+
+  const { data: mediaLibrary = [] } = useQuery({
+    queryKey: ['mediaLibraryTitles'],
+    queryFn: () => base44.entities.MediaLibrary.list(),
+    staleTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  // Build map: "Session N" → video title
+  const sessionTitleMap = useMemo(() => {
+    const map = {};
+    for (const v of mediaLibrary) {
+      if (v.default_day) map[`Session ${v.default_day}`] = v.title;
+    }
+    return map;
+  }, [mediaLibrary]);
 
   const { data: wordRatings = [] } = useQuery({
     queryKey: ['wordRatings', userProfile?.language, currentUser?.email],
@@ -925,6 +941,7 @@ Return JSON:
                   deleteWordMutation={deleteWordMutation}
                   handleAddWordFromSentence={handleAddWordFromSentence}
                   generateCardSentence={generateCardSentence}
+                  sessionTitleMap={sessionTitleMap}
                 />
               </div>
             )
@@ -965,6 +982,7 @@ Return JSON:
                   deleteWordMutation={deleteWordMutation}
                   handleAddWordFromSentence={handleAddWordFromSentence}
                   generateCardSentence={generateCardSentence}
+                  sessionTitleMap={sessionTitleMap}
                 />
               </div>
             );
@@ -994,6 +1012,7 @@ Return JSON:
                   deleteWordMutation={deleteWordMutation}
                   handleAddWordFromSentence={handleAddWordFromSentence}
                   generateCardSentence={generateCardSentence}
+                  sessionTitleMap={sessionTitleMap}
                 />
               ))}
             </div>
