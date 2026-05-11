@@ -13,7 +13,7 @@ export default function ContinuousTranscript({
   canEdit,
   isPlaying: isPlayingProp = false,
 }) {
-  const [showPhonetics, setShowPhonetics] = React.useState(true);
+  const [showPhonetics, setShowPhonetics] = React.useState(false);
   const [hideEnglish, setHideEnglish] = React.useState(true);
   const [hideTranslit, setHideTranslit] = React.useState(false);
   const [localTranscript, setLocalTranscript] = React.useState(transcriptProp);
@@ -295,7 +295,7 @@ export default function ContinuousTranscript({
                 : 'bg-white/10 border-white/20 text-white/60 hover:bg-white/20'
             }`}
           >
-            {showPhonetics ? '🔤 Show Transliteration' : 'אָ Show Phonetics'}
+            {showPhonetics ? 'אָ Show Hebrew' : '🔤 Show Phonetics'}
           </button>
         </div>
       </div>
@@ -433,13 +433,7 @@ export default function ContinuousTranscript({
                 ) : (
                   <>
                    {showPhonetics ? (
-                      segment.hebrew && (
-                        <p className="text-cyan-300 text-base font-medium leading-tight text-center break-words" dir="rtl">
-                          {renderWords(segIdx, 'hebrew', segment.hebrew, 'text-cyan-300 text-base font-medium')}
-                        </p>
-                      )
-                    ) : (
-                      !hideTranslit && (
+                      !hideTranslit && segment.transliteration && (
                         <p className="text-white text-base font-medium leading-tight text-center break-words">
                           {renderWords(segIdx, 'transliteration', segment.transliteration, 'text-white text-base font-medium')}
                           {canEdit && (
@@ -451,6 +445,12 @@ export default function ContinuousTranscript({
                               ✏️
                             </button>
                           )}
+                        </p>
+                      )
+                    ) : (
+                      segment.hebrew && (
+                        <p className="text-cyan-300 text-base font-medium leading-tight text-center break-words" dir="rtl">
+                          {renderWords(segIdx, 'hebrew', segment.hebrew, 'text-cyan-300 text-base font-medium')}
                         </p>
                       )
                     )}
