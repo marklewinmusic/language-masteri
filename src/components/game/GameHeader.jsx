@@ -318,7 +318,7 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
 
         {/* Brand */}
         <div className="text-center flex-1">
-          <p className="font-bold text-2xl tracking-widest" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif', letterSpacing: '0.08em', fontWeight: 500 }}>Language Mastery</p>
+          <p className="font-bold text-2xl tracking-widest" style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif', letterSpacing: '0.08em', fontWeight: 500 }}>Masteri Languages</p>
         </div>
 
         {/* Streak + Clock + Logout */}

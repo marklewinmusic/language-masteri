@@ -93,7 +93,7 @@ export default function Home() {
       } catch (e) {}
     };
     fetchUser();
-    document.title = "Home - Lashon Languages";
+    document.title = "Masteri Languages";
   }, []);
 
   const { data: userProfile, isLoading: profileLoading } = useQuery({
