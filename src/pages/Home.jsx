@@ -692,11 +692,7 @@ export default function Home() {
                   >
                     📅 Schedule <ChevronRight className="inline w-5 h-5 mb-1" />
                   </h2>
-                  <Link to={createPageUrl('Backpack')} className="no-underline">
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all" style={{ background: 'rgba(96,165,250,0.1)', color: '#93C5FD', border: '1px solid rgba(96,165,250,0.25)' }}>
-                      <span>🎒</span><span>Backpack</span>
-                    </div>
-                  </Link>
+
                 </div>
                   <div className="space-y-2">
                     {uniqueDays.filter(day => {
