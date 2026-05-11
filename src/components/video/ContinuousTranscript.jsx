@@ -13,7 +13,7 @@ export default function ContinuousTranscript({
   canEdit,
   isPlaying: isPlayingProp = false,
 }) {
-  const [showPhonetics, setShowPhonetics] = React.useState(false);
+  const [showPhonetics, setShowPhonetics] = React.useState(true);
   const [hideEnglish, setHideEnglish] = React.useState(true);
   const [hideTranslit, setHideTranslit] = React.useState(false);
   const [localTranscript, setLocalTranscript] = React.useState(transcriptProp);
@@ -301,7 +301,7 @@ export default function ContinuousTranscript({
       </div>
       <div className="space-y-1 flex flex-col items-center" onClick={() => setActiveWordKey(null)}>
         {transcript.map((segment, segIdx) => {
-          if (!segment.transliteration) return null;
+          if (!segment.transliteration && !segment.hebrew) return null;
           const isActive = getIsActive(segIdx);
 
           return (
