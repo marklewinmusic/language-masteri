@@ -1420,7 +1420,7 @@ Return a JSON with a "videos" array. Each video must have:
 
             {/* Language */}
             <Select value={filterLanguage} onValueChange={setFilterLanguage}>
-              <SelectTrigger className="bg-white border-stone-300 text-stone-700 w-36">
+              <SelectTrigger className="bg-white/10 border-white/20 text-white w-36">
                 <SelectValue placeholder="Language" />
               </SelectTrigger>
               <SelectContent>
@@ -1437,7 +1437,7 @@ Return a JSON with a "videos" array. Each video must have:
             {/* Difficulty - multiselect */}
             <div className="relative group">
               <button
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium bg-white border border-stone-300 text-stone-700 hover:border-stone-400 transition-all"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium bg-white/10 border border-white/20 text-white hover:border-white/40 transition-all"
               >
                 {filterDifficulty.length === 0 ? 'All Levels' : `${filterDifficulty.length} Level${filterDifficulty.length > 1 ? 's' : ''}`}
                 <ChevronDown className="w-3 h-3" />
@@ -1469,7 +1469,7 @@ Return a JSON with a "videos" array. Each video must have:
             {/* Topics multi-select */}
             <div className="relative group">
               <button
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium bg-white border border-stone-300 text-stone-700 hover:border-stone-400 transition-all"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium bg-white/10 border border-white/20 text-white hover:border-white/40 transition-all"
               >
                 {filterTopics.length === 0 ? 'All Topics' : `${filterTopics.length} Topic${filterTopics.length > 1 ? 's' : ''}`}
                 <ChevronDown className="w-3 h-3" />
