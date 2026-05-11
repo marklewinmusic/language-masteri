@@ -302,11 +302,7 @@ const GameHeader = React.memo(function GameHeader({ profile, coins, onBuyCoins }
                       </button>
                     ))}
                   </div>
-                  <div className="mt-2 pt-2" style={{ borderTop: '1px solid rgba(96,165,250,0.12)' }}>
-                    <Button onClick={handleLogout} className="w-full justify-start text-sm" style={{ background: 'rgba(239,68,68,0.08)', color: '#FCA5A5' }} variant="ghost">
-                      <LogOut className="w-4 h-4 mr-2" />Logout
-                    </Button>
-                  </div>
+
                 </div>
               </motion.div>
             )}
