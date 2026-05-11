@@ -601,12 +601,12 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 40%, #eae6da 100%)' }}>
+    <div className="min-h-screen" style={{ background: '#0A1628' }}>
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-20 -left-20 w-[500px] h-[500px] rounded-full blur-3xl" style={{ background: 'radial-gradient(circle, #b8a88018 0%, transparent 70%)' }} />
-        <div className="absolute top-1/3 right-0 w-96 h-96 rounded-full blur-3xl" style={{ background: 'radial-gradient(circle, #8a9a7815 0%, transparent 70%)' }} />
-        <div className="absolute bottom-0 left-1/4 w-80 h-80 rounded-full blur-3xl" style={{ background: 'radial-gradient(circle, #c8b89010 0%, transparent 70%)' }} />
+        <div className="absolute -top-20 -left-20 w-[500px] h-[500px] rounded-full blur-3xl" style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%)' }} />
+        <div className="absolute top-1/3 right-0 w-96 h-96 rounded-full blur-3xl" style={{ background: 'radial-gradient(circle, rgba(96,165,250,0.06) 0%, transparent 70%)' }} />
+        <div className="absolute bottom-0 left-1/4 w-80 h-80 rounded-full blur-3xl" style={{ background: 'radial-gradient(circle, rgba(29,78,216,0.05) 0%, transparent 70%)' }} />
       </div>
 
 
@@ -615,8 +615,8 @@ export default function Home() {
 
         {/* Managing user banner */}
         {managingUserEmail && currentUser?.role === 'admin' && (
-          <div className="mt-4 bg-amber-500/20 border border-amber-500/50 rounded-lg p-3 text-center">
-            <p className="text-amber-400 font-medium text-sm">👤 Managing: {managingUserEmail}</p>
+          <div className="mt-4 bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 text-center">
+            <p className="text-blue-300 font-medium text-sm">👤 Managing: {managingUserEmail}</p>
             <Button
               onClick={() => {
                 localStorage.removeItem('admin_managing_user');
@@ -686,14 +686,14 @@ export default function Home() {
               <div className="w-full max-w-md">
                 <div className="flex items-center justify-between mb-4">
                   <h2
-                    className="text-3xl font-bold cursor-pointer hover:opacity-80 transition-opacity"
-                    style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}
+                    className="text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity"
+                    style={{ color: '#BFDBFE', fontFamily: 'Inter, sans-serif' }}
                     onClick={() => navigate(createPageUrl("Days"))}
                   >
                     📅 Schedule <ChevronRight className="inline w-5 h-5 mb-1" />
                   </h2>
                   <Link to={createPageUrl('Backpack')} className="no-underline">
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all" style={{ background: '#ffffff', color: '#3d4a2e', boxShadow: '0 1px 4px rgba(0,0,0,0.08)', border: '1px solid #e0dcd4' }}>
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all" style={{ background: 'rgba(96,165,250,0.1)', color: '#93C5FD', border: '1px solid rgba(96,165,250,0.25)' }}>
                       <span>🎒</span><span>Backpack</span>
                     </div>
                   </Link>
@@ -729,15 +729,15 @@ export default function Home() {
                     return (
                       <div key={day.id}>
                         <div
-                          className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-3 flex items-center justify-between cursor-pointer hover:border-white/20 transition-all"
-                          style={{ backgroundColor: dayColor.bg + '40' }}
+                          className="backdrop-blur-xl rounded-xl p-3 flex items-center justify-between cursor-pointer transition-all"
+                          style={{ background: 'rgba(15,40,100,0.4)', border: '1px solid rgba(96,165,250,0.15)' }}
                           onClick={() => {
                             if (isMasterUser) { setExpandedDay(expandedDay === day.day_number ? null : day.day_number); return; }
                             setSessionModal(day);
                           }}
                         >
-                          <h3 className="font-bold text-sm" style={{ color: '#3d4a2e' }}>Session {day.day_number}</h3>
-                          <ChevronDown className={`w-4 h-4 transition-transform ml-auto ${isExpanded ? 'rotate-180' : ''}`} style={{ color: '#6b7c5a' }} />
+                          <h3 className="font-bold text-sm" style={{ color: '#BFDBFE' }}>Session {day.day_number}</h3>
+                          <ChevronDown className={`w-4 h-4 transition-transform ml-auto ${isExpanded ? 'rotate-180' : ''}`} style={{ color: '#60A5FA' }} />
                         </div>
                         <AnimatePresence>
                           {isExpanded && (
@@ -837,7 +837,7 @@ export default function Home() {
                                               setDragOverTask(null);
                                             }}
                                             className={`flex items-center justify-between px-3 py-2 rounded-lg hover:opacity-80 transition-all group ${isDragging ? 'cursor-grabbing opacity-50' : 'cursor-pointer'} ${isDragOver ? 'border-t-2 border-b-2 border-cyan-400 my-2' : ''}`}
-                                            style={{ background: isTaskDone ? '#5a6b5a30' : '#ffffff50', border: isDragOver ? undefined : '1px solid #5a6b5a20' }}
+                                            style={{ background: isTaskDone ? 'rgba(96,165,250,0.12)' : 'rgba(96,165,250,0.05)', border: isDragOver ? undefined : '1px solid rgba(96,165,250,0.12)' }}
                                             onClick={async () => {
                                               if (isDragging) return;
                                               // If generic "Watch a video" placeholder with no video, go to library to select one
@@ -901,11 +901,11 @@ export default function Home() {
                                               <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isTaskDone ? 'bg-green-500 border-green-500' : 'border-stone-400'}`}>
                                                 {isTaskDone && <Check className="w-2.5 h-2.5 text-white" />}
                                               </div>
-                                              <span className="text-sm font-medium" style={{ color: '#3d4a2e' }}>{task.name}</span>
+                                              <span className="text-sm font-medium" style={{ color: '#BFDBFE' }}>{task.name}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                             {(task.video_id || extractYouTubeId(task.youtube_url)) && <span className="text-xs" style={{ color: '#6b7c5a' }}>▶ video</span>}
-                                             {task.mediaUrl && <span className="text-xs" style={{ color: '#6b7c5a' }}>🎵 audio</span>}
+                                             {(task.video_id || extractYouTubeId(task.youtube_url)) && <span className="text-xs" style={{ color: '#60A5FA' }}>▶ video</span>}
+                                             {task.mediaUrl && <span className="text-xs" style={{ color: '#60A5FA' }}>🎵 audio</span>}
                                              {isMasterUser && (
                                                 <button
                                                   onClick={(e) => { e.stopPropagation(); handleStartEditTask(day.id, task); }}
