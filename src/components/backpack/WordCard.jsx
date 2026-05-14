@@ -109,12 +109,21 @@ export default function WordCard({
   const [regeneratingImage, setRegeneratingImage] = useState(false);
   const [localScript, setLocalScript] = useState(null); // null = use parent prop
 
-  // Auto-generate image if missing
+  const [pendingGeneration, setPendingGeneration] = useState(false);
+
+  // Auto-generate image if missing — queue with small delay to avoid hammering
   useEffect(() => {
-    if (!word.image_url && word.id && !word.id.startsWith('session_') && suggestingMnemonic !== word.id) {
-      suggestMnemonicForWord(word);
+    if (!word.image_url && word.id && !word.id.startsWith('session_')) {
+      setPendingGeneration(true);
+      const timer = setTimeout(() => {
+        suggestMnemonicForWord(word);
+        setPendingGeneration(false);
+      }, Math.random() * 2000); // stagger requests
+      return () => clearTimeout(timer);
     }
   }, [word.id]); // eslint-disable-line
+
+  const isGeneratingImage = suggestingMnemonic === word.id || pendingGeneration;
 
   const showHebrew = localScript !== null ? localScript === 'hebrew' : showHebrewProp;
   const showTransliteration = localScript !== null ? localScript === 'translit' : showTransliterationProp;
@@ -189,18 +198,21 @@ export default function WordCard({
             {showHebrew ? 'א' : 'abc'}
           </button>
         </div>
-        {regeneratingImage && (
-          <div className="absolute inset-0 z-10 bg-white/70 flex flex-col items-center justify-center gap-1">
-            <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
-            <span className="text-[10px] text-stone-400">Generating...</span>
-          </div>
-        )}
         {word.image_url ? (
           <img src={word.image_url} alt={word.phonetic} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-cyan-400/20 via-purple-400/20 to-pink-400/20 flex flex-col items-center justify-center text-center px-4">
-            <p className="text-cyan-600 font-bold text-xl mb-2" dir="rtl">{word.word}</p>
-            <p className="text-stone-500 text-sm">{word.phonetic}</p>
+          <div className="w-full h-full bg-gradient-to-br from-cyan-400/10 via-purple-400/10 to-pink-400/10 flex flex-col items-center justify-center text-center px-4 gap-2">
+            {(isGeneratingImage || regeneratingImage) ? (
+              <>
+                <Loader2 className="w-6 h-6 animate-spin text-purple-400" />
+                <span className="text-[10px] text-stone-400">Generating image...</span>
+              </>
+            ) : (
+              <>
+                <p className="text-cyan-600 font-bold text-xl" dir="rtl">{word.word}</p>
+                <p className="text-stone-500 text-sm">{word.phonetic}</p>
+              </>
+            )}
           </div>
         )}
 
