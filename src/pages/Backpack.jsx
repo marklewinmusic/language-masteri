@@ -981,6 +981,37 @@ Return JSON:
             <div className="text-center py-12">
               <p className="text-stone-400 text-lg">No words at this level yet!</p>
             </div>
+          ) : activeTab === 'level5' ? (
+            <div className="flex flex-wrap gap-4 justify-center">
+              {getDisplayWords().map((word) => (
+                <WordCard
+                  key={word.id}
+                  word={word}
+                  showAllEnglish={showAllEnglish}
+                  onEnglishToggle={() => setShowAllEnglish(v => !v)}
+                  showHebrew={showHebrew}
+                  showTransliteration={showTransliteration}
+                  showPhonetics={showPhonetics}
+                  isContentEditable={isContentEditable}
+                  mnemonicExplanations={mnemonicExplanations}
+                  setMnemonicExplanations={setMnemonicExplanations}
+                  cardSentences={cardSentences}
+                  generatingSentence={generatingSentence}
+                  fetchingTranslation={fetchingTranslation}
+                  suggestingMnemonic={suggestingMnemonic}
+                  isAdmin={isAdmin}
+                  updateWordMutation={updateWordMutation}
+                  handleRateWord={handleRateWord}
+                  suggestMnemonicForWord={suggestMnemonicForWord}
+                  approveWordMutation={approveWordMutation}
+                  handleDismissWord={handleDismissWord}
+                  deleteWordMutation={deleteWordMutation}
+                  handleAddWordFromSentence={handleAddWordFromSentence}
+                  generateCardSentence={generateCardSentence}
+                  sessionTitleMap={sessionTitleMap}
+                />
+              ))}
+            </div>
           ) : activeTab !== 'level0' ? (() => {
             const words = getDisplayWords();
             const idx = Math.min(singleCardIndex, words.length - 1);
