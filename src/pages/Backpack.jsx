@@ -32,9 +32,8 @@ export default function Backpack() {
   const [newWords, setNewWords] = useState([]);
   const [activeNewWord, setActiveNewWord] = useState(null);
   const [showAllEnglish, setShowAllEnglish] = useState(false);
-  const [scriptMode, setScriptMode] = useState('hebrew'); // 'hebrew' | 'translit'
-  const showHebrew = scriptMode === 'hebrew';
-  const showTransliteration = scriptMode === 'translit';
+  const [showHebrew, setShowHebrew] = useState(true);
+  const [showTransliteration, setShowTransliteration] = useState(true);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'single'
   const [singleCardIndex, setSingleCardIndex] = useState(0);
   const [activeSecondTab, setActiveSecondTab] = useState(null); // 'verbs' | 'corevocab' | null
@@ -954,6 +953,8 @@ Return JSON:
                   }}
                   showAllEnglish={showAllEnglish}
                   onEnglishToggle={() => setShowAllEnglish(v => !v)}
+                  onHebrewToggle={() => setShowHebrew(v => !v)}
+                  onTranslitToggle={() => setShowTransliteration(v => !v)}
                   showHebrew={showHebrew}
                   showTransliteration={showTransliteration}
                   showPhonetics={showPhonetics}
@@ -989,6 +990,8 @@ Return JSON:
                   word={word}
                   showAllEnglish={showAllEnglish}
                   onEnglishToggle={() => setShowAllEnglish(v => !v)}
+                  onHebrewToggle={() => setShowHebrew(v => !v)}
+                  onTranslitToggle={() => setShowTransliteration(v => !v)}
                   showHebrew={showHebrew}
                   showTransliteration={showTransliteration}
                   showPhonetics={showPhonetics}
@@ -1027,6 +1030,8 @@ Return JSON:
                   word={word}
                   showAllEnglish={showAllEnglish}
                   onEnglishToggle={() => setShowAllEnglish(v => !v)}
+                  onHebrewToggle={() => setShowHebrew(v => !v)}
+                  onTranslitToggle={() => setShowTransliteration(v => !v)}
                   showHebrew={showHebrew}
                   showTransliteration={showTransliteration}
                   showPhonetics={showPhonetics}
@@ -1058,6 +1063,8 @@ Return JSON:
                   word={word}
                   showAllEnglish={showAllEnglish}
                   onEnglishToggle={() => setShowAllEnglish(v => !v)}
+                  onHebrewToggle={() => setShowHebrew(v => !v)}
+                  onTranslitToggle={() => setShowTransliteration(v => !v)}
                   showHebrew={showHebrew}
                   showTransliteration={showTransliteration}
                   showPhonetics={showPhonetics}

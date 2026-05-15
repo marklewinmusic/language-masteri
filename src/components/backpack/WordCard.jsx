@@ -76,6 +76,8 @@ export default function WordCard({
   showTransliteration: showTransliterationProp = true,
   onScriptToggle,
   onEnglishToggle,
+  onHebrewToggle,
+  onTranslitToggle,
   isContentEditable,
   mnemonicExplanations,
   setMnemonicExplanations,
@@ -100,11 +102,8 @@ export default function WordCard({
 
   const isGeneratingImage = suggestingMnemonic === word.id;
 
-  const [showHebrewLocal, setShowHebrewLocal] = useState(showHebrewProp ?? true);
-  const [showTranslitLocal, setShowTranslitLocal] = useState(showTransliterationProp ?? true);
-
-  const showHebrew = showHebrewLocal;
-  const showTransliteration = showTranslitLocal;
+  const showHebrew = showHebrewProp ?? true;
+  const showTransliteration = showTransliterationProp ?? true;
 
   const regenerateImageFromDescription = async (description) => {
     setRegeneratingImage(true);
@@ -159,18 +158,18 @@ export default function WordCard({
             EN
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); setShowTranslitLocal(v => !v); }}
+            onClick={(e) => { e.stopPropagation(); if (onTranslitToggle) onTranslitToggle(); }}
             className={`px-1.5 py-0.5 rounded text-[9px] font-bold transition-all leading-none border ${
-              showTranslitLocal ? 'bg-stone-700 text-white border-stone-600' : 'bg-white/80 border-stone-200 text-stone-500 hover:bg-white hover:text-stone-700'
+              showTransliteration ? 'bg-stone-700 text-white border-stone-600' : 'bg-white/80 border-stone-200 text-stone-500 hover:bg-white hover:text-stone-700'
             }`}
             title="Toggle transliteration"
           >
             abc
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); setShowHebrewLocal(v => !v); }}
+            onClick={(e) => { e.stopPropagation(); if (onHebrewToggle) onHebrewToggle(); }}
             className={`px-1.5 py-0.5 rounded text-[9px] font-bold transition-all leading-none border ${
-              showHebrewLocal ? 'bg-stone-700 text-white border-stone-600' : 'bg-white/80 border-stone-200 text-stone-500 hover:bg-white hover:text-stone-700'
+              showHebrew ? 'bg-stone-700 text-white border-stone-600' : 'bg-white/80 border-stone-200 text-stone-500 hover:bg-white hover:text-stone-700'
             }`}
             title="Toggle Hebrew"
           >
