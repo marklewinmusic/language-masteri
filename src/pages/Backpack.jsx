@@ -693,11 +693,11 @@ Return JSON with:
     setGeneratingSentence(prev => ({ ...prev, [word.id]: false }));
   };
 
-  const handleAddWordFromSentence = async (wordText, meaning) => {
+  const handleAddWordFromSentence = async (wordText, meaning, hebrew) => {
     const exists = wordRatings.find(w => (w.phonetic || w.word)?.toLowerCase() === wordText.toLowerCase());
     if (exists) { toast.info('Already in backpack!'); return; }
     await createWordMutation.mutateAsync({
-      word: wordText, translation: meaning, phonetic: wordText,
+      word: hebrew || wordText, translation: meaning, phonetic: wordText,
       category: 'wordbank', language: userProfile?.language || 'hebrew',
       times_practiced: 0, mastered: false,
     });

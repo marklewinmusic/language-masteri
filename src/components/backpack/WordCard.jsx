@@ -51,27 +51,16 @@ function SentenceWords({ words, onAddToBackpack, showHebrew = true, showTranslit
         </p>
       )}
 
-      {/* Active word action popup — clicking a word opens edit mode directly */}
+      {/* Active word action popup — one tap to add */}
       {activeIndex !== null && (
         <div className="flex items-center justify-center gap-1 py-1">
-          <span className="flex items-center gap-1 bg-cyan-50 border border-cyan-200 rounded px-1.5 py-0.5">
-            <input
-              autoFocus
-              value={editingWord}
-              onChange={e => setEditingWord(e.target.value)}
-              placeholder="transliteration..."
-              className="text-[10px] font-semibold text-cyan-700 w-20 outline-none bg-transparent border-r border-cyan-200 pr-1"
-            />
-            <input
-              value={editingMeaning}
-              onChange={e => setEditingMeaning(e.target.value)}
-              placeholder="meaning..."
-              className="text-[10px] text-stone-600 w-20 outline-none bg-transparent"
-            />
+          <span className="flex items-center gap-2 bg-cyan-50 border border-cyan-200 rounded-lg px-2 py-1">
+            <span className="text-[11px] font-semibold text-cyan-700">{words[activeIndex].word}</span>
+            {words[activeIndex].meaning && <span className="text-[10px] text-stone-500">= {words[activeIndex].meaning}</span>}
             <button
-              onClick={() => { onAddToBackpack(editingWord || words[activeIndex].word, editingMeaning); setActiveIndex(null); }}
-              className="text-green-500 hover:text-green-700"
-            ><Plus className="w-3 h-3" /></button>
+              onClick={() => { onAddToBackpack(words[activeIndex].word, words[activeIndex].meaning, words[activeIndex].hebrew); setActiveIndex(null); }}
+              className="flex items-center gap-0.5 bg-green-500 text-white rounded px-1.5 py-0.5 text-[10px] font-bold hover:bg-green-600"
+            ><Plus className="w-3 h-3" /> Add</button>
             <button onClick={() => setActiveIndex(null)} className="text-stone-300 hover:text-stone-500"><X className="w-3 h-3" /></button>
           </span>
         </div>
@@ -310,8 +299,8 @@ export default function WordCard({
               {showTransliteration && (
                 <SentenceWords
                   words={cardSentences[word.id].words}
-                  onAddToBackpack={handleAddWordFromSentence}
-                  showHebrew={false}
+                  onAddToBackpack={(w, meaning, hebrew) => handleAddWordFromSentence(w, meaning, hebrew)}
+                  showHebrew={true}
                   showTransliteration={true}
                 />
               )}
