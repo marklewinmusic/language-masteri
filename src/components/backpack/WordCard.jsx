@@ -194,14 +194,12 @@ export default function WordCard({
               <>
                 <p className="text-cyan-600 font-bold text-xl" dir="rtl">{word.word}</p>
                 <p className="text-stone-500 text-sm">{word.phonetic}</p>
-                {imgFailed && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setImgFailed(false); suggestMnemonicForWord(word); }}
-                    className="text-[9px] text-purple-400 underline mt-1"
-                  >
-                    🎨 Regenerate
-                  </button>
-                )}
+                <button
+                  onClick={(e) => { e.stopPropagation(); setImgFailed(false); suggestMnemonicForWord(word); }}
+                  className="text-[9px] text-purple-400 underline mt-1"
+                >
+                  🎨 Regenerate
+                </button>
               </>
             )}
           </div>

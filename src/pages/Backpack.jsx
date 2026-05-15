@@ -353,7 +353,7 @@ Return JSON:
   // Auto-generate images for all words missing them — sequential queue
   useEffect(() => {
     const wordsNeedingImages = langFilteredRatings.filter(
-      w => !w.image_url && w.id && !w.id.startsWith('session_') && !w._shared && !queuedWordIds.current.has(w.id)
+      w => !w.image_url && w.id && !w.id.startsWith('session_') && !queuedWordIds.current.has(w.id)
     );
     if (wordsNeedingImages.length === 0 || isRunningQueue.current) return;
 
