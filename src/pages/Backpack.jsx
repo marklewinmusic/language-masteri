@@ -53,6 +53,7 @@ export default function Backpack() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestingMnemonic, setSuggestingMnemonic] = useState(null); // wordId currently suggesting
+  const [mnemonicQueue, setMnemonicQueue] = useState(new Set()); // all wordIds queued for generation
   const [showPhonetics, setShowPhonetics] = useState(false); // global toggle for all cards
   const [cardSentences, setCardSentences] = useState({});
   const [generatingSentence, setGeneratingSentence] = useState({});
@@ -359,6 +360,7 @@ Return JSON:
 
     // Mark them as queued immediately to prevent duplicate queuing on re-renders
     wordsNeedingImages.forEach(w => queuedWordIds.current.add(w.id));
+    setMnemonicQueue(prev => { const next = new Set(prev); wordsNeedingImages.forEach(w => next.add(w.id)); return next; });
 
     let cancelled = false;
     isRunningQueue.current = true;
@@ -366,6 +368,7 @@ Return JSON:
       for (const word of wordsNeedingImages) {
         if (cancelled) break;
         await suggestMnemonicRef.current(word);
+        setMnemonicQueue(prev => { const next = new Set(prev); next.delete(word.id); return next; });
         await new Promise(r => setTimeout(r, 500));
       }
       isRunningQueue.current = false;
@@ -965,6 +968,7 @@ Return JSON:
                   generatingSentence={generatingSentence}
                   fetchingTranslation={fetchingTranslation}
                   suggestingMnemonic={suggestingMnemonic}
+                  mnemonicQueue={mnemonicQueue}
                   isAdmin={isAdmin}
                   updateWordMutation={updateWordMutation}
                   handleRateWord={handleRateWord}
@@ -1002,6 +1006,7 @@ Return JSON:
                   generatingSentence={generatingSentence}
                   fetchingTranslation={fetchingTranslation}
                   suggestingMnemonic={suggestingMnemonic}
+                  mnemonicQueue={mnemonicQueue}
                   isAdmin={isAdmin}
                   updateWordMutation={updateWordMutation}
                   handleRateWord={handleRateWord}
@@ -1042,6 +1047,7 @@ Return JSON:
                   generatingSentence={generatingSentence}
                   fetchingTranslation={fetchingTranslation}
                   suggestingMnemonic={suggestingMnemonic}
+                  mnemonicQueue={mnemonicQueue}
                   isAdmin={isAdmin}
                   updateWordMutation={updateWordMutation}
                   handleRateWord={handleRateWord}
@@ -1075,6 +1081,7 @@ Return JSON:
                   generatingSentence={generatingSentence}
                   fetchingTranslation={fetchingTranslation}
                   suggestingMnemonic={suggestingMnemonic}
+                  mnemonicQueue={mnemonicQueue}
                   isAdmin={isAdmin}
                   updateWordMutation={updateWordMutation}
                   handleRateWord={handleRateWord}

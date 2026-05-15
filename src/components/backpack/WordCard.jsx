@@ -85,6 +85,7 @@ export default function WordCard({
   generatingSentence,
   fetchingTranslation,
   suggestingMnemonic,
+  mnemonicQueue = new Set(),
   isAdmin,
   updateWordMutation,
   handleRateWord,
@@ -100,7 +101,7 @@ export default function WordCard({
   const [regeneratingImage, setRegeneratingImage] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
 
-  const isGeneratingImage = suggestingMnemonic === word.id;
+  const isGeneratingImage = suggestingMnemonic === word.id || mnemonicQueue.has(word.id);
 
   const showHebrew = showHebrewProp ?? true;
   const showTransliteration = showTransliterationProp ?? true;
