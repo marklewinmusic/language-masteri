@@ -33,13 +33,14 @@ export default function SessionFlashcardsSection({ userProfile, onSessionSelect 
     .filter(d => {
       const hasContent = (d.subsections || []).some(s => {
         const taskName = s.name?.toLowerCase() || '';
-        // Filter Hebrew-only content
         if (taskName.includes('the bride') && userLang !== 'hebrew') return false;
         return s.video_id || s.mediaUrl || s.youtube_url;
       });
       return hasContent;
     })
     .sort((a, b) => a.day_number - b.day_number)
+    // Deduplicate by day_number — keep first occurrence
+    .filter((d, idx, arr) => arr.findIndex(x => x.day_number === d.day_number) === idx)
     .slice(0, 3);
 
   if (sessionsWithContent.length === 0) return null;
