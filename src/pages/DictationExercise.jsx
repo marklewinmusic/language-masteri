@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Play, Pause, ChevronRight, CheckCircle, XCircle, Eye } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
+import { ArrowLeft, Play, Pause, ChevronRight, CheckCircle, XCircle, Eye, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -13,6 +15,31 @@ export default function DictationExercise() {
   const [inputs, setInputs] = useState({});
   const [revealed, setRevealed] = useState({});
   const [done, setDone] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: user } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const addWordMutation = useMutation({
+    mutationFn: async (wordData) => {
+      return await base44.entities.Word.create({
+        word: wordData.word,
+        translation: wordData.translation || wordData.word,
+        phonetic: wordData.phonetic || wordData.word,
+        category: "wordbank",
+        language: "hebrew",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["words"] });
+      toast.success("Word added to backpack!");
+    },
+    onError: () => {
+      toast.error("Failed to add word");
+    },
+  });
 
   const data = JSON.parse(sessionStorage.getItem("dictationData") || "{}");
   const { videoId, title, transcript = [] } = data;
@@ -246,6 +273,24 @@ export default function DictationExercise() {
                   }
                 }}
               />
+
+              {/* Clickable words */}
+              {inputs[currentSegIdx] && (
+                <div className="flex flex-wrap gap-2 bg-white/5 rounded-xl p-3 border border-white/10">
+                  {inputs[currentSegIdx].split(/\s+/).map((word, idx) => (
+                    <motion.button
+                      key={idx}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => addWordMutation.mutate({ word })}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 hover:text-indigo-100 text-sm transition-all border border-indigo-500/30 group"
+                    >
+                      <span>{word}</span>
+                      <Plus className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </motion.button>
+                  ))}
+                </div>
+              )}
 
               {/* Reveal answer */}
               <AnimatePresence>
