@@ -166,6 +166,13 @@ export default function Journal() {
     }
   }, [text]);
 
+  // Auto-generate exercises when vocab words are ready
+  useEffect(() => {
+    if (suggestedVocab.length > 0 && exercises.length === 0 && !generatingExercises) {
+      generateExercises();
+    }
+  }, [suggestedVocab.length]);
+
   // Translate the full entry to learning language
   const handleTranslateEntry = async () => {
     if (!text.trim()) return;
@@ -508,18 +515,9 @@ Return JSON with an array "exercises" where each item has: word (the vocab word 
             <div className="relative z-10 px-6 pb-4 pt-2" style={{ borderTop: '1px dashed rgba(200,180,140,0.5)' }}>
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-semibold tracking-wide uppercase" style={{ color: '#9b7e5a', fontFamily: 'Jost, sans-serif' }}>
-                  📝 Translate these sentences ({langName})
+                  📝 Rewrite in {langName}
                 </p>
-                {exercises.length === 0 ? (
-                  <button
-                    onClick={generateExercises}
-                    disabled={generatingExercises}
-                    className="text-xs px-3 py-1 rounded-full font-semibold transition-all disabled:opacity-50 flex items-center gap-1"
-                    style={{ background: 'rgba(90,107,90,0.15)', color: '#5a6b5a', border: '1px solid rgba(90,107,90,0.3)', fontFamily: 'Jost, sans-serif' }}
-                  >
-                    {generatingExercises ? <><Loader2 className="w-3 h-3 animate-spin" /> Generating...</> : '✨ Generate exercises'}
-                  </button>
-                ) : (
+                {exercises.length > 0 && (
                   <button onClick={() => setExercises([])} className="text-xs" style={{ color: '#9b7e5a' }}>✕ Clear</button>
                 )}
               </div>
