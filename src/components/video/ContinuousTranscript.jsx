@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Play, Pause, Loader2, Check, X, Plus } from "lucide-react";
+import { Play, Pause, Loader2, Check, X, Plus, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ContinuousTranscript({ 
@@ -41,6 +41,43 @@ export default function ContinuousTranscript({
   const [wordTranslations, setWordTranslations] = React.useState({}); // key -> translation string
   const [translatingKey, setTranslatingKey] = React.useState(null);
   const [revealedSentences, setRevealedSentences] = React.useState(new Set());
+  const [generatingHebrew, setGeneratingHebrew] = React.useState(false);
+
+  const missingHebrew = transcript.some(s => s.transliteration && !s.hebrew);
+
+  const generateMissingHebrew = async () => {
+    const missing = transcript
+      .map((s, i) => ({ ...s, _idx: i }))
+      .filter(s => s.transliteration && !s.hebrew);
+    if (!missing.length) return;
+
+    setGeneratingHebrew(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Convert these ${missing.length} Hebrew transliterations back into Hebrew script. Each entry is numbered. Return JSON with a "segments" array in the same order, each: { hebrew: string (Hebrew script) }.
+${missing.map((s, i) => `${i + 1}. ${s.transliteration}`).join('\n')}`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            segments: {
+              type: 'array',
+              items: { type: 'object', properties: { hebrew: { type: 'string' } } }
+            }
+          }
+        }
+      });
+      missing.forEach((seg, i) => {
+        const hebrew = result?.segments?.[i]?.hebrew;
+        if (hebrew) {
+          applyLocalEdit(seg._idx, 'hebrew', hebrew);
+          if (onEditWord) onEditWord(seg._idx, 'hebrew', hebrew);
+        }
+      });
+    } catch (e) {
+      console.error('Failed to generate Hebrew', e);
+    }
+    setGeneratingHebrew(false);
+  };
 
   const toggleSentenceReveal = (segIdx) => {
     setRevealedSentences(prev => {
@@ -266,6 +303,16 @@ export default function ContinuousTranscript({
           <p className="text-white/30 text-xs">Hover a word and click 🎒 to add to backpack</p>
         )}
         <div className="ml-auto flex items-center gap-1.5 flex-wrap">
+          {canEdit && missingHebrew && (
+            <button
+              onClick={generateMissingHebrew}
+              disabled={generatingHebrew}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold transition-all border bg-purple-500/20 border-purple-500/50 text-purple-300 hover:bg-purple-500/30"
+            >
+              {generatingHebrew ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+              {generatingHebrew ? 'Generating...' : 'Generate Hebrew'}
+            </button>
+          )}
           <button
             onClick={() => setHideEnglish(prev => !prev)}
             className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold transition-all border ${
