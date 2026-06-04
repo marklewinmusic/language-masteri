@@ -1884,6 +1884,7 @@ Return a JSON with a "videos" array. Each video must have:
                     onDeleteSegment={deleteTranscriptSegment}
                     canEdit={canEdit}
                     isPlaying={isPlaying}
+                    language={selectedVideo?.language || userProfile?.language || 'hebrew'}
                   />
                   <div className="mt-6 pb-8 flex justify-center">
                     {sessionDay ? (

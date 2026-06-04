@@ -12,7 +12,9 @@ export default function ContinuousTranscript({
   onDeleteSegment,
   canEdit,
   isPlaying: isPlayingProp = false,
+  language = 'hebrew',
 }) {
+  const isHebrew = language === 'hebrew';
   const [showPhonetics, setShowPhonetics] = React.useState(true);
   const [hideEnglish, setHideEnglish] = React.useState(true);
   const [localTranscript, setLocalTranscript] = React.useState(transcriptProp);
@@ -22,9 +24,9 @@ export default function ContinuousTranscript({
     setLocalTranscript(transcriptProp);
   }, [transcriptProp]);
 
-  // Auto-generate Hebrew if missing when transcript loads
+  // Auto-generate Hebrew if missing when transcript loads (Hebrew only)
   React.useEffect(() => {
-    if (transcriptProp?.length > 0 && transcriptProp.some(s => s.transliteration && !s.hebrew)) {
+    if (language === 'hebrew' && transcriptProp?.length > 0 && transcriptProp.some(s => s.transliteration && !s.hebrew)) {
       generateMissingHebrew();
     }
   }, [transcriptProp]);
@@ -335,16 +337,18 @@ ${missing.map((s, i) => `${i + 1}. Transliteration: "${s.transliteration}" | Eng
           >
             {hideEnglish ? '👁 English' : '🚫 English'}
           </button>
-          <button
-            onClick={() => setShowPhonetics(prev => !prev)}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all border ${
-              showPhonetics
-                ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300'
-                : 'bg-white/10 border-white/20 text-white/60 hover:bg-white/20'
-            }`}
-          >
-            {showPhonetics ? 'אָ Show Hebrew' : '🔤 Show Phonetics'}
-          </button>
+          {isHebrew && (
+            <button
+              onClick={() => setShowPhonetics(prev => !prev)}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all border ${
+                showPhonetics
+                  ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300'
+                  : 'bg-white/10 border-white/20 text-white/60 hover:bg-white/20'
+              }`}
+            >
+              {showPhonetics ? 'אָ Show Hebrew' : '🔤 Show Phonetics'}
+            </button>
+          )}
         </div>
       </div>
       <div className="space-y-1 flex flex-col items-center" onClick={() => setActiveWordKey(null)}>
