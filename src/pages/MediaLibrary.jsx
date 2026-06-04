@@ -601,7 +601,7 @@ Keep natural sentence breaks. Return a JSON object with a "transcript" array.`,
     if (formData.default_day) {
       const dayNum = parseInt(formData.default_day);
       try {
-        const matchingDays = await base44.entities.Day.filter({ day_number: dayNum });
+        const matchingDays = await base44.entities.Day.filter({ day_number: dayNum, language: data.language || formData.language });
         for (const day of matchingDays) {
           const subsections = day.subsections || [];
           const videoTaskId = `video_${data.video_id || formData.video_id}`;
@@ -688,7 +688,7 @@ Keep natural sentence breaks. Return a JSON object with a "transcript" array.`,
         // Also inject into the user's specific session day if session # provided
         if (au.session) {
           const sessionNum = parseInt(au.session);
-          const matchingDays = await base44.entities.Day.filter({ day_number: sessionNum });
+          const matchingDays = await base44.entities.Day.filter({ day_number: sessionNum, language: data.language || formData.language });
           for (const day of matchingDays) {
             const subsections = day.subsections || [];
             const videoTaskId = `video_${data.video_id}`;
