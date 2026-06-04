@@ -75,8 +75,8 @@ export default function SessionFlow() {
         );
         navigate("/DictationExercise");
         break;
-      case 2: // Speak (SpeakingSession)
-        navigate(`/SpeakingSession?videoId=${sessionId}`);
+      case 2: // Speak (SpeakAudio)
+        navigate(`/SpeakAudio?videoId=${sessionId}&dayId=${dayId || ""}&taskId=${taskId || ""}`);
         break;
       case 3: // Flashcards
         navigate(`/Flashcards?videoId=${sessionId}`);

@@ -18,6 +18,7 @@ import MasterFluencyLanding from '@/pages/MasterFluencyLanding';
 import SongListenPage from '@/pages/SongListenPage';
 import DictationExercise from '@/pages/DictationExercise';
 import SessionFlow from '@/pages/SessionFlow';
+import SpeakAudio from '@/pages/SpeakAudio';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -80,6 +81,7 @@ const AuthenticatedApp = () => {
       <Route path="/SongListenPage" element={<SongListenPage />} />
       <Route path="/DictationExercise" element={<LayoutWrapper currentPageName="DictationExercise"><DictationExercise /></LayoutWrapper>} />
       <Route path="/SessionFlow" element={<LayoutWrapper currentPageName="SessionFlow"><SessionFlow /></LayoutWrapper>} />
+      <Route path="/SpeakAudio" element={<LayoutWrapper currentPageName="SpeakAudio"><SpeakAudio /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
