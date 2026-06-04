@@ -852,7 +852,7 @@ export default function Home() {
                                               }
                                               const ytId = task.video_id || extractYouTubeId(task.youtube_url);
                                              if (ytId) {
-                                               navigate(createPageUrl('MediaLibrary') + `?videoId=${ytId}`);
+                                               navigate(createPageUrl('MediaLibrary') + `?videoId=${ytId}&dayId=${day.id}&taskId=${task.id}`);
                                              } else if (task.mediaUrl) {
                                                // Look up saved transcript from MediaLibrary
                                                let transcript = task.transcript || '';
@@ -976,7 +976,7 @@ export default function Home() {
                     key={task.id}
                     onClick={() => {
                       setSessionModal(null);
-                      navigate(createPageUrl('MediaLibrary') + `?videoId=${ytId}&sessionDay=${sessionModal.day_number}`);
+                      navigate(createPageUrl('MediaLibrary') + `?videoId=${ytId}&sessionDay=${sessionModal.day_number}&dayId=${sessionModal.id}&taskId=${task.id}`);
                     }}
                     className="flex items-center gap-3 bg-stone-100 rounded-xl p-3 border border-stone-200 hover:border-stone-400 transition-all w-full text-left"
                   >

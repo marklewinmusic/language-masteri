@@ -90,9 +90,33 @@ export default function MediaLibrary() {
   const [newTopicInput, setNewTopicInput] = useState("");
 
   const sessionDay = new URLSearchParams(window.location.search).get('sessionDay');
+  const urlDayId = new URLSearchParams(window.location.search).get('dayId');
+  const urlTaskId = new URLSearchParams(window.location.search).get('taskId');
+
+  const markTaskComplete = async () => {
+    if (!urlDayId || !urlTaskId) return;
+    try {
+      const progList = await base44.entities.DayProgress.filter({ day_id: urlDayId });
+      const prog = progList[0];
+      if (prog) {
+        const already = (prog.subsections_completed || []).includes(urlTaskId);
+        if (!already) {
+          await base44.entities.DayProgress.update(prog.id, {
+            subsections_completed: [...(prog.subsections_completed || []), urlTaskId]
+          });
+        }
+      } else {
+        await base44.entities.DayProgress.create({
+          day_id: urlDayId,
+          subsections_completed: [urlTaskId]
+        });
+      }
+    } catch (e) { console.error('Failed to mark task complete', e); }
+  };
 
   const handleStartFlashcards = async () => {
     setLoadingFlashcards(true);
+    await markTaskComplete();
     try {
       const vid = selectedVideo;
       const sessionLabel = vid?.default_day ? `Session ${vid.default_day}` : vid?.title;
@@ -111,7 +135,11 @@ export default function MediaLibrary() {
         if (result.words?.length) {
           setSessionVocabWords(result.words);
           setShowPostVideoFlashcards(true);
+        } else {
+          navigate(createPageUrl('Home'));
         }
+      } else {
+        navigate(createPageUrl('Home'));
       }
     } catch (e) { console.error('Failed to load session vocab', e); }
     setLoadingFlashcards(false);
@@ -119,6 +147,7 @@ export default function MediaLibrary() {
 
   const handleRankWords = async () => {
     if (!sessionDay) return;
+    await markTaskComplete();
     const words = await base44.entities.Word.filter({ example_sentence: `Session ${sessionDay}` });
     setSessionVocabWords(words.length > 0 ? words : []);
     setShowPostVideoFlashcards(true);
@@ -1950,7 +1979,7 @@ Return a JSON with a "videos" array. Each video must have:
         words={sessionVocabWords}
         videoTitle={selectedVideo?.title}
         userProfile={userProfile}
-        onClose={() => { setShowPostVideoFlashcards(false); setSessionVocabWords([]); }}
+        onClose={() => { setShowPostVideoFlashcards(false); setSessionVocabWords([]); navigate(createPageUrl('Home')); }}
       />
     )}
     <TranslatorWidget />
