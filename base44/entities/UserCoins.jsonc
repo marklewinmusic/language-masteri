@@ -1,0 +1,22 @@
+{
+  "name": "UserCoins",
+  "type": "object",
+  "properties": {
+    "coins": {
+      "type": "number",
+      "default": 0
+    },
+    "unlocked_items": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "equipped_item": {
+      "type": "string",
+      "description": "Currently equipped item for the parrot"
+    }
+  },
+  "required": []
+}

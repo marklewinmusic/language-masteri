@@ -1,0 +1,22 @@
+{
+  "name": "ChatMessage",
+  "type": "object",
+  "properties": {
+    "from_user": {
+      "type": "string"
+    },
+    "to_user": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "hebrew_text": {
+      "type": "string"
+    },
+    "ai_suggestion": {
+      "type": "string"
+    }
+  },
+  "required": []
+}

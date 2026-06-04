@@ -159,15 +159,6 @@ export default function WordCard({
             EN
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); if (onTranslitToggle) onTranslitToggle(); }}
-            className={`px-1.5 py-0.5 rounded text-[9px] font-bold transition-all leading-none border ${
-              showTransliteration ? 'bg-stone-700 text-white border-stone-600' : 'bg-white/80 border-stone-200 text-stone-500 hover:bg-white hover:text-stone-700'
-            }`}
-            title="Toggle transliteration"
-          >
-            abc
-          </button>
-          <button
             onClick={(e) => { e.stopPropagation(); if (onHebrewToggle) onHebrewToggle(); }}
             className={`px-1.5 py-0.5 rounded text-[9px] font-bold transition-all leading-none border ${
               showHebrew ? 'bg-stone-700 text-white border-stone-600' : 'bg-white/80 border-stone-200 text-stone-500 hover:bg-white hover:text-stone-700'

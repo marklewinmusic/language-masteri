@@ -1,0 +1,17 @@
+{
+  "name": "Achievement",
+  "type": "object",
+  "properties": {
+    "badge_id": {
+      "type": "string"
+    },
+    "earned_date": {
+      "type": "string"
+    },
+    "shared": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": []
+}
