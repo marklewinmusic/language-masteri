@@ -373,7 +373,7 @@ Return JSON:
   suggestMnemonicRef.current = suggestMnemonicForWord;
 
   const userLang = userProfile?.language || 'hebrew';
-  const langFilteredRatings = wordRatings.filter(w => !w.language || w.language === userLang);
+  const langFilteredRatings = wordRatings.filter(w => w.language === userLang);
 
   // Track which word IDs have been queued for auto-generation (persists across re-renders)
   const queuedWordIds = React.useRef(new Set());
