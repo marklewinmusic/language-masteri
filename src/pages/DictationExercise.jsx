@@ -124,7 +124,7 @@ export default function DictationExercise() {
             {transcript.map((seg, i) => (
               <div key={i} className={`rounded-xl p-3 text-left text-sm ${inputs[i] ? "bg-white/10" : "bg-white/5"}`}>
                 <p className="text-white/40 text-xs mb-1">Sentence {i + 1}</p>
-                <p className="text-white/80">{seg.transliteration || seg.text}</p>
+                <p className="text-white/80 whitespace-nowrap overflow-x-auto">{seg.transliteration || seg.text}</p>
                 {inputs[i] && (
                   <p className="text-white/50 mt-1 italic">You wrote: {inputs[i]}</p>
                 )}
@@ -255,12 +255,12 @@ export default function DictationExercise() {
                     style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.4)" }}
                   >
                     <p className="text-indigo-300 text-xs font-semibold uppercase tracking-wider">Answer</p>
-                    <p className="text-white text-base font-medium">{currentSeg.transliteration || currentSeg.text}</p>
+                    <p className="text-white text-base font-medium whitespace-nowrap overflow-x-auto">{currentSeg.transliteration || currentSeg.text}</p>
                     {currentSeg.english && (
                       <p className="text-white/50 text-sm">{currentSeg.english}</p>
                     )}
                     {currentSeg.hebrew && (
-                      <p className="text-cyan-300 text-base font-bold" dir="rtl">{currentSeg.hebrew}</p>
+                      <p className="text-cyan-300 text-base font-bold whitespace-nowrap overflow-x-auto" dir="rtl">{currentSeg.hebrew}</p>
                     )}
                   </motion.div>
                 ) : (
