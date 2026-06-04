@@ -12,10 +12,18 @@ export default function DictationExercise() {
   const playerRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSegIdx, setCurrentSegIdx] = useState(0);
-  const [inputs, setInputs] = useState({});
+  const [inputs, setInputs] = useState(() => {
+    const saved = localStorage.getItem("dictationInputs");
+    return saved ? JSON.parse(saved) : {};
+  });
   const [revealed, setRevealed] = useState({});
   const [done, setDone] = useState(false);
   const queryClient = useQueryClient();
+
+  // Save inputs to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("dictationInputs", JSON.stringify(inputs));
+  }, [inputs]);
 
   const { data: user } = useQuery({
     queryKey: ["currentUser"],
