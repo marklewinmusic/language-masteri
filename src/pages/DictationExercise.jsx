@@ -217,9 +217,6 @@ export default function DictationExercise() {
               className="space-y-4"
             >
               <div className="flex items-center justify-center gap-2">
-                <p className="text-white/50 text-sm">
-                  Listen to sentence {currentSegIdx + 1} and write what you hear:
-                </p>
                 <button
                   onClick={togglePlay}
                   className="w-6 h-6 rounded-full flex items-center justify-center text-white bg-white/20 hover:bg-white/30 transition-all flex-shrink-0"
@@ -227,6 +224,9 @@ export default function DictationExercise() {
                 >
                   {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3 ml-0.5" />}
                 </button>
+                <p className="text-white/50 text-sm">
+                  Listen to sentence {currentSegIdx + 1} and write what you hear:
+                </p>
               </div>
 
               <textarea
