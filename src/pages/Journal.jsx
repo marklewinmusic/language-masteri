@@ -37,6 +37,7 @@ export default function Journal() {
   const [showTranslated, setShowTranslated] = useState(false);
   const [exercises, setExercises] = useState([]); // [{english, answer, userInput, revealed}]
   const [generatingExercises, setGeneratingExercises] = useState(false);
+  const [showPhonetics, setShowPhonetics] = useState(false);
   const [journalMode, setJournalMode] = useState("free"); // "free" | "song"
   const [songJournalDone, setSongJournalDone] = useState(false);
   const today = new Date().toISOString().split('T')[0];
@@ -518,7 +519,13 @@ Return JSON with an array "exercises" where each item has: word (the vocab word 
                   📝 Rewrite in {langName}
                 </p>
                 {exercises.length > 0 && (
-                  <button onClick={() => setExercises([])} className="text-xs" style={{ color: '#9b7e5a' }}>✕ Clear</button>
+                  <button
+                    onClick={() => setShowPhonetics(p => !p)}
+                    className="text-xs px-3 py-1 rounded-full transition-all flex items-center gap-1"
+                    style={{ background: showPhonetics ? 'rgba(90,107,90,0.15)' : 'rgba(200,180,140,0.2)', color: '#5a6b5a', border: '1px solid rgba(90,107,90,0.2)', fontFamily: 'Jost, sans-serif' }}
+                  >
+                    {showPhonetics ? '🔤 Hide phonetics' : '🔤 Show phonetics'}
+                  </button>
                 )}
               </div>
               {exercises.length > 0 && (
@@ -526,7 +533,14 @@ Return JSON with an array "exercises" where each item has: word (the vocab word 
                   {exercises.map((ex, i) => (
                     <div key={i} className="rounded-xl p-3 space-y-2" style={{ background: 'rgba(255,252,240,0.8)', border: '1px solid rgba(200,180,140,0.4)' }}>
                       <div className="flex items-start gap-2">
-                        <span className="text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: 'rgba(90,107,90,0.12)', color: '#5a6b5a', fontFamily: 'Jost, sans-serif' }}>{ex.word}</span>
+                        <div className="flex flex-col items-start gap-0.5 flex-shrink-0">
+                          <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(90,107,90,0.12)', color: '#5a6b5a', fontFamily: 'Jost, sans-serif' }}>{ex.word}</span>
+                          {showPhonetics && suggestedVocab.find(w => (w.phonetic || w.word) === ex.word)?.translation && (
+                            <span className="text-[10px] px-2" style={{ color: '#9b7e5a', fontFamily: 'Jost, sans-serif' }}>
+                              {suggestedVocab.find(w => (w.phonetic || w.word) === ex.word)?.translation}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm" style={{ color: '#3d4a2e', fontFamily: 'Georgia, serif' }}>{ex.english}</p>
                       </div>
                       <input
