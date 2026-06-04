@@ -176,21 +176,14 @@ export default function DictationExercise() {
 
       {/* Controls */}
       <div className="flex items-center justify-center gap-3 py-3 border-b border-white/10">
-        <button
-          onClick={togglePlay}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-white bg-white/10 hover:bg-white/20 transition-all"
-        >
-          {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
-        </button>
-        <span className="text-white/40 text-xs">Play video, then write what you hear</span>
-        {currentSegIdx > 0 && (
-          <button
-            onClick={() => seekToSegment(currentSegIdx - 1)}
-            className="text-white/40 hover:text-white text-xs underline transition-colors"
-          >
-            ← Prev
-          </button>
-        )}
+       {currentSegIdx > 0 && (
+         <button
+           onClick={() => seekToSegment(currentSegIdx - 1)}
+           className="text-white/40 hover:text-white text-xs underline transition-colors"
+         >
+           ← Prev
+         </button>
+       )}
       </div>
 
       {/* Sentence selector pills */}
@@ -223,9 +216,18 @@ export default function DictationExercise() {
               exit={{ opacity: 0, x: -30 }}
               className="space-y-4"
             >
-              <p className="text-white/50 text-sm text-center">
-                Listen to sentence {currentSegIdx + 1} and write what you hear:
-              </p>
+              <div className="flex items-center justify-center gap-2">
+                <p className="text-white/50 text-sm">
+                  Listen to sentence {currentSegIdx + 1} and write what you hear:
+                </p>
+                <button
+                  onClick={togglePlay}
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-white bg-white/20 hover:bg-white/30 transition-all flex-shrink-0"
+                  title="Play sentence"
+                >
+                  {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3 ml-0.5" />}
+                </button>
+              </div>
 
               <textarea
                 autoFocus
