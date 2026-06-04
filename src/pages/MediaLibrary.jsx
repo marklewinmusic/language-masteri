@@ -117,40 +117,14 @@ export default function MediaLibrary() {
   const handleStartFlashcards = async () => {
     setLoadingFlashcards(true);
     await markTaskComplete();
-    try {
-      const vid = selectedVideo;
-      const sessionLabel = vid?.default_day ? `Session ${vid.default_day}` : vid?.title;
-      const words = await base44.entities.Word.filter({ example_sentence: sessionLabel });
-      if (words.length > 0) {
-        setSessionVocabWords(words);
-        setShowPostVideoFlashcards(true);
-      } else if (transcript.length > 0) {
-        const fullText = transcript.map(s => s.transliteration || s.text).join(' ');
-        const lang = vid?.language || userProfile?.language || 'hebrew';
-        const langCap = lang.charAt(0).toUpperCase() + lang.slice(1);
-        const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `Extract 8-12 key vocabulary words from this ${langCap} transcript for a language learner. Only meaningful content words. Transcript: "${fullText.slice(0, 2000)}". Return JSON with words array, each having: word (native script), phonetic (Latin), translation (English).`,
-          response_json_schema: { type: 'object', properties: { words: { type: 'array', items: { type: 'object', properties: { word: { type: 'string' }, phonetic: { type: 'string' }, translation: { type: 'string' } } } } } }
-        });
-        if (result.words?.length) {
-          setSessionVocabWords(result.words);
-          setShowPostVideoFlashcards(true);
-        } else {
-          navigate(createPageUrl('Home'));
-        }
-      } else {
-        navigate(createPageUrl('Home'));
-      }
-    } catch (e) { console.error('Failed to load session vocab', e); }
     setLoadingFlashcards(false);
+    navigate(createPageUrl('Home'));
   };
 
   const handleRankWords = async () => {
     if (!sessionDay) return;
     await markTaskComplete();
-    const words = await base44.entities.Word.filter({ example_sentence: `Session ${sessionDay}` });
-    setSessionVocabWords(words.length > 0 ? words : []);
-    setShowPostVideoFlashcards(true);
+    navigate(createPageUrl('Home'));
   };
 
   const [formData, setFormData] = useState({
@@ -1974,14 +1948,7 @@ Return a JSON with a "videos" array. Each video must have:
       )}
     </div>
 
-    {showPostVideoFlashcards && sessionVocabWords.length > 0 && (
-      <PostVideoFlashcards
-        words={sessionVocabWords}
-        videoTitle={selectedVideo?.title}
-        userProfile={userProfile}
-        onClose={() => { setShowPostVideoFlashcards(false); setSessionVocabWords([]); navigate(createPageUrl('Home')); }}
-      />
-    )}
+
     <TranslatorWidget />
     </>
     );
