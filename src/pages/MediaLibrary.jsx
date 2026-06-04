@@ -118,7 +118,14 @@ export default function MediaLibrary() {
     setLoadingFlashcards(true);
     await markTaskComplete();
     setLoadingFlashcards(false);
-    navigate(createPageUrl('Home'));
+    // Pass video + transcript to dictation page
+    const videoId = selectedVideo?.video_id || selectedVideo?.youtube_video_id || extractYouTubeId(selectedVideo?.video_url || "");
+    sessionStorage.setItem("dictationData", JSON.stringify({
+      videoId,
+      title: selectedVideo?.title || "",
+      transcript: transcript.filter(s => s.transliteration || s.text),
+    }));
+    navigate("/DictationExercise");
   };
 
   const handleRankWords = async () => {
@@ -1903,7 +1910,7 @@ Return a JSON with a "videos" array. Each video must have:
                         style={{ background: 'linear-gradient(135deg, #5a6b5a, #3d4a2e)' }}
                       >
                         {loadingFlashcards ? <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : '✅'}
-                        {loadingFlashcards ? 'Loading...' : "I'm Done — Start Flashcards"}
+                        {loadingFlashcards ? 'Loading...' : "I'm Done Hearing — Write It"}
                       </button>
                     )}
                   </div>
