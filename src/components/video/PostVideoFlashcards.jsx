@@ -111,6 +111,41 @@ Return JSON with:
     }
   };
 
+  // Detect if a word is a conjugated verb and return the infinitive form if so
+  const normalizeToInfinitive = async (word) => {
+    const lang = userProfile?.language || "hebrew";
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Is "${word.phonetic}" (meaning: "${word.translation}") in ${lang} a conjugated verb form (not an infinitive/base form)? If yes, return the infinitive/dictionary form. If it's already an infinitive or not a verb, return it as-is.
+
+Return JSON only:
+- is_conjugated: boolean
+- infinitive_phonetic: the infinitive in Latin transliteration
+- infinitive_word: the infinitive in native script (${lang})
+- infinitive_translation: English meaning of the infinitive (e.g. "to run" not "ran")`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            is_conjugated: { type: "boolean" },
+            infinitive_phonetic: { type: "string" },
+            infinitive_word: { type: "string" },
+            infinitive_translation: { type: "string" }
+          }
+        }
+      });
+      if (result.is_conjugated && result.infinitive_phonetic) {
+        return {
+          ...word,
+          phonetic: result.infinitive_phonetic,
+          word: result.infinitive_word || word.word,
+          translation: result.infinitive_translation || word.translation,
+          is_verb: true,
+        };
+      }
+    } catch (e) { /* fall through */ }
+    return word;
+  };
+
   const handleRate = async (word, rating) => {
     setSaving(true);
     const key = getKey(word);
@@ -123,17 +158,29 @@ Return JSON with:
         data: { times_practiced: rating, mastered: rating >= 5, ...(imageUrl ? { image_url: imageUrl } : {}) }
       });
     } else {
-      await createWordMutation.mutateAsync({
-        word: word.word,
-        translation: word.translation,
-        phonetic: word.phonetic,
-        category: "wordbank",
-        language: userProfile?.language || "hebrew",
-        times_practiced: rating,
-        mastered: rating >= 5,
-        vocab_level: 0,
-        ...(imageUrl ? { image_url: imageUrl } : {}),
-      });
+      // Normalize conjugated verbs to their infinitive before saving
+      const normalizedWord = await normalizeToInfinitive(word);
+      // Check if this infinitive already exists to avoid duplicates
+      const existing = await base44.entities.Word.filter({ phonetic: normalizedWord.phonetic });
+      if (existing.length > 0) {
+        await updateWordMutation.mutateAsync({
+          id: existing[0].id,
+          data: { times_practiced: rating, mastered: rating >= 5, ...(imageUrl ? { image_url: imageUrl } : {}) }
+        });
+      } else {
+        await createWordMutation.mutateAsync({
+          word: normalizedWord.word,
+          translation: normalizedWord.translation,
+          phonetic: normalizedWord.phonetic,
+          category: "wordbank",
+          language: userProfile?.language || "hebrew",
+          times_practiced: rating,
+          mastered: rating >= 5,
+          vocab_level: 0,
+          is_verb: normalizedWord.is_verb || false,
+          ...(imageUrl ? { image_url: imageUrl } : {}),
+        });
+      }
     }
 
     setSaving(false);
