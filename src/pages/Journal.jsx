@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, Suspense, lazy } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,8 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import SongTranscriptJournal from "../components/journal/SongTranscriptJournal";
 
-const TranslatorWidget = lazy(() => import("../components/TranslatorWidget"));
-const SignaturePad = lazy(() => import("../components/journal/SignaturePad"));
+import TranslatorWidget from "../components/TranslatorWidget";
+import SignaturePad from "../components/journal/SignaturePad";
 
 const languageNames = {
   hebrew: 'Hebrew', english: 'English', spanish: 'Spanish',
@@ -606,9 +606,7 @@ Return JSON with an array "exercises" where each item has: word (the vocab word 
 
             <div className="flex items-end gap-4">
               <div className="w-40">
-                <Suspense fallback={<div className="h-16 rounded animate-pulse" style={{ background: 'rgba(200,180,140,0.2)' }} />}>
-                  <SignaturePad value={signature} onChange={setSignature} disabled={wordCount < 100} />
-                </Suspense>
+                <SignaturePad value={signature} onChange={setSignature} disabled={wordCount < 100} />
               </div>
               <Button
                 onClick={handleSave}
@@ -701,9 +699,7 @@ Return JSON with an array "exercises" where each item has: word (the vocab word 
         </motion.div>
       )}
 
-      <Suspense fallback={null}>
-        <TranslatorWidget />
-      </Suspense>
+      <TranslatorWidget />
     </div>
   );
 }
