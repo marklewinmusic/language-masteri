@@ -754,10 +754,11 @@ export default function Home() {
                                        const existing = (day.subsections || []).find(s => s.id === taskId);
                                        if (existing) { toast.info('Already in this session'); return; }
                                        const sub = isYouTube
-                                         ? { id: taskId, name: `▶ ${media.title}`, video_id: media.video_id, page: 'MediaLibrary' }
-                                         : { id: taskId, name: media.title, page: '', mediaUrl: media.video_url || '' };
+                                         ? { id: taskId, name: `▶ ${media.title}`, video_id: media.video_id, page: 'MediaLibrary', media_id: media.id }
+                                         : { id: taskId, name: media.title, page: '', mediaUrl: media.video_url || '', media_id: media.id };
                                        updateDayMutation.mutate({ id: day.id, data: { subsections: [...(day.subsections || []), sub] } });
                                        toast.success(`"${media.title}" added to session!`);
+                                       setLibraryPickerDayId(null);
                                      }}
                                    />
                                  </>
@@ -863,16 +864,18 @@ export default function Home() {
                                               }
                                               const ytId = task.video_id || extractYouTubeId(task.youtube_url);
                                              if (ytId) {
-                                               navigate(createPageUrl('MediaLibrary') + `?videoId=${ytId}&dayId=${day.id}&taskId=${task.id}`);
+                                               navigate(createPageUrl('MediaLibrary') + `?videoId=${ytId}&dayId=${day.id}&taskId=${task.id}&mediaId=${task.media_id || ''}`);
                                              } else if (task.mediaUrl) {
                                                // Look up saved transcript from MediaLibrary
                                                let transcript = task.transcript || '';
-                                               let mediaLibraryId = null;
+                                               let mediaLibraryId = task.media_id || null;
                                                try {
-                                                 const results = await base44.entities.MediaLibrary.filter({ video_url: task.mediaUrl });
-                                                 if (results[0]) {
-                                                   transcript = results[0].transcript_phonetics || transcript;
-                                                   mediaLibraryId = results[0].id;
+                                                 if (!mediaLibraryId) {
+                                                   const results = await base44.entities.MediaLibrary.filter({ video_url: task.mediaUrl });
+                                                   if (results[0]) {
+                                                     transcript = results[0].transcript_phonetics || transcript;
+                                                     mediaLibraryId = results[0].id;
+                                                   }
                                                  }
                                                } catch {}
                                                sessionStorage.setItem('songListenData', JSON.stringify({ title: task.name, mediaUrl: task.mediaUrl || '', transcript, videoId: '', mediaLibraryId }));
@@ -888,7 +891,7 @@ export default function Home() {
                                                     task.name?.toLowerCase().includes(m.title?.toLowerCase())
                                                   );
                                                   if (match?.video_id) {
-                                                    navigate(createPageUrl('MediaLibrary') + `?videoId=${match.video_id}`);
+                                                    navigate(createPageUrl('MediaLibrary') + `?videoId=${match.video_id}&mediaId=${match.id}`);
                                                   } else if (match?.video_url) {
                                                     sessionStorage.setItem('songListenData', JSON.stringify({ title: match.title, mediaUrl: match.video_url, transcript: match.transcript_phonetics || '', videoId: '', mediaLibraryId: match.id }));
                                                     navigate('/SongListenPage');
@@ -995,7 +998,7 @@ export default function Home() {
                     key={task.id}
                     onClick={() => {
                       setSessionModal(null);
-                      navigate(createPageUrl('MediaLibrary') + `?videoId=${ytId}&sessionDay=${sessionModal.day_number}&dayId=${sessionModal.id}&taskId=${task.id}`);
+                      navigate(createPageUrl('MediaLibrary') + `?videoId=${ytId}&sessionDay=${sessionModal.day_number}&dayId=${sessionModal.id}&taskId=${task.id}&mediaId=${task.media_id || ''}`);
                     }}
                     className="flex items-center gap-3 bg-stone-100 rounded-xl p-3 border border-stone-200 hover:border-stone-400 transition-all w-full text-left"
                   >
