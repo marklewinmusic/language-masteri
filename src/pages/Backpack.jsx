@@ -167,11 +167,12 @@ export default function Backpack() {
     refetchOnWindowFocus: false,
   });
 
-  // Build map: "Session N" → video title
+  // Build map: "Session N" → video title, also map video title → video title (for words tagged with title directly)
   const sessionTitleMap = useMemo(() => {
     const map = {};
     for (const v of mediaLibrary) {
       if (v.default_day) map[`Session ${v.default_day}`] = v.title;
+      if (v.title) map[v.title] = v.title; // words whose example_sentence is the video title itself
     }
     return map;
   }, [mediaLibrary]);
@@ -905,18 +906,6 @@ Return JSON:
           <PasteWordsList userProfile={userProfile} onWordsAdded={() => queryClient.invalidateQueries({ queryKey: ['wordRatings'] })} />
         </div>
 
-        {/* Session Flashcards Section */}
-        {userProfile && (
-          <SessionFlashcardsSection 
-            userProfile={userProfile}
-            onSessionSelect={(words, title, autoStart) => {
-              setSessionFlashcardData({ words, title });
-              setActiveTab("level0");
-              if (autoStart) setSingleCardIndex(0);
-            }}
-          />
-        )}
-
         {/* Tabs - Single Row + Phonetics Toggle */}
         <div className="flex gap-1 mb-2 justify-center overflow-x-auto flex-wrap items-center">
           {tabs.map(tab => (
@@ -933,6 +922,18 @@ Return JSON:
             </button>
           ))}
         </div>
+
+        {/* Video Word Folders — below level tabs */}
+        {userProfile && (
+          <SessionFlashcardsSection 
+            userProfile={userProfile}
+            onSessionSelect={(words, title, autoStart) => {
+              setSessionFlashcardData({ words, title });
+              setActiveTab("level0");
+              if (autoStart) setSingleCardIndex(0);
+            }}
+          />
+        )}
 
 
         {/* Search input */}

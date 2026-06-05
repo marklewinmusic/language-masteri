@@ -152,9 +152,9 @@ export default function WordCard({
       className="bg-white/70 border border-stone-200 rounded-lg overflow-hidden w-48 flex flex-col"
     >
       {/* Source content label — top of card */}
-      {word.example_sentence && (
-        <div className="px-2 py-1 flex items-center justify-center border-b border-stone-100 bg-stone-50">
-          <span className="text-[10px] text-stone-400 italic truncate">
+      {(word.example_sentence && (sessionTitleMap[word.example_sentence] || word.example_sentence)) && (
+        <div className="px-2 py-1 flex items-center justify-center border-b border-amber-100 bg-amber-50/70">
+          <span className="text-[10px] text-amber-700 font-medium truncate">
             📺 {sessionTitleMap[word.example_sentence] || word.example_sentence}
           </span>
         </div>
