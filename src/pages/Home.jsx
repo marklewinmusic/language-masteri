@@ -934,13 +934,13 @@ export default function Home() {
                                             </div>
                                           </div>
                                           )}
-                                          {isLastTask && (
-                                          <button
-                                            onClick={() => setSessionModal(null)}
-                                            className="mt-2 w-full py-2 px-3 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-sm font-medium border border-emerald-500/50 transition-all"
-                                          >
-                                            ✓ Session Complete
-                                          </button>
+                                          {isLastTask && isMasterUser && (
+                                            <button
+                                              onClick={() => setAddingTaskToDayId(addingTaskToDayId === day.id ? null : day.id)}
+                                              className="mt-2 w-full py-2 px-3 rounded-lg bg-white/10 hover:bg-white/20 text-white/60 hover:text-white/80 text-sm font-medium border border-dashed border-white/20 transition-all flex items-center justify-center gap-2"
+                                            >
+                                              <Plus className="w-4 h-4" /> Add more
+                                            </button>
                                           )}
                                           </div>
                                           );
