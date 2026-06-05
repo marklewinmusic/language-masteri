@@ -18,25 +18,46 @@ export default function SessionFlashcardsSection({ userProfile, onSessionSelect 
 
   // Auto-backfill: extract vocab for any video that has a transcript but no session_vocab_words
   useEffect(() => {
+    if (isLoading || backfilling) return;
     const videosNeedingExtraction = mediaLibrary.filter(
-      m => m.processed_transcript?.length > 0 && !(m.session_vocab_words?.length > 0)
+      m => (m.processed_transcript?.length > 0 || m.transcript_phonetics?.trim()) && !(m.session_vocab_words?.length > 0)
     );
-    if (videosNeedingExtraction.length === 0 || backfilling) return;
+    if (videosNeedingExtraction.length === 0) return;
 
     const runBackfill = async () => {
       setBackfilling(true);
       for (const video of videosNeedingExtraction) {
         try {
-          const fullText = video.processed_transcript.map(s => s.transliteration || s.text || '').join(' ');
+          // Build best available transcript text
+          let fullText = '';
+          if (video.processed_transcript?.length > 0) {
+            fullText = video.processed_transcript
+              .map(s => [s.transliteration, s.text].filter(Boolean).join(' '))
+              .join(' ');
+          }
+          if (!fullText.trim() && video.transcript_phonetics) {
+            fullText = video.transcript_phonetics;
+          }
           if (!fullText.trim()) continue;
+
           const lang = video.language || 'hebrew';
           const langCap = lang.charAt(0).toUpperCase() + lang.slice(1);
           const result = await base44.integrations.Core.InvokeLLM({
-            prompt: `Extract 8-12 important vocabulary words from this ${langCap} learning transcript. Only meaningful content words (nouns, verbs, adjectives). Transcript: "${fullText.slice(0, 3000)}". Return JSON with a "words" array, each item: { phonetic: Latin transliteration, translation: English meaning (1-4 words), hebrew: native script }.`,
+            prompt: `You are a language teacher. Extract 8-12 important vocabulary words from this ${langCap} learning transcript. Pick meaningful content words (nouns, verbs, adjectives) that a learner should know. Transcript: "${fullText.slice(0, 4000)}". Return a JSON object with a "words" array. Each item must have: phonetic (Latin romanization), translation (English meaning, 1-4 words), hebrew (Hebrew script).`,
             response_json_schema: {
               type: 'object',
               properties: {
-                words: { type: 'array', items: { type: 'object', properties: { phonetic: { type: 'string' }, translation: { type: 'string' }, hebrew: { type: 'string' } } } }
+                words: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      phonetic: { type: 'string' },
+                      translation: { type: 'string' },
+                      hebrew: { type: 'string' }
+                    }
+                  }
+                }
               }
             }
           });
@@ -52,7 +73,7 @@ export default function SessionFlashcardsSection({ userProfile, onSessionSelect 
       setBackfilling(false);
     };
     runBackfill();
-  }, [mediaLibrary.length]);
+  }, [isLoading, mediaLibrary.length]);
 
   // Only show videos that have pre-extracted vocab words
   const videosWithVocab = mediaLibrary
@@ -60,18 +81,7 @@ export default function SessionFlashcardsSection({ userProfile, onSessionSelect 
     .sort((a, b) => (a.default_day || 999) - (b.default_day || 999));
 
   if (isLoading) return null;
-  
-  // Show loading state while backfilling
-  if (backfilling && videosWithVocab.length === 0) {
-    return (
-      <div className="mb-6 flex items-center gap-2 text-stone-400 text-sm">
-        <Loader2 className="w-4 h-4 animate-spin" />
-        Preparing video word folders...
-      </div>
-    );
-  }
-
-  if (videosWithVocab.length === 0) return null;
+  if (!backfilling && videosWithVocab.length === 0) return null;
 
   const handleSelectVideo = (media) => {
     const words = (media.session_vocab_words || []).map(w => ({
@@ -86,8 +96,14 @@ export default function SessionFlashcardsSection({ userProfile, onSessionSelect 
 
   return (
     <div className="mb-6">
-      <h2 className="text-base font-semibold mb-3" style={{ color: '#3d4a2e', fontFamily: 'Jost, sans-serif' }}>
+      <h2 className="text-base font-semibold mb-3 flex items-center gap-2" style={{ color: '#3d4a2e', fontFamily: 'Jost, sans-serif' }}>
         📖 Video Word Folders
+        {backfilling && (
+          <span className="flex items-center gap-1 text-xs font-normal text-amber-600">
+            <Loader2 className="w-3 h-3 animate-spin" />
+            Building folders…
+          </span>
+        )}
       </h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {videosWithVocab.map((media) => (
