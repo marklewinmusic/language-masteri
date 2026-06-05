@@ -221,6 +221,21 @@ export default function SessionFlow() {
             {completedSteps.size} / {steps.length} completed
           </div>
         </motion.div>
+
+        {/* Complete Session Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="mt-6 w-full max-w-md"
+        >
+          <Button
+            onClick={() => navigate(-1)}
+            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4"
+          >
+            Complete Session
+          </Button>
+        </motion.div>
       </div>
     </div>
   );
