@@ -191,11 +191,11 @@ Return JSON with:
               </form>
 
               {translation && translation.result && (
-                <div className="bg-white/10 border border-white/20 rounded-xl p-3 space-y-2">
-                  <p className="text-white/50 text-[10px] uppercase mb-0.5">{translation.original}</p>
-                  <p className="text-cyan-300 text-xl font-bold">{translation.result.hebrew}</p>
-                  <p className="text-white/70 text-sm">{translation.original}</p>
-                  <p className="text-white font-semibold text-base">{translation.result.english}</p>
+                <div className="bg-white/10 border border-white/20 rounded-xl p-3">
+                  <p className="text-white/50 text-[10px] uppercase leading-tight">{translation.original}</p>
+                  <p className="text-cyan-300 text-base font-bold leading-tight">{translation.result.hebrew}</p>
+                  <p className="text-white/70 text-sm leading-tight">{translation.result.transliteration}</p>
+                  <p className="text-white font-semibold text-sm leading-tight">{translation.result.english}</p>
 
                   {translation.result.example_sentence_hebrew && (
                     <div className="mt-2 pt-2 border-t border-white/10">
