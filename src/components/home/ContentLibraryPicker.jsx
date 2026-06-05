@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Input } from "@/components/ui/input";
-import { Search, Upload, Loader2, X } from "lucide-react";
+import { Upload, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ContentLibraryPicker({ open, onOpenChange, onSelect, language }) {
-  const [search, setSearch] = useState("");
   const [uploading, setUploading] = useState(false);
 
   const { data: media = [] } = useQuery({
@@ -19,16 +17,8 @@ export default function ContentLibraryPicker({ open, onOpenChange, onSelect, lan
   const filtered = media
     .filter(m => m.is_active !== false)
     .filter(m => {
-      // If a language is specified, only show videos with that language
-      if (language) {
-        return m.language === language;
-      }
+      if (language) return m.language === language;
       return true;
-    })
-    .filter(m => {
-      if (!search.trim()) return true;
-      const q = search.toLowerCase();
-      return m.title?.toLowerCase().includes(q) || (m.tags || "").toLowerCase().includes(q);
     });
 
   const getThumbnail = (m) => {
@@ -81,17 +71,6 @@ export default function ContentLibraryPicker({ open, onOpenChange, onSelect, lan
       <div className="flex items-center justify-between mb-1">
         <span className="text-xs font-semibold" style={{ color: '#93C5FD' }}>📚 Add from Library</span>
         <button onClick={() => onOpenChange(false)} className="text-stone-400 hover:text-stone-200"><X className="w-3.5 h-3.5" /></button>
-      </div>
-
-      <div className="relative">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
-        <input
-          autoFocus
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Search..."
-          className="w-full pl-8 pr-3 py-1.5 rounded-lg text-xs bg-white/10 border border-white/20 text-white placeholder:text-stone-400 outline-none focus:border-blue-400"
-        />
       </div>
 
       <label className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg border border-dashed border-stone-500 cursor-pointer hover:bg-white/5 transition-all">
