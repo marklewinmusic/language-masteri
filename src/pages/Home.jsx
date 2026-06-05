@@ -803,7 +803,7 @@ export default function Home() {
                                                placeholder="YouTube URL"
                                              />
                                              {/* MP3 upload — saves immediately */}
-                                             <label className="flex items-center gap-1 px-2 py-1 rounded-lg border border-dashed border-stone-400 cursor-pointer hover:bg-stone-100 transition-all text-xs text-stone-500 whitespace-nowrap flex-shrink-0">
+                                             <label className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-lg border border-dashed border-stone-400 cursor-pointer hover:bg-stone-100 transition-all text-xs text-stone-500 whitespace-nowrap flex-shrink-0">
                                                🎵 MP3
                                                <input
                                                  type="file"
