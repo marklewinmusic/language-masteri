@@ -773,12 +773,13 @@ export default function Home() {
                                   const otherLanguages = ['hebrew', 'english', 'spanish', 'french', 'portuguese', 'italian'].filter(l => l !== userLang);
                                   if (otherLanguages.some(l => taskName.includes(l))) return false;
                                   return true;
-                                }).map((task, idx) => {
+                                }).map((task, idx, filteredTasks) => {
                                   const isSong = task.song_id || (songs && songs.find(s => s.id === task.id));
                                     const isTaskDone = progress?.subsections_completed?.includes(task.id);
                                     const isDragging = draggedTask?.dayId === day.id && draggedTask?.idx === idx;
                                     const isDragOver = dragOverTask?.dayId === day.id && dragOverTask?.idx === idx;
                                     const isEditing = editingTask?.dayId === day.id && editingTask?.taskId === task.id;
+                                    const isLastTask = idx === filteredTasks.length - 1;
                                     return (
                                       <div key={task.id} className="flex flex-col gap-1">
                                         {isEditing ? (
@@ -932,11 +933,19 @@ export default function Home() {
                                              )}
                                             </div>
                                           </div>
-                                        )}
-                                      </div>
-                                    );
-                                 })}
-                              </div>
+                                          )}
+                                          {isLastTask && (
+                                          <button
+                                            onClick={() => setSessionModal(null)}
+                                            className="mt-2 w-full py-2 px-3 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-sm font-medium border border-emerald-500/50 transition-all"
+                                          >
+                                            ✓ Session Complete
+                                          </button>
+                                          )}
+                                          </div>
+                                          );
+                                          })}
+                                          </div>
                             </motion.div>
                           )}
                         </AnimatePresence>
