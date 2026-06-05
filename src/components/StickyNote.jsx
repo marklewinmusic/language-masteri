@@ -175,7 +175,7 @@ export default function StickyNote() {
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-20 left-4 z-50 w-80 shadow-2xl rounded-2xl overflow-hidden"
+            className="fixed bottom-20 left-4 z-50 w-64 shadow-2xl rounded-2xl overflow-hidden"
             style={{ background: "#fef08a", border: "1px solid #eab308" }}
           >
             {/* Header */}
@@ -183,11 +183,23 @@ export default function StickyNote() {
               <div className="flex items-center gap-1.5">
                 <StickyNoteIcon className="w-4 h-4 text-slate-700" />
                 <span className="font-bold text-slate-700 text-sm">Notes</span>
-                <span className="text-slate-500 text-xs ml-1">@ to tag someone</span>
+                <span className="text-slate-500 text-xs ml-1">@ to tag</span>
               </div>
-              <button onClick={() => setIsOpen(false)} className="text-slate-500 hover:text-slate-800 transition-colors">
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-1.5">
+                {words.length > 0 && (
+                  <button
+                    onClick={handleAddToMyBackpack}
+                    disabled={addingToBackpack}
+                    title="Add words to my backpack"
+                    className="text-base leading-none"
+                  >
+                    {addingToBackpack ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "🎒"}
+                  </button>
+                )}
+                <button onClick={() => setIsOpen(false)} className="text-slate-500 hover:text-slate-800 transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             {/* Textarea */}
@@ -197,7 +209,7 @@ export default function StickyNote() {
                 value={notes}
                 onChange={handleChange}
                 placeholder={"Take notes...\n\n@John Smith - practice: shalom, toda"}
-                className="w-full h-44 p-3 text-sm text-slate-800 resize-none outline-none"
+                className="w-full h-28 p-3 text-sm text-slate-800 resize-none outline-none"
                 style={{ background: "transparent" }}
                 autoFocus
               />
@@ -230,32 +242,19 @@ export default function StickyNote() {
               </div>
             )}
 
-            {/* Bottom action row */}
-            <div className="px-3 pb-3 pt-1 flex gap-2">
-              {/* Backpack button — always shown when there are words */}
-              {words.length > 0 && (
-                <button
-                  onClick={handleAddToMyBackpack}
-                  disabled={addingToBackpack}
-                  title="Add words to my backpack"
-                  className="flex items-center justify-center gap-1.5 bg-amber-400 hover:bg-amber-500 text-slate-900 font-semibold text-sm rounded-lg py-2 px-3 transition-all disabled:opacity-60 flex-shrink-0"
-                >
-                  {addingToBackpack ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="text-base">🎒</span>}
-                </button>
-              )}
-
-              {/* Save to student button — only when @mention present */}
-              {mentions.length > 0 && (
+            {/* Bottom action row — only shown when @mention present */}
+            {mentions.length > 0 && (
+              <div className="px-3 pb-3 pt-1">
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex-1 flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm rounded-lg py-2 transition-all disabled:opacity-60"
+                  className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm rounded-lg py-2 transition-all disabled:opacity-60"
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   Save for {mentions.map(m => `@${m}`).join(", ")}
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
