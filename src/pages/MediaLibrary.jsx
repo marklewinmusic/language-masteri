@@ -76,6 +76,8 @@ export default function MediaLibrary() {
   });
   const [selectedVerb, setSelectedVerb] = useState(null);
   const [extractingVocab, setExtractingVocab] = useState(false);
+  const [editingTitleId, setEditingTitleId] = useState(null);
+  const [editingTitleValue, setEditingTitleValue] = useState("");
   const [recommendations, setRecommendations] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [showPostVideoFlashcards, setShowPostVideoFlashcards] = useState(false);
@@ -1677,10 +1679,35 @@ Return a JSON with a "videos" array. Each video must have:
                   </div>
                   <div className="p-3">
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <h3 className="font-bold text-base flex-1 text-white">{video.title}</h3>
+                      {editingTitleId === video.id ? (
+                        <input
+                          autoFocus
+                          value={editingTitleValue}
+                          onChange={(e) => setEditingTitleValue(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => {
+                            e.stopPropagation();
+                            if (e.key === 'Enter') {
+                              updateVideoMutation.mutate({ id: video.id, data: { title: editingTitleValue } });
+                              setEditingTitleId(null);
+                            } else if (e.key === 'Escape') {
+                              setEditingTitleId(null);
+                            }
+                          }}
+                          onBlur={() => {
+                            if (editingTitleValue.trim() && editingTitleValue !== video.title) {
+                              updateVideoMutation.mutate({ id: video.id, data: { title: editingTitleValue } });
+                            }
+                            setEditingTitleId(null);
+                          }}
+                          className="flex-1 bg-white/10 border border-white/30 rounded-lg px-2 py-1 text-white text-sm font-bold outline-none focus:border-cyan-400"
+                        />
+                      ) : (
+                        <h3 className="font-bold text-base flex-1 text-white">{video.title}</h3>
+                      )}
                       <div className="flex gap-1 flex-shrink-0">
                         {canEdit && (
-                          <button onClick={(e) => { e.stopPropagation(); handleEdit(video); }} className="text-stone-400 hover:text-stone-700 transition-colors p-1">
+                          <button onClick={(e) => { e.stopPropagation(); setEditingTitleId(video.id); setEditingTitleValue(video.title); }} className="text-stone-400 hover:text-white transition-colors p-1" title="Edit title">
                             <Pencil className="w-4 h-4" />
                           </button>
                         )}
