@@ -19,7 +19,13 @@ export default function ContentLibraryPicker({ open, onOpenChange, onSelect, lan
 
   const filtered = media
     .filter(m => m.is_active !== false)
-    .filter(m => !language || m.language === language)
+    .filter(m => {
+      // If a language is specified, only show videos with that language
+      if (language) {
+        return m.language === language;
+      }
+      return true;
+    })
     .filter(m => {
       if (!search.trim()) return true;
       const q = search.toLowerCase();
