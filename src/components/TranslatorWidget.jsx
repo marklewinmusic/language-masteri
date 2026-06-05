@@ -73,6 +73,18 @@ Return JSON with:
         }
       });
       setTranslation({ original: text, result: result });
+      // Auto-add to backpack
+      if (result?.hebrew) {
+        createWordMutation.mutate({
+          word: result.hebrew,
+          translation: result.english,
+          phonetic: result.transliteration || result.hebrew,
+          category: "wordbank",
+          times_practiced: 0,
+          mastered: false,
+          vocab_level: 0,
+        });
+      }
     } catch (e) {
       toast.error("Translation failed");
     }
