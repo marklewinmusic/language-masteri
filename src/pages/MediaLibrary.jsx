@@ -78,6 +78,7 @@ export default function MediaLibrary() {
   const [extractingVocab, setExtractingVocab] = useState(false);
   const [editingTitleId, setEditingTitleId] = useState(null);
   const [editingTitleValue, setEditingTitleValue] = useState("");
+  const [assignOpenId, setAssignOpenId] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [showPostVideoFlashcards, setShowPostVideoFlashcards] = useState(false);
@@ -1711,7 +1712,7 @@ Return a JSON with a "videos" array. Each video must have:
                       )}
                       <div className="flex gap-1 flex-shrink-0">
                         {canEdit && (
-                          <button onClick={(e) => { e.stopPropagation(); setEditingTitleId(video.id); setEditingTitleValue(video.title); }} className="text-stone-400 hover:text-white transition-colors p-1" title="Edit title">
+                          <button onClick={(e) => { e.stopPropagation(); setEditingTitleId(video.id); setEditingTitleValue(video.title); setAssignOpenId(assignOpenId === video.id ? null : video.id); }} className="text-stone-400 hover:text-white transition-colors p-1" title="Edit title">
                             <Pencil className="w-4 h-4" />
                           </button>
                         )}
@@ -1727,13 +1728,14 @@ Return a JSON with a "videos" array. Each video must have:
                       <span className="text-xs bg-purple-500/15 text-purple-700 px-2 py-0.5 rounded">{video.difficulty_level}</span>
                       {video.duration_minutes && <span className="text-xs bg-stone-200 text-stone-600 px-2 py-0.5 rounded">{video.duration_minutes} min</span>}
                     </div>
-                    {canAssign && (
+                    {canAssign && assignOpenId === video.id && (
                       <Select onValueChange={(userEmail) => {
                         if (userEmail) {
                           assignVideoMutation.mutate({ user_email: userEmail, media_library_id: video.id, assigned_by: currentUser.email, assigned_at: new Date().toISOString(), order: 0 });
+                          setAssignOpenId(null);
                         }
                       }}>
-                        <SelectTrigger className="w-full bg-green-500/10 border-green-500/40 text-green-700 hover:bg-green-500/20 text-xs h-8">
+                        <SelectTrigger onClick={(e) => e.stopPropagation()} className="w-full bg-green-500/10 border-green-500/40 text-green-700 hover:bg-green-500/20 text-xs h-8">
                           <Users className="w-3 h-3 mr-1" />
                           <SelectValue placeholder="Assign to session..." />
                         </SelectTrigger>
