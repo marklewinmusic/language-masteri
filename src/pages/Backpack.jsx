@@ -88,6 +88,7 @@ export default function Backpack() {
   const [fetchingTranslation, setFetchingTranslation] = useState({});
   const [sessionFlashcardData, setSessionFlashcardData] = useState(null); // { words, title }
   const [selectedSessionId, setSelectedSessionId] = useState(null); // which session is highlighted
+  const [showAddWordPanel, setShowAddWordPanel] = useState(false);
 
   // Load current user
   useEffect(() => {
@@ -877,38 +878,7 @@ Return JSON:
           <h1 className="text-3xl font-bold" style={{ color: '#3a4a3a', fontFamily: 'Cormorant Garamond, serif', fontWeight: 400 }}>🎒 My Backpack</h1>
         </div>
 
-        {/* Add new word */}
-        <div className="mb-5 bg-white/60 rounded-xl border border-stone-200 p-4">
-          <h3 className="text-sm font-semibold mb-3" style={{ color: '#3d4a2e', fontFamily: 'Jost, sans-serif' }}>+ Add New Word</h3>
-          <div className="flex gap-2 flex-wrap">
-            <Input
-              value={addWordForm.phonetic}
-              onChange={(e) => setAddWordForm(prev => ({ ...prev, phonetic: e.target.value }))}
-              placeholder="Transliteration (e.g. shalom)"
-              className="flex-1 min-w-[140px] bg-white/80 border-stone-300 text-stone-800 text-sm"
-              onKeyDown={(e) => e.key === 'Enter' && handleAddNewWord()}
-            />
-            <Input
-              value={addWordForm.translation}
-              onChange={(e) => setAddWordForm(prev => ({ ...prev, translation: e.target.value }))}
-              placeholder="English meaning"
-              className="flex-1 min-w-[140px] bg-white/80 border-stone-300 text-stone-800 text-sm"
-              onKeyDown={(e) => e.key === 'Enter' && handleAddNewWord()}
-            />
-            <Button
-              onClick={handleAddNewWord}
-              disabled={addingWord || (!addWordForm.phonetic.trim() && !addWordForm.translation.trim())}
-              style={{ background: '#5a6b5a', color: 'white' }}
-            >
-              {addingWord ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Add'}
-            </Button>
-          </div>
-
-          {/* Paste bulk words */}
-          <PasteWordsList userProfile={userProfile} onWordsAdded={() => queryClient.invalidateQueries({ queryKey: ['wordRatings'] })} />
-        </div>
-
-        {/* Tabs - Single Row + Phonetics Toggle */}
+        {/* Tabs - Single Row + Add Word Button */}
         <div className="flex gap-1 mb-2 justify-center overflow-x-auto flex-wrap items-center">
           {tabs.map(tab => (
             <button
@@ -923,7 +893,43 @@ Return JSON:
               {tab.label}
             </button>
           ))}
+          <button
+            onClick={() => setShowAddWordPanel(v => !v)}
+            className="px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all bg-white/60 text-stone-500 hover:bg-white/80 border border-stone-200"
+          >
+            + Add
+          </button>
         </div>
+
+        {/* Add new word panel */}
+        {showAddWordPanel && (
+          <div className="mb-4 bg-white/60 rounded-xl border border-stone-200 p-4">
+            <div className="flex gap-2 flex-wrap">
+              <Input
+                value={addWordForm.phonetic}
+                onChange={(e) => setAddWordForm(prev => ({ ...prev, phonetic: e.target.value }))}
+                placeholder="Transliteration (e.g. shalom)"
+                className="flex-1 min-w-[140px] bg-white/80 border-stone-300 text-stone-800 text-sm"
+                onKeyDown={(e) => e.key === 'Enter' && handleAddNewWord()}
+              />
+              <Input
+                value={addWordForm.translation}
+                onChange={(e) => setAddWordForm(prev => ({ ...prev, translation: e.target.value }))}
+                placeholder="English meaning"
+                className="flex-1 min-w-[140px] bg-white/80 border-stone-300 text-stone-800 text-sm"
+                onKeyDown={(e) => e.key === 'Enter' && handleAddNewWord()}
+              />
+              <Button
+                onClick={handleAddNewWord}
+                disabled={addingWord || (!addWordForm.phonetic.trim() && !addWordForm.translation.trim())}
+                style={{ background: '#5a6b5a', color: 'white' }}
+              >
+                {addingWord ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Add'}
+              </Button>
+            </div>
+            <PasteWordsList userProfile={userProfile} onWordsAdded={() => queryClient.invalidateQueries({ queryKey: ['wordRatings'] })} />
+          </div>
+        )}
 
         {/* Video Word Folders — below level tabs */}
         {userProfile && (
