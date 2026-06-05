@@ -46,7 +46,7 @@ export default function MediaLibrary() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingVideo, setEditingVideo] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterLanguage, setFilterLanguage] = useState("");
+  const [filterLanguage, setFilterLanguage] = useState("hebrew");
   const [filterDifficulty, setFilterDifficulty] = useState([]);
   const [filterTopics, setFilterTopics] = useState([]);
   const [filterContentTypes, setFilterContentTypes] = useState(["videos", "songs", "audio"]);
