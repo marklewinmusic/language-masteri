@@ -155,7 +155,7 @@ Return JSON with:
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
             className="fixed bottom-20 left-4 z-50 w-80 bg-slate-950/95 backdrop-blur-xl border border-purple-500/30 rounded-2xl shadow-2xl flex flex-col"
-            style={{ maxHeight: "85vh" }}
+            style={{ maxHeight: "85vh", height: "auto" }}
           >
             <div className="flex items-center justify-between px-4 pt-4 pb-2 flex-shrink-0">
               <div className="flex items-center gap-1.5 text-sm font-semibold text-white">
@@ -167,7 +167,7 @@ Return JSON with:
               </button>
             </div>
 
-            <div className="overflow-y-auto flex-1 px-4 pb-4 space-y-3 pt-1">
+            <div className="overflow-y-auto px-4 pb-3 space-y-2 pt-1">
               <form onSubmit={(e) => { e.preventDefault(); handleTranslate(); }} className="flex gap-2">
                 <Input
                   value={inputText}
