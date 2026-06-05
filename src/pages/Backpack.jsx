@@ -1066,48 +1066,7 @@ Return JSON:
                 />
               ))}
             </div>
-          ) : activeTab !== 'level0' ? (() => {
-            const words = getDisplayWords();
-            const idx = Math.min(singleCardIndex, words.length - 1);
-            const word = words[idx];
-            return (
-              <div className="flex flex-col items-center gap-4">
-                <div className="flex items-center gap-2 w-full max-w-xs justify-between">
-                  <button onClick={() => setSingleCardIndex(i => Math.max(0, i - 1))} disabled={idx === 0} className="px-4 py-2 rounded-xl bg-white/60 border border-stone-200 text-stone-500 disabled:opacity-30 font-bold text-lg">←</button>
-                  <span className="text-stone-400 text-sm">{idx + 1} / {words.length}</span>
-                  <button onClick={() => setSingleCardIndex(i => Math.min(words.length - 1, i + 1))} disabled={idx === words.length - 1} className="px-4 py-2 rounded-xl bg-white/60 border border-stone-200 text-stone-500 disabled:opacity-30 font-bold text-lg">→</button>
-                </div>
-                <WordCard
-                  word={word}
-                  showAllEnglish={showAllEnglish}
-                  onEnglishToggle={() => setShowAllEnglish(v => !v)}
-                  onHebrewToggle={() => setShowHebrew(v => !v)}
-                  onTranslitToggle={() => setShowTransliteration(v => !v)}
-                  showHebrew={showHebrew}
-                  showTransliteration={showTransliteration}
-                  showPhonetics={showPhonetics}
-                  isContentEditable={isContentEditable}
-                  mnemonicExplanations={mnemonicExplanations}
-                  setMnemonicExplanations={setMnemonicExplanations}
-                  cardSentences={cardSentences}
-                  generatingSentence={generatingSentence}
-                  fetchingTranslation={fetchingTranslation}
-                  suggestingMnemonic={suggestingMnemonic}
-                  mnemonicQueue={mnemonicQueue}
-                  isAdmin={isAdmin}
-                  updateWordMutation={updateWordMutation}
-                  handleRateWord={handleRateWord}
-                  suggestMnemonicForWord={suggestMnemonicForWord}
-                  approveWordMutation={approveWordMutation}
-                  handleDismissWord={handleDismissWord}
-                  deleteWordMutation={deleteWordMutation}
-                  handleAddWordFromSentence={handleAddWordFromSentence}
-                  generateCardSentence={generateCardSentence}
-                  sessionTitleMap={sessionTitleMap}
-                />
-              </div>
-            );
-          })() : (
+          ) : (
             <div className="flex flex-wrap gap-4 justify-center">
               {getDisplayWords().map((word) => (
                 <WordCard
