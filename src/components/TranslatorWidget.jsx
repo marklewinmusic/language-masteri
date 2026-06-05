@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Loader2, ChevronDown, Languages } from "lucide-react";
+import { X, Loader2, ChevronDown, Languages, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { base44 } from "@/api/base44Client";
@@ -175,14 +175,19 @@ Return JSON with:
                   placeholder="Type a word..."
                   className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
                 />
-                <Button
-                  type="submit"
-                  disabled={!inputText.trim() || isTranslating}
-                  size="sm"
-                  className="bg-amber-500 hover:bg-amber-600 flex-shrink-0 text-lg"
-                >
-                  {isTranslating ? <Loader2 className="w-4 h-4 animate-spin" /> : "🎒"}
-                </Button>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <Button
+                    type="submit"
+                    disabled={!inputText.trim() || isTranslating}
+                    size="sm"
+                    className="bg-amber-500 hover:bg-amber-600 text-lg"
+                  >
+                    {isTranslating ? <Loader2 className="w-4 h-4 animate-spin" /> : "🎒"}
+                  </Button>
+                  {wordAdded && (
+                    <CheckCircle2 className="w-5 h-5 text-green-400" />
+                  )}
+                </div>
               </form>
 
               {translation && translation.result && (
