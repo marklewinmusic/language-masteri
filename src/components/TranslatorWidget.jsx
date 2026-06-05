@@ -185,7 +185,7 @@ Return JSON with:
                     {isTranslating ? <Loader2 className="w-4 h-4 animate-spin" /> : "🎒"}
                   </Button>
                   {wordAdded && (
-                    <Check className="w-3.5 h-3.5 text-green-300 absolute bottom-0.5 right-0.5 font-bold" strokeWidth={3} />
+                    <Check className="w-6 h-6 text-green-300 absolute inset-0 m-auto" strokeWidth={3} />
                   )}
                 </div>
               </form>
