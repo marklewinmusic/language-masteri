@@ -198,11 +198,11 @@ Return JSON with:
                   <p className="text-white font-semibold text-base">{translation.result.english}</p>
 
                   {translation.result.example_sentence_hebrew && (
-                    <div className="mt-2 pt-2 border-t border-white/10 space-y-1">
-                      <p className="text-white/40 text-[10px] uppercase">Example</p>
-                      <p className="text-emerald-300 text-sm" dir="rtl">{translation.result.example_sentence_hebrew}</p>
-                      <p className="text-white/60 text-xs">{translation.result.example_sentence_transliteration}</p>
-                      <p className="text-white/50 text-xs italic">"{translation.result.example_sentence_english}"</p>
+                    <div className="mt-2 pt-2 border-t border-white/10">
+                      <p className="text-white/40 text-[10px] uppercase mb-1">Example</p>
+                      <p className="text-emerald-300 text-sm leading-tight" dir="rtl">{translation.result.example_sentence_hebrew}</p>
+                      <p className="text-white/60 text-xs leading-tight">{translation.result.example_sentence_transliteration}</p>
+                      <p className="text-white/50 text-xs italic leading-tight">"{translation.result.example_sentence_english}"</p>
                     </div>
                   )}
                 </div>
