@@ -9,7 +9,7 @@ export default function ContentLibraryPicker({ open, onOpenChange, onSelect, lan
 
   const { data: media = [] } = useQuery({
     queryKey: ["mediaLibrary"],
-    queryFn: () => base44.entities.MediaLibrary.list(),
+    queryFn: () => base44.entities.MediaLibrary.list('title', 200),
     enabled: open,
     staleTime: 5 * 60 * 1000,
   });
@@ -79,7 +79,7 @@ export default function ContentLibraryPicker({ open, onOpenChange, onSelect, lan
         <input type="file" accept=".mp3,.m4a,audio/mpeg,audio/mp4" onChange={handleAudioUpload} disabled={uploading} className="hidden" />
       </label>
 
-      <div className="max-h-48 overflow-y-auto space-y-1">
+      <div className="max-h-64 overflow-y-auto space-y-1">
         {filtered.length === 0 && <p className="text-center text-stone-400 py-4 text-xs">No content found.</p>}
         {filtered.map(m => (
           <button
