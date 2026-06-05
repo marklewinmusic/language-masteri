@@ -77,13 +77,12 @@ export default function SessionFlashcardsSection({ userProfile, onSessionSelect 
     runBackfill();
   }, [isLoading, mediaLibrary.length]);
 
-  // Only show videos that have pre-extracted vocab words
-  const videosWithVocab = mediaLibrary
-    .filter(m => m.session_vocab_words?.length > 0)
+  // Show all videos, sorted by default_day
+  const allVideos = mediaLibrary
     .sort((a, b) => (a.default_day || 999) - (b.default_day || 999));
 
   if (isLoading) return null;
-  if (!backfilling && videosWithVocab.length === 0) return null;
+  if (!backfilling && allVideos.length === 0) return null;
 
   const handleSelectVideo = (media) => {
     const words = (media.session_vocab_words || []).map(w => ({
@@ -108,26 +107,31 @@ export default function SessionFlashcardsSection({ userProfile, onSessionSelect 
         )}
       </h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {videosWithVocab.map((media) => (
-          <button
-            key={media.id}
-            onClick={() => handleSelectVideo(media)}
-            className="bg-white/60 border border-stone-200 rounded-xl flex items-center justify-between px-4 py-3 hover:bg-white/80 transition-all text-left"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-base flex-shrink-0">📹</span>
-              <div className="min-w-0">
-                <p className="font-semibold text-sm truncate" style={{ color: '#3d4a2e' }}>
-                  {media.title} words
-                </p>
-                <p className="text-xs" style={{ color: '#9b7e5a' }}>
-                  {media.session_vocab_words.length} words
-                </p>
+        {allVideos.map((media) => {
+          const wordCount = media.session_vocab_words?.length || 0;
+          const isReady = wordCount > 0;
+          return (
+            <button
+              key={media.id}
+              onClick={() => isReady && handleSelectVideo(media)}
+              disabled={!isReady}
+              className={`bg-white/60 border border-stone-200 rounded-xl flex items-center justify-between px-4 py-3 transition-all text-left ${isReady ? 'hover:bg-white/80 cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-base flex-shrink-0">📹</span>
+                <div className="min-w-0">
+                  <p className="font-semibold text-sm truncate" style={{ color: '#3d4a2e' }}>
+                    {media.title}
+                  </p>
+                  <p className="text-xs" style={{ color: '#9b7e5a' }}>
+                    {isReady ? `${wordCount} words` : 'Building…'}
+                  </p>
+                </div>
               </div>
-            </div>
-            <ChevronRight className="w-4 h-4 flex-shrink-0 ml-2" style={{ color: '#6b7c5a' }} />
-          </button>
-        ))}
+              <ChevronRight className="w-4 h-4 flex-shrink-0 ml-2" style={{ color: '#6b7c5a' }} />
+            </button>
+          );
+        })}
 
         {/* All words button */}
         <button
