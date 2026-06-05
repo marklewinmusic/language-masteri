@@ -152,13 +152,20 @@ export default function WordCard({
       className="bg-white/70 border border-stone-200 rounded-lg overflow-hidden w-48 flex flex-col"
     >
       {/* Source content label — top of card */}
-      {word.example_sentence && (
-        <div className="px-2 py-1 flex items-center justify-center border-b border-amber-100 bg-amber-50">
-          <span className="text-[10px] text-amber-700 font-medium truncate max-w-full">
-            📺 {sessionTitleMap[word.example_sentence] || word.example_sentence}
-          </span>
-        </div>
-      )}
+      {(() => {
+        const sourceLabel = word.day_introduced
+          ? sessionTitleMap[`Session ${word.day_introduced}`] || `Session ${word.day_introduced}`
+          : word.coach_folder
+          ? `📋 ${word.coach_folder}`
+          : null;
+        return sourceLabel ? (
+          <div className="px-2 py-1 flex items-center justify-center border-b border-amber-100 bg-amber-50">
+            <span className="text-[10px] text-amber-700 font-medium truncate max-w-full" title={sourceLabel}>
+              📺 {sourceLabel}
+            </span>
+          </div>
+        ) : null;
+      })()}
 
       {word.approved && (
         <div className="flex items-center gap-1 px-2 py-0.5 bg-green-100 border-b border-green-200">
