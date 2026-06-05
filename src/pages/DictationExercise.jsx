@@ -226,10 +226,11 @@ export default function DictationExercise() {
       </div>
 
       {/* Sentence selector pills */}
-      <div className="flex gap-1.5 px-4 py-2 overflow-x-auto justify-center">
+      <div className="flex gap-1.5 px-4 py-2 overflow-x-auto">
         {transcript.map((_, i) => (
           <button
             key={i}
+            ref={i === currentSegIdx ? (el) => el?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }) : null}
             onClick={() => { setCurrentSegIdx(i); seekToSegment(i); }}
             className={`flex-shrink-0 w-7 h-7 rounded-full text-xs font-bold transition-all ${
               i === currentSegIdx
