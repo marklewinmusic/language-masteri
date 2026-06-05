@@ -92,6 +92,8 @@ export default function Backpack() {
   // Load current user
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
+    // Force-clear video folders cache so fresh vocab data always loads
+    queryClient.removeQueries({ queryKey: ['mediaLibraryVocab'] });
   }, []);
 
   // Check for pending session flashcard data

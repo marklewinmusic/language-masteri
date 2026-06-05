@@ -14,6 +14,8 @@ export default function SessionFlashcardsSection({ userProfile, onSessionSelect 
     queryFn: () => base44.entities.MediaLibrary.filter({ language: userProfile.language, is_active: true }),
     enabled: !!userProfile?.language,
     staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
   });
 
   // Auto-backfill: extract vocab for any video that has a transcript but no session_vocab_words
