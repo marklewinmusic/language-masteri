@@ -871,10 +871,7 @@ Return JSON:
     <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0ece4 0%, #e8e4d8 50%, #eae6da 100%)' }}>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
-        <div className="relative flex items-center justify-center mb-4">
-          <Link to={createPageUrl("Home")} className="absolute left-0 text-stone-400 hover:text-stone-700">
-            <ArrowLeft className="w-6 h-6" />
-          </Link>
+        <div className="flex items-center justify-center mb-4">
           <h1 className="text-3xl font-bold" style={{ color: '#3a4a3a', fontFamily: 'Cormorant Garamond, serif', fontWeight: 400 }}>🎒 My Backpack</h1>
         </div>
 
