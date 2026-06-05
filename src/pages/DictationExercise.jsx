@@ -204,7 +204,11 @@ export default function DictationExercise() {
       {/* Video */}
       {videoId && (
         <div className="w-full max-w-3xl mx-auto" style={{ height: "40vh" }}>
-          <style>{`.ytp-big-play-button { display: none !important; }`}</style>
+          <style>{`
+            .ytp-big-play-button { display: none !important; }
+            .ytp-big-play-button.ytp-button { display: none !important; }
+            button.ytp-big-play-button { display: none !important; }
+          `}</style>
           <div id="dictation-yt-player" className="w-full h-full" />
         </div>
       )}
