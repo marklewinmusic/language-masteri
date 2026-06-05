@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Search, X, Upload, Loader2 } from "lucide-react";
+import { Search, Upload, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ContentLibraryPicker({ open, onOpenChange, onSelect, language }) {
@@ -75,73 +74,55 @@ export default function ContentLibraryPicker({ open, onOpenChange, onSelect, lan
     }
   };
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[80vh] flex flex-col" style={{ background: '#f5f1eb', border: '1px solid #e0dcd4' }}>
-        <DialogHeader>
-          <DialogTitle style={{ color: '#3d4a2e', fontFamily: 'Cormorant Garamond, serif' }}>
-            📚 Add from Content Library
-          </DialogTitle>
-        </DialogHeader>
+    <div className="mt-2 rounded-xl border border-blue-300/30 p-3 space-y-2" style={{ background: 'rgba(15,40,100,0.5)' }}>
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-xs font-semibold" style={{ color: '#93C5FD' }}>📚 Add from Library</span>
+        <button onClick={() => onOpenChange(false)} className="text-stone-400 hover:text-stone-200"><X className="w-3.5 h-3.5" /></button>
+      </div>
 
-        <div className="space-y-2 mb-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
-            <Input
-              autoFocus
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search content..."
-              className="pl-9 bg-white border-stone-300 text-stone-800"
-            />
-          </div>
-          <label className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-dashed border-stone-300 bg-stone-50 hover:bg-stone-100 cursor-pointer transition-all">
-            {uploading ? (
-              <>
-                <Loader2 className="w-4 h-4 text-stone-600 animate-spin" />
-                <span className="text-sm font-medium text-stone-600">Uploading...</span>
-              </>
+      <div className="relative">
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
+        <input
+          autoFocus
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search..."
+          className="w-full pl-8 pr-3 py-1.5 rounded-lg text-xs bg-white/10 border border-white/20 text-white placeholder:text-stone-400 outline-none focus:border-blue-400"
+        />
+      </div>
+
+      <label className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg border border-dashed border-stone-500 cursor-pointer hover:bg-white/5 transition-all">
+        {uploading ? <Loader2 className="w-3.5 h-3.5 text-stone-400 animate-spin" /> : <Upload className="w-3.5 h-3.5 text-stone-400" />}
+        <span className="text-xs text-stone-400">{uploading ? 'Uploading...' : 'Upload MP3 or M4A'}</span>
+        <input type="file" accept=".mp3,.m4a,audio/mpeg,audio/mp4" onChange={handleAudioUpload} disabled={uploading} className="hidden" />
+      </label>
+
+      <div className="max-h-48 overflow-y-auto space-y-1">
+        {filtered.length === 0 && <p className="text-center text-stone-400 py-4 text-xs">No content found.</p>}
+        {filtered.map(m => (
+          <button
+            key={m.id}
+            onClick={() => { onSelect(m); onOpenChange(false); }}
+            className="w-full flex items-center gap-2 rounded-lg p-1.5 hover:bg-white/10 transition-all text-left"
+            style={{ border: '1px solid rgba(96,165,250,0.15)' }}
+          >
+            {isAudio(m) ? (
+              <div className="w-10 h-7 rounded flex-shrink-0 flex items-center justify-center bg-white/10 text-sm">🎵</div>
+            ) : getThumbnail(m) ? (
+              <img src={getThumbnail(m)} alt="" className="w-10 h-7 rounded object-cover flex-shrink-0" />
             ) : (
-              <>
-                <Upload className="w-4 h-4 text-stone-600" />
-                <span className="text-sm font-medium text-stone-600">Upload MP3 or M4A</span>
-              </>
+              <div className="w-10 h-7 rounded flex-shrink-0 bg-white/10 flex items-center justify-center text-sm">📹</div>
             )}
-            <input
-              type="file"
-              accept=".mp3,.m4a,audio/mpeg,audio/mp4"
-              onChange={handleAudioUpload}
-              disabled={uploading}
-              className="hidden"
-            />
-          </label>
-        </div>
-
-        <div className="flex-1 overflow-y-auto space-y-2 pr-1">
-          {filtered.length === 0 && (
-            <p className="text-center text-stone-400 py-8 text-sm">No content found.</p>
-          )}
-          {filtered.map(m => (
-            <button
-              key={m.id}
-              onClick={() => { onSelect(m); onOpenChange(false); }}
-              className="w-full flex items-center gap-3 bg-white rounded-xl border border-stone-200 p-2.5 hover:border-stone-400 transition-all text-left"
-            >
-              {isAudio(m) ? (
-                <div className="w-14 h-10 rounded-lg flex-shrink-0 flex items-center justify-center bg-stone-100 text-xl">🎵</div>
-              ) : getThumbnail(m) ? (
-                <img src={getThumbnail(m)} alt="" className="w-14 h-10 rounded-lg object-cover flex-shrink-0" />
-              ) : (
-                <div className="w-14 h-10 rounded-lg flex-shrink-0 bg-stone-100 flex items-center justify-center text-xl">📹</div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="text-stone-700 font-semibold text-sm truncate">{m.title}</p>
-                <p className="text-stone-400 text-xs">{isAudio(m) ? "🎧 Audio" : "▶ Video"} · {m.difficulty_level || "All"}</p>
-              </div>
-            </button>
-          ))}
-        </div>
-      </DialogContent>
-    </Dialog>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium truncate" style={{ color: '#BFDBFE' }}>{m.title}</p>
+              <p className="text-stone-400 text-[10px]">{isAudio(m) ? "🎧 Audio" : "▶ Video"}</p>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

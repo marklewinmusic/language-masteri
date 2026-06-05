@@ -736,13 +736,31 @@ export default function Home() {
                               <div className="mt-1 space-y-1 pl-3">
                                 {/* Add from content library — always show for admin */}
                                 {isMasterUser && (
-                                  <button
-                                    onClick={() => setLibraryPickerDayId(day.id)}
-                                    className="w-full text-left px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-1 mb-1"
-                                    style={{ color: '#93C5FD', background: 'rgba(96,165,250,0.06)', border: '1px dashed rgba(96,165,250,0.3)' }}
-                                  >
-                                    <Plus className="w-3 h-3" /> + Add item
-                                  </button>
+                                 <>
+                                   <button
+                                     onClick={() => setLibraryPickerDayId(libraryPickerDayId === day.id ? null : day.id)}
+                                     className="w-full text-left px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-1 mb-1"
+                                     style={{ color: '#93C5FD', background: 'rgba(96,165,250,0.06)', border: '1px dashed rgba(96,165,250,0.3)' }}
+                                   >
+                                     <Plus className="w-3 h-3" /> + Add item
+                                   </button>
+                                   <ContentLibraryPicker
+                                     open={libraryPickerDayId === day.id}
+                                     onOpenChange={(open) => { if (!open) setLibraryPickerDayId(null); }}
+                                     language={userProfile?.language}
+                                     onSelect={(media) => {
+                                       const isYouTube = !!media.video_id;
+                                       const taskId = isYouTube ? `video_${media.video_id}` : `task_${Date.now()}`;
+                                       const existing = (day.subsections || []).find(s => s.id === taskId);
+                                       if (existing) { toast.info('Already in this session'); return; }
+                                       const sub = isYouTube
+                                         ? { id: taskId, name: `▶ ${media.title}`, video_id: media.video_id, page: 'MediaLibrary' }
+                                         : { id: taskId, name: media.title, page: '', mediaUrl: media.video_url || '' };
+                                       updateDayMutation.mutate({ id: day.id, data: { subsections: [...(day.subsections || []), sub] } });
+                                       toast.success(`"${media.title}" added to session!`);
+                                     }}
+                                   />
+                                 </>
                                 )}
                                 {(day.subsections || []).filter(task => {
                                   const taskName = task.name?.toLowerCase() || '';
@@ -1021,25 +1039,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Content Library Picker */}
-      <ContentLibraryPicker
-        open={!!libraryPickerDayId}
-        onOpenChange={(open) => { if (!open) setLibraryPickerDayId(null); }}
-        language={userProfile?.language}
-        onSelect={(media) => {
-          const day = days.find(d => d.id === libraryPickerDayId);
-          if (!day) return;
-          const isYouTube = !!media.video_id;
-          const taskId = isYouTube ? `video_${media.video_id}` : `task_${Date.now()}`;
-          const existing = (day.subsections || []).find(s => s.id === taskId);
-          if (existing) { toast.info('Already in this session'); return; }
-          const sub = isYouTube
-            ? { id: taskId, name: `▶ ${media.title}`, video_id: media.video_id, page: 'MediaLibrary' }
-            : { id: taskId, name: media.title, page: '', mediaUrl: media.video_url || '' };
-          updateDayMutation.mutate({ id: libraryPickerDayId, data: { subsections: [...(day.subsections || []), sub] } });
-          toast.success(`"${media.title}" added to session!`);
-        }}
-      />
+
 
       {/* Song Transcript Modal */}
       <SongTranscriptModal
