@@ -141,7 +141,7 @@ Return JSON with:
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-16 left-4 z-50 px-4 py-2 rounded-xl bg-white text-slate-900 shadow-lg flex items-center gap-2 font-bold"
+          className="fixed bottom-[calc(1rem+2.75rem)] left-4 z-50 px-4 py-2 rounded-xl bg-white text-slate-900 shadow-lg flex items-center gap-2 font-bold"
         >
           <Languages className="w-4 h-4" />
           Translate
