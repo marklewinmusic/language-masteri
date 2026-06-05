@@ -193,14 +193,14 @@ Return JSON with:
               {translation && translation.result && (
                 <div className="bg-white/10 border border-white/20 rounded-xl p-3 space-y-2">
                   <p className="text-white/50 text-[10px] uppercase mb-0.5">{translation.original}</p>
-                  <p className="text-cyan-300 text-xl font-bold" dir="rtl">{translation.result.hebrew}</p>
+                  <p className="text-cyan-300 text-xl font-bold">{translation.result.hebrew}</p>
                   <p className="text-white/70 text-sm">{translation.original}</p>
                   <p className="text-white font-semibold text-base">{translation.result.english}</p>
 
                   {translation.result.example_sentence_hebrew && (
                     <div className="mt-2 pt-2 border-t border-white/10">
                       <p className="text-white/40 text-[10px] uppercase mb-1">Example</p>
-                      <p className="text-emerald-300 text-sm leading-tight" dir="rtl">{translation.result.example_sentence_hebrew}</p>
+                      <p className="text-emerald-300 text-sm leading-tight">{translation.result.example_sentence_hebrew}</p>
                       <p className="text-white/60 text-xs leading-tight">{translation.result.example_sentence_transliteration}</p>
                       <p className="text-white/50 text-xs italic leading-tight">"{translation.result.example_sentence_english}"</p>
                     </div>
