@@ -1873,16 +1873,7 @@ Return a JSON with a "videos" array. Each video must have:
             <div className="flex items-center justify-between p-4 border-b border-white/10">
               <h2 className="text-white font-bold text-xl">{selectedVideo?.title}</h2>
               <div className="flex items-center gap-2">
-                {transcript.length > 0 && (
-                  <button
-                    onClick={() => extractVocabFromTranscript(selectedVideo, transcript)}
-                    disabled={extractingVocab}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 text-sm font-medium border border-cyan-500/40 transition-all disabled:opacity-50"
-                  >
-                    {extractingVocab ? <Loader2 className="w-4 h-4 animate-spin" /> : "🎒"}
-                    {extractingVocab ? "Extracting..." : "Save key words to Backpack"}
-                  </button>
-                )}
+
                 <button
                   onClick={() => setShowTranscript(false)}
                   className="text-white/60 hover:text-white p-2"
