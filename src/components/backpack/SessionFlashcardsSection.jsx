@@ -28,7 +28,7 @@ export default function SessionFlashcardsSection({ userProfile, onSessionSelect 
       translation: w.translation,
     }));
     if (onSessionSelect) {
-      onSessionSelect(words, media.title);
+      onSessionSelect(words, `${media.title} words`);
     }
   };
 
@@ -48,7 +48,7 @@ export default function SessionFlashcardsSection({ userProfile, onSessionSelect 
               <span className="text-base flex-shrink-0">📹</span>
               <div className="min-w-0">
                 <p className="font-semibold text-sm truncate" style={{ color: '#3d4a2e' }}>
-                  {media.title}
+                  {media.title} words
                 </p>
                 <p className="text-xs" style={{ color: '#9b7e5a' }}>
                   {media.session_vocab_words.length} words

@@ -925,8 +925,8 @@ For each segment:
       setTranscript(processedSegments);
       setPastedTranscript("");
       toast.success("Transcript processed!");
-      // Auto-extract vocab words for session flashcards
-      extractAndStoreVocabWords(video.id, processedSegments, video.language);
+      // Auto-extract vocab words → creates a named folder in flashcards
+      if (video.id) extractAndStoreVocabWords(video.id, processedSegments, video.language);
     } catch (e) {
       console.error('Error:', e);
       toast.error(e.message || "Failed to process");
@@ -1138,6 +1138,10 @@ For each segment:
         setTranscript(savedVideo.processed_transcript);
         setSelectedVideo(savedVideo);
         setLoadingTranscript(false);
+        // Auto-extract vocab folder if not yet done
+        if (!savedVideo.session_vocab_words?.length) {
+          extractAndStoreVocabWords(savedVideo.id, savedVideo.processed_transcript, savedVideo.language);
+        }
         return;
       }
     } catch (e) {}
