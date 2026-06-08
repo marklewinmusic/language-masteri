@@ -718,78 +718,89 @@ export default function Home() {
                       const thumbnailUrl = thumbYtId ? `https://i.ytimg.com/vi/${thumbYtId}/hqdefault.jpg` : null;
                       const sessionTitle = firstVideoTask?.name?.replace(/^▶\s*/, '') || day.title || `Session ${day.day_number}`;
 
+                      const sessionChecklist = [
+                        { label: 'Add words to your Backpack' },
+                        { label: 'Learn sentence by sentence' },
+                        { label: 'Rank words by mastery level' },
+                        { label: 'Complete a live coaching session' },
+                      ];
+
                       return (
                         <div key={day.id}>
-                          {/* Thumbnail Card */}
+                          {/* Thumbnail Card + Checklist */}
                           <div
-                            className={`relative rounded-2xl overflow-hidden transition-all ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-[1.01]'}`}
-                            onClick={() => {
-                              if (isLocked) { toast.info('Complete sessions 1–3 to unlock this!'); return; }
-                              if (isMasterUser) { setExpandedDay(expandedDay === day.day_number ? null : day.day_number); return; }
-                              setSessionModal(day);
-                            }}
+                            className="rounded-2xl overflow-hidden"
+                            style={{ background: 'rgba(15,30,80,0.45)', border: '1px solid rgba(96,165,250,0.15)' }}
                           >
-                            {/* Thumbnail */}
-                            <div className="relative w-full" style={{ paddingBottom: '42%' }}>
-                              {thumbnailUrl ? (
-                                <img
-                                  src={thumbnailUrl}
-                                  alt=""
-                                  className="absolute inset-0 w-full h-full object-cover"
-                                  style={{ filter: isLocked ? 'brightness(0.35)' : 'brightness(0.7)' }}
-                                />
-                              ) : (
-                                <div
-                                  className="absolute inset-0 flex items-center justify-center text-5xl"
-                                  style={{ background: isLocked ? 'rgba(15,20,50,0.9)' : 'linear-gradient(135deg, #1e3a5f, #2d1b69)', filter: isLocked ? 'brightness(0.4)' : undefined }}
-                                >
-                                  🎬
-                                </div>
-                              )}
-
-                              {/* Gradient overlay */}
-                              <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 55%, rgba(0,0,0,0.15) 100%)' }} />
-
-                              {/* Lock overlay */}
-                              {isLocked && (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                                  <Lock className="w-8 h-8 text-white/70" />
-                                  <p className="text-white/60 text-xs font-medium">Complete sessions 1–3 to unlock</p>
-                                </div>
-                              )}
-
-                              {/* Content */}
-                              {!isLocked && (
-                                <div className="absolute inset-0 flex items-center px-4">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#93C5FD' }}>
-                                      Session {day.day_number}
-                                    </p>
-                                    <p className="text-white font-semibold text-sm leading-snug line-clamp-2 pr-2">{sessionTitle}</p>
-                                    {allCompleted && (
-                                      <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-green-300">
-                                        <Check className="w-3 h-3" /> Completed
-                                      </span>
-                                    )}
-                                  </div>
-                                  {isMasterUser ? (
-                                    <ChevronDown className={`w-5 h-5 flex-shrink-0 text-white/70 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                            <div className="flex">
+                              {/* Thumbnail */}
+                              <div
+                                className={`relative flex-shrink-0 ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                                style={{ width: '45%' }}
+                                onClick={() => {
+                                  if (isLocked) { toast.info('Complete sessions 1–3 to unlock this!'); return; }
+                                  if (isMasterUser) { setExpandedDay(expandedDay === day.day_number ? null : day.day_number); return; }
+                                  setSessionModal(day);
+                                }}
+                              >
+                                <div className="relative w-full" style={{ paddingBottom: '75%' }}>
+                                  {thumbnailUrl ? (
+                                    <img
+                                      src={thumbnailUrl}
+                                      alt=""
+                                      className="absolute inset-0 w-full h-full object-cover"
+                                      style={{ filter: isLocked ? 'brightness(0.3)' : 'brightness(0.75)' }}
+                                    />
                                   ) : (
-                                    <div className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 ml-2" style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(4px)' }}>
-                                      <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+                                    <div
+                                      className="absolute inset-0 flex items-center justify-center text-4xl"
+                                      style={{ background: isLocked ? 'rgba(10,15,40,0.95)' : 'linear-gradient(135deg, #1e3a5f, #2d1b69)' }}
+                                    >
+                                      🎬
+                                    </div>
+                                  )}
+                                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 60%)' }} />
+
+                                  {isLocked ? (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+                                      <Lock className="w-6 h-6 text-white/60" />
+                                    </div>
+                                  ) : (
+                                    <div className="absolute inset-0 flex flex-col justify-end p-2">
+                                      <p className="text-white/70 text-xs font-bold uppercase tracking-wider">Session {day.day_number}</p>
+                                      {!isMasterUser && (
+                                        <div className="mt-1 w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.2)' }}>
+                                          <Play className="w-4 h-4 text-white ml-0.5" fill="white" />
+                                        </div>
+                                      )}
+                                      {isMasterUser && <ChevronDown className={`w-4 h-4 text-white/60 transition-transform mt-1 ${isExpanded ? 'rotate-180' : ''}`} />}
+                                    </div>
+                                  )}
+                                  {isLocked && (
+                                    <div className="absolute bottom-2 left-0 right-0 text-center">
+                                      <p className="text-white/40 text-xs font-bold uppercase tracking-wider">Session {day.day_number}</p>
                                     </div>
                                   )}
                                 </div>
-                              )}
+                              </div>
 
-                              {/* Locked label */}
-                              {isLocked && (
-                                <div className="absolute top-2 left-3">
-                                  <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'rgba(147,197,253,0.5)' }}>
-                                    Session {day.day_number}
-                                  </p>
-                                </div>
-                              )}
+                              {/* Checklist */}
+                              <div className="flex-1 p-3 flex flex-col justify-center gap-1.5">
+                                <p className="text-xs font-semibold mb-1 truncate" style={{ color: '#93C5FD' }}>{sessionTitle}</p>
+                                {sessionChecklist.map((item, cIdx) => (
+                                  <label key={cIdx} className={`flex items-start gap-2 cursor-pointer group ${isLocked ? 'opacity-40' : ''}`}>
+                                    <div className="w-3.5 h-3.5 rounded border flex-shrink-0 mt-0.5 flex items-center justify-center"
+                                      style={{ borderColor: 'rgba(96,165,250,0.4)', background: 'rgba(96,165,250,0.05)' }}>
+                                    </div>
+                                    <span className="text-xs leading-tight" style={{ color: '#BFDBFE' }}>{item.label}</span>
+                                  </label>
+                                ))}
+                                {allCompleted && (
+                                  <span className="inline-flex items-center gap-1 mt-1 text-xs font-medium text-green-300">
+                                    <Check className="w-3 h-3" /> Done
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
 
