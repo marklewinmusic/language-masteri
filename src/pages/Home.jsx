@@ -682,282 +682,229 @@ export default function Home() {
 
             {/* SCHEDULE SECTION */}
             {(() => {
-              // For non-admin users, only show schedule if at least one session has tasks
               const hasContent = uniqueDays.some(d => (d.subsections || []).length > 0);
               if (!isMasterUser && !hasContent) return null;
+
+              // Sessions 4+ locked until sessions 1-3 are all completed
+              const first3 = uniqueDays.slice(0, 3);
+              const first3AllDone = first3.length >= 3 && first3.every(d => {
+                const p = getDayProgress(d.id);
+                return d.subsections?.length > 0 && d.subsections.every(t => p?.subsections_completed?.includes(t.id));
+              });
+
               return (
-              <div className="flex justify-center">
-              <div className="w-full max-w-md">
-                <div className="flex items-center justify-between mb-4">
-                  <h2
-                    className="text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity"
-                    style={{ color: '#BFDBFE', fontFamily: 'Inter, sans-serif' }}
-                    onClick={() => navigate(createPageUrl("Days"))}
-                  >
-                    📅 Schedule <ChevronRight className="inline w-5 h-5 mb-1" />
-                  </h2>
+                <div className="w-full max-w-md mx-auto">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2
+                      className="text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity"
+                      style={{ color: '#BFDBFE', fontFamily: 'Inter, sans-serif' }}
+                      onClick={() => navigate(createPageUrl("Days"))}
+                    >
+                      📅 Schedule <ChevronRight className="inline w-5 h-5 mb-1" />
+                    </h2>
+                  </div>
 
-                </div>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {uniqueDays.slice(0, 5).map((day, idx) => {
-                    const dayColors = [
-                      { bg: '#5a6b5a', text: '#f5f0e8' },
-                      { bg: '#6b7c63', text: '#f5f0e8' },
-                      { bg: '#4a5a4a', text: '#f5f0e8' },
-                    ];
-                    const dayColor = dayColors[idx % dayColors.length];
-                    const progress = getDayProgress(day.id);
-                    const allCompleted = day.subsections?.length > 0 &&
-                      day.subsections.every(task => progress?.subsections_completed?.includes(task.id));
-                    const isExpanded = expandedDay === day.day_number;
+                      const progress = getDayProgress(day.id);
+                      const allCompleted = day.subsections?.length > 0 &&
+                        day.subsections.every(task => progress?.subsections_completed?.includes(task.id));
+                      const isExpanded = expandedDay === day.day_number;
+                      const isLocked = !isMasterUser && idx >= 3 && !first3AllDone;
 
-                    return (
-                      <div key={day.id}>
-                        <div
-                          className="backdrop-blur-xl rounded-xl p-3 flex items-center justify-between cursor-pointer transition-all"
-                          style={{ background: 'rgba(15,40,100,0.4)', border: '1px solid rgba(96,165,250,0.15)' }}
-                          onClick={() => {
-                            if (isMasterUser) { setExpandedDay(expandedDay === day.day_number ? null : day.day_number); return; }
-                            setSessionModal(day);
-                          }}
-                        >
-                          <h3 className="font-bold text-sm" style={{ color: '#BFDBFE' }}>Session {day.day_number}</h3>
-                          <ChevronDown className={`w-4 h-4 transition-transform ml-auto ${isExpanded ? 'rotate-180' : ''}`} style={{ color: '#60A5FA' }} />
-                        </div>
-                        <AnimatePresence>
-                          {isExpanded && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.2 }}
-                              className="overflow-hidden"
-                            >
-                              <div className="mt-1 space-y-1 pl-3">
-                                {/* Add from content library — always show for admin */}
-                                {isMasterUser && (
-                                 <>
-                                   <button
-                                     onClick={() => setLibraryPickerDayId(libraryPickerDayId === day.id ? null : day.id)}
-                                     className="w-full text-left px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-1 mb-1"
-                                     style={{ color: '#93C5FD', background: 'rgba(96,165,250,0.06)', border: '1px dashed rgba(96,165,250,0.3)' }}
-                                   >
-                                     <Plus className="w-3 h-3" /> + Add item
-                                   </button>
-                                   <ContentLibraryPicker
-                                     open={libraryPickerDayId === day.id}
-                                     onOpenChange={(open) => { if (!open) setLibraryPickerDayId(null); }}
-                                     language={userProfile?.language}
-                                     onSelect={(media) => {
-                                       const isYouTube = !!media.video_id;
-                                       const taskId = isYouTube ? `video_${media.video_id}` : `task_${Date.now()}`;
-                                       const existing = (day.subsections || []).find(s => s.id === taskId);
-                                       if (existing) { toast.info('Already in this session'); return; }
-                                       const sub = isYouTube
-                                         ? { id: taskId, name: `▶ ${media.title}`, video_id: media.video_id, page: 'MediaLibrary', media_id: media.id }
-                                         : { id: taskId, name: media.title, page: '', mediaUrl: media.video_url || '', media_id: media.id };
-                                       updateDayMutation.mutate({ id: day.id, data: { subsections: [...(day.subsections || []), sub] } });
-                                       toast.success(`"${media.title}" added to session!`);
-                                       setLibraryPickerDayId(null);
-                                     }}
-                                   />
-                                 </>
-                                )}
-                                {(day.subsections || []).filter(task => {
-                                  const taskName = task.name?.toLowerCase() || '';
-                                  const userLang = userProfile?.language || 'hebrew';
-                                  // "The Bride" is Hebrew-only
-                                  if (taskName.includes('the bride') && userLang !== 'hebrew') return false;
-                                  // Hide generic "Watch a video" if a specific video task exists
-                                  if (task.id === 'video' && (day.subsections || []).some(s => s.video_id)) return false;
-                                  // Hide tasks that reference a different language by name
-                                  const otherLanguages = ['hebrew', 'english', 'spanish', 'french', 'portuguese', 'italian'].filter(l => l !== userLang);
-                                  if (otherLanguages.some(l => taskName.includes(l))) return false;
-                                  return true;
-                                }).map((task, idx, filteredTasks) => {
-                                  const isSong = task.song_id || (songs && songs.find(s => s.id === task.id));
+                      // Find first video thumbnail
+                      const firstVideoTask = (day.subsections || []).find(t => t.video_id || extractYouTubeId(t.youtube_url));
+                      const thumbYtId = firstVideoTask ? (firstVideoTask.video_id || extractYouTubeId(firstVideoTask.youtube_url)) : null;
+                      const thumbnailUrl = thumbYtId ? `https://i.ytimg.com/vi/${thumbYtId}/hqdefault.jpg` : null;
+                      const sessionTitle = firstVideoTask?.name?.replace(/^▶\s*/, '') || day.title || `Session ${day.day_number}`;
+
+                      return (
+                        <div key={day.id}>
+                          {/* Thumbnail Card */}
+                          <div
+                            className={`relative rounded-2xl overflow-hidden transition-all ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-[1.01]'}`}
+                            onClick={() => {
+                              if (isLocked) { toast.info('Complete sessions 1–3 to unlock this!'); return; }
+                              if (isMasterUser) { setExpandedDay(expandedDay === day.day_number ? null : day.day_number); return; }
+                              setSessionModal(day);
+                            }}
+                          >
+                            {/* Thumbnail */}
+                            <div className="relative w-full" style={{ paddingBottom: '42%' }}>
+                              {thumbnailUrl ? (
+                                <img
+                                  src={thumbnailUrl}
+                                  alt=""
+                                  className="absolute inset-0 w-full h-full object-cover"
+                                  style={{ filter: isLocked ? 'brightness(0.35)' : 'brightness(0.7)' }}
+                                />
+                              ) : (
+                                <div
+                                  className="absolute inset-0 flex items-center justify-center text-5xl"
+                                  style={{ background: isLocked ? 'rgba(15,20,50,0.9)' : 'linear-gradient(135deg, #1e3a5f, #2d1b69)', filter: isLocked ? 'brightness(0.4)' : undefined }}
+                                >
+                                  🎬
+                                </div>
+                              )}
+
+                              {/* Gradient overlay */}
+                              <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 55%, rgba(0,0,0,0.15) 100%)' }} />
+
+                              {/* Lock overlay */}
+                              {isLocked && (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                                  <Lock className="w-8 h-8 text-white/70" />
+                                  <p className="text-white/60 text-xs font-medium">Complete sessions 1–3 to unlock</p>
+                                </div>
+                              )}
+
+                              {/* Content */}
+                              {!isLocked && (
+                                <div className="absolute inset-0 flex items-center px-4">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#93C5FD' }}>
+                                      Session {day.day_number}
+                                    </p>
+                                    <p className="text-white font-semibold text-sm leading-snug line-clamp-2 pr-2">{sessionTitle}</p>
+                                    {allCompleted && (
+                                      <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-green-300">
+                                        <Check className="w-3 h-3" /> Completed
+                                      </span>
+                                    )}
+                                  </div>
+                                  {isMasterUser ? (
+                                    <ChevronDown className={`w-5 h-5 flex-shrink-0 text-white/70 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                  ) : (
+                                    <div className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 ml-2" style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(4px)' }}>
+                                      <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Locked label */}
+                              {isLocked && (
+                                <div className="absolute top-2 left-3">
+                                  <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'rgba(147,197,253,0.5)' }}>
+                                    Session {day.day_number}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Admin expanded tasks */}
+                          <AnimatePresence>
+                            {isExpanded && isMasterUser && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="mt-1 space-y-1 pl-3 pb-2" style={{ background: 'rgba(15,30,80,0.3)', borderRadius: '0 0 12px 12px', border: '1px solid rgba(96,165,250,0.1)', borderTop: 'none' }}>
+                                  <>
+                                    <button
+                                      onClick={() => setLibraryPickerDayId(libraryPickerDayId === day.id ? null : day.id)}
+                                      className="w-full text-left px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-1 mb-1 mt-2"
+                                      style={{ color: '#93C5FD', background: 'rgba(96,165,250,0.06)', border: '1px dashed rgba(96,165,250,0.3)' }}
+                                    >
+                                      <Plus className="w-3 h-3" /> + Add item
+                                    </button>
+                                    <ContentLibraryPicker
+                                      open={libraryPickerDayId === day.id}
+                                      onOpenChange={(open) => { if (!open) setLibraryPickerDayId(null); }}
+                                      language={userProfile?.language}
+                                      onSelect={(media) => {
+                                        const isYouTube = !!media.video_id;
+                                        const taskId = isYouTube ? `video_${media.video_id}` : `task_${Date.now()}`;
+                                        const existing = (day.subsections || []).find(s => s.id === taskId);
+                                        if (existing) { toast.info('Already in this session'); return; }
+                                        const sub = isYouTube
+                                          ? { id: taskId, name: `▶ ${media.title}`, video_id: media.video_id, page: 'MediaLibrary', media_id: media.id }
+                                          : { id: taskId, name: media.title, page: '', mediaUrl: media.video_url || '', media_id: media.id };
+                                        updateDayMutation.mutate({ id: day.id, data: { subsections: [...(day.subsections || []), sub] } });
+                                        toast.success(`"${media.title}" added to session!`);
+                                        setLibraryPickerDayId(null);
+                                      }}
+                                    />
+                                  </>
+                                  {(day.subsections || []).filter(task => {
+                                    const taskName = task.name?.toLowerCase() || '';
+                                    const userLang = userProfile?.language || 'hebrew';
+                                    if (taskName.includes('the bride') && userLang !== 'hebrew') return false;
+                                    if (task.id === 'video' && (day.subsections || []).some(s => s.video_id)) return false;
+                                    const otherLanguages = ['hebrew', 'english', 'spanish', 'french', 'portuguese', 'italian'].filter(l => l !== userLang);
+                                    if (otherLanguages.some(l => taskName.includes(l))) return false;
+                                    return true;
+                                  }).map((task, tIdx, filteredTasks) => {
+                                    const isSong = task.song_id || (songs && songs.find(s => s.id === task.id));
                                     const isTaskDone = progress?.subsections_completed?.includes(task.id);
-                                    const isDragging = draggedTask?.dayId === day.id && draggedTask?.idx === idx;
-                                    const isDragOver = dragOverTask?.dayId === day.id && dragOverTask?.idx === idx;
+                                    const isDragging = draggedTask?.dayId === day.id && draggedTask?.idx === tIdx;
+                                    const isDragOver = dragOverTask?.dayId === day.id && dragOverTask?.idx === tIdx;
                                     const isEditing = editingTask?.dayId === day.id && editingTask?.taskId === task.id;
-                                    const isLastTask = idx === filteredTasks.length - 1;
+                                    const isLastTask = tIdx === filteredTasks.length - 1;
                                     return (
                                       <div key={task.id} className="flex flex-col gap-1">
                                         {isEditing ? (
-                                         <div className="flex items-center gap-2 px-3 py-2 bg-white/70 rounded-xl border border-cyan-400/50">
-                                             {/* Editable title */}
-                                             <input
-                                               autoFocus
-                                               value={editingTaskData.name}
-                                               onChange={(e) => setEditingTaskData(prev => ({ ...prev, name: e.target.value }))}
-                                               onKeyDown={(e) => { if (e.key === 'Enter') handleSaveEditedTask(day.id); if (e.key === 'Escape') handleCancelEdit(); }}
-                                               className="flex-1 min-w-0 bg-transparent border-none outline-none text-sm font-medium text-stone-800 placeholder:text-stone-400"
-                                               placeholder="Title"
-                                             />
-                                             {/* YouTube URL — saves on blur */}
-                                             <input
-                                               value={editingTaskData.youtube_url}
-                                               onChange={(e) => setEditingTaskData(prev => ({ ...prev, youtube_url: e.target.value }))}
-                                               onBlur={() => { if (editingTaskData.youtube_url.trim()) handleSaveEditedTask(day.id); }}
-                                               onKeyDown={(e) => { if (e.key === 'Enter') handleSaveEditedTask(day.id); }}
-                                               className="w-36 bg-stone-100 border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 outline-none focus:border-cyan-400 placeholder:text-stone-400"
-                                               placeholder="YouTube URL"
-                                             />
-                                             {/* MP3 upload — saves immediately */}
-                                             <label className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-lg border border-dashed border-stone-400 cursor-pointer hover:bg-stone-100 transition-all text-xs text-stone-500 whitespace-nowrap flex-shrink-0">
-                                               🎵 MP3
-                                               <input
-                                                 type="file"
-                                                 accept="audio/*"
-                                                 className="hidden"
-                                                 onChange={async (e) => {
-                                                   const file = e.target.files[0];
-                                                   if (!file) return;
-                                                   const { file_url } = await base44.integrations.Core.UploadFile({ file });
-                                                   const updated = { ...editingTaskData, mediaUrl: file_url, youtube_url: '' };
-                                                   const d = days.find(x => x.id === day.id);
-                                                   const updatedSubs = d.subsections.map(s =>
-                                                     s.id === editingTask.taskId
-                                                       ? { ...s, name: updated.name, youtube_url: '', video_id: null, mediaUrl: file_url, page: updated.page }
-                                                       : s
-                                                   );
-                                                   updateDayMutation.mutate({ id: day.id, data: { subsections: updatedSubs } });
-                                                   setEditingTask(null);
-                                                   toast.success('MP3 uploaded!');
-                                                 }}
-                                               />
-                                             </label>
-                                           </div>
+                                          <div className="flex items-center gap-2 px-3 py-2 bg-white/70 rounded-xl border border-cyan-400/50">
+                                            <input autoFocus value={editingTaskData.name} onChange={(e) => setEditingTaskData(prev => ({ ...prev, name: e.target.value }))} onKeyDown={(e) => { if (e.key === 'Enter') handleSaveEditedTask(day.id); if (e.key === 'Escape') handleCancelEdit(); }} className="flex-1 min-w-0 bg-transparent border-none outline-none text-sm font-medium text-stone-800 placeholder:text-stone-400" placeholder="Title" />
+                                            <input value={editingTaskData.youtube_url} onChange={(e) => setEditingTaskData(prev => ({ ...prev, youtube_url: e.target.value }))} onBlur={() => { if (editingTaskData.youtube_url.trim()) handleSaveEditedTask(day.id); }} onKeyDown={(e) => { if (e.key === 'Enter') handleSaveEditedTask(day.id); }} className="w-36 bg-stone-100 border border-stone-200 rounded-lg px-2 py-1 text-xs text-stone-700 outline-none focus:border-cyan-400 placeholder:text-stone-400" placeholder="YouTube URL" />
+                                            <label className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-lg border border-dashed border-stone-400 cursor-pointer hover:bg-stone-100 transition-all text-xs text-stone-500 whitespace-nowrap flex-shrink-0">
+                                              🎵 MP3
+                                              <input type="file" accept="audio/*" className="hidden" onChange={async (e) => { const file = e.target.files[0]; if (!file) return; const { file_url } = await base44.integrations.Core.UploadFile({ file }); const d = days.find(x => x.id === day.id); const updatedSubs = d.subsections.map(s => s.id === editingTask.taskId ? { ...s, name: editingTaskData.name, youtube_url: '', video_id: null, mediaUrl: file_url, page: editingTaskData.page } : s); updateDayMutation.mutate({ id: day.id, data: { subsections: updatedSubs } }); setEditingTask(null); toast.success('MP3 uploaded!'); }} />
+                                            </label>
+                                          </div>
                                         ) : (
                                           <div
                                             draggable
-                                            onDragStart={() => setDraggedTask({ dayId: day.id, idx })}
-                                            onDragOver={(e) => {
-                                              e.preventDefault();
-                                              setDragOverTask({ dayId: day.id, idx });
-                                            }}
+                                            onDragStart={() => setDraggedTask({ dayId: day.id, idx: tIdx })}
+                                            onDragOver={(e) => { e.preventDefault(); setDragOverTask({ dayId: day.id, idx: tIdx }); }}
                                             onDragLeave={() => setDragOverTask(null)}
-                                            onDrop={() => {
-                                              if (draggedTask && draggedTask.dayId === day.id && draggedTask.idx !== idx) {
-                                                reorderTasks(day.id, draggedTask.idx, idx);
-                                              }
-                                              setDraggedTask(null);
-                                              setDragOverTask(null);
-                                            }}
+                                            onDrop={() => { if (draggedTask && draggedTask.dayId === day.id && draggedTask.idx !== tIdx) { reorderTasks(day.id, draggedTask.idx, tIdx); } setDraggedTask(null); setDragOverTask(null); }}
                                             className={`flex items-center justify-between px-3 py-2 rounded-lg hover:opacity-80 transition-all group ${isDragging ? 'cursor-grabbing opacity-50' : 'cursor-pointer'} ${isDragOver ? 'border-t-2 border-b-2 border-cyan-400 my-2' : ''}`}
                                             style={{ background: isTaskDone ? 'rgba(96,165,250,0.12)' : 'rgba(96,165,250,0.05)', border: isDragOver ? undefined : '1px solid rgba(96,165,250,0.12)' }}
                                             onClick={async () => {
                                               if (isDragging) return;
-                                              // If generic "Watch a video" placeholder with no video, go to library to select one
-                                              if (task.id === 'video' && !task.video_id && !task.youtube_url) {
-                                                setLibraryPickerDayId(day.id);
-                                                return;
-                                              }
-                                              if (isSong) {
-                                                const songData = songs.find(s => s.id === task.id || s.id === task.song_id);
-                                                if (songData?.id) {
-                                                  navigate(`/SingingLesson?songId=${songData.id}`);
-                                                } else {
-                                                  navigate('/SingingHome');
-                                                }
-                                                return;
-                                              }
+                                              if (task.id === 'video' && !task.video_id && !task.youtube_url) { setLibraryPickerDayId(day.id); return; }
+                                              if (isSong) { const songData = songs.find(s => s.id === task.id || s.id === task.song_id); if (songData?.id) { navigate(`/SingingLesson?songId=${songData.id}`); } else { navigate('/SingingHome'); } return; }
                                               const ytId = task.video_id || extractYouTubeId(task.youtube_url);
-                                             if (ytId) {
-                                               navigate(createPageUrl('MediaLibrary') + `?videoId=${ytId}&dayId=${day.id}&taskId=${task.id}&mediaId=${task.media_id || ''}`);
-                                             } else if (task.mediaUrl) {
-                                               // Look up saved transcript from MediaLibrary
-                                               let transcript = task.transcript || '';
-                                               let mediaLibraryId = task.media_id || null;
-                                               try {
-                                                 if (!mediaLibraryId) {
-                                                   const results = await base44.entities.MediaLibrary.filter({ video_url: task.mediaUrl });
-                                                   if (results[0]) {
-                                                     transcript = results[0].transcript_phonetics || transcript;
-                                                     mediaLibraryId = results[0].id;
-                                                   }
-                                                 }
-                                               } catch {}
-                                               sessionStorage.setItem('songListenData', JSON.stringify({ title: task.name, mediaUrl: task.mediaUrl || '', transcript, videoId: '', mediaLibraryId }));
-                                               navigate('/SongListenPage');
-                                             } else if (task.page) {
-                                               navigate(createPageUrl(task.page));
-                                              } else {
-                                                // Try to find a matching MediaLibrary entry by title
-                                                try {
-                                                  const allMedia = await base44.entities.MediaLibrary.list();
-                                                  const match = allMedia.find(m => 
-                                                    m.title?.toLowerCase().includes(task.name?.toLowerCase()) ||
-                                                    task.name?.toLowerCase().includes(m.title?.toLowerCase())
-                                                  );
-                                                  if (match?.video_id) {
-                                                    navigate(createPageUrl('MediaLibrary') + `?videoId=${match.video_id}&mediaId=${match.id}`);
-                                                  } else if (match?.video_url) {
-                                                    sessionStorage.setItem('songListenData', JSON.stringify({ title: match.title, mediaUrl: match.video_url, transcript: match.transcript_phonetics || '', videoId: '', mediaLibraryId: match.id }));
-                                                    navigate('/SongListenPage');
-                                                  } else {
-                                                    // No media found — open SongListenPage so user can add audio/transcript
-                                                    sessionStorage.setItem('songListenData', JSON.stringify({ title: task.name, mediaUrl: '', transcript: '', videoId: '' }));
-                                                    navigate('/SongListenPage');
-                                                  }
-                                                } catch {
-                                                  sessionStorage.setItem('songListenData', JSON.stringify({ title: task.name, mediaUrl: '', transcript: '', videoId: '' }));
-                                                  navigate('/SongListenPage');
-                                                }
-                                              }
+                                              if (ytId) { navigate(createPageUrl('MediaLibrary') + `?videoId=${ytId}&dayId=${day.id}&taskId=${task.id}&mediaId=${task.media_id || ''}`); }
+                                              else if (task.mediaUrl) { let transcript = task.transcript || ''; let mediaLibraryId = task.media_id || null; try { if (!mediaLibraryId) { const results = await base44.entities.MediaLibrary.filter({ video_url: task.mediaUrl }); if (results[0]) { transcript = results[0].transcript_phonetics || transcript; mediaLibraryId = results[0].id; } } } catch {} sessionStorage.setItem('songListenData', JSON.stringify({ title: task.name, mediaUrl: task.mediaUrl || '', transcript, videoId: '', mediaLibraryId })); navigate('/SongListenPage'); }
+                                              else if (task.page) { navigate(createPageUrl(task.page)); }
+                                              else { try { const allMedia = await base44.entities.MediaLibrary.list(); const match = allMedia.find(m => m.title?.toLowerCase().includes(task.name?.toLowerCase()) || task.name?.toLowerCase().includes(m.title?.toLowerCase())); if (match?.video_id) { navigate(createPageUrl('MediaLibrary') + `?videoId=${match.video_id}&mediaId=${match.id}`); } else if (match?.video_url) { sessionStorage.setItem('songListenData', JSON.stringify({ title: match.title, mediaUrl: match.video_url, transcript: match.transcript_phonetics || '', videoId: '', mediaLibraryId: match.id })); navigate('/SongListenPage'); } else { sessionStorage.setItem('songListenData', JSON.stringify({ title: task.name, mediaUrl: '', transcript: '', videoId: '' })); navigate('/SongListenPage'); } } catch { sessionStorage.setItem('songListenData', JSON.stringify({ title: task.name, mediaUrl: '', transcript: '', videoId: '' })); navigate('/SongListenPage'); } }
                                             }}
                                           >
                                             <div className="flex items-center gap-2">
-                                              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isTaskDone ? 'bg-green-500 border-green-500' : 'border-stone-400'}`}>
-                                                {isTaskDone && <Check className="w-2.5 h-2.5 text-white" />}
-                                              </div>
+                                              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isTaskDone ? 'bg-green-500 border-green-500' : 'border-stone-400'}`}>{isTaskDone && <Check className="w-2.5 h-2.5 text-white" />}</div>
                                               <span className="text-sm font-medium" style={{ color: '#BFDBFE' }}>{task.name}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                             {(task.video_id || extractYouTubeId(task.youtube_url)) && <span className="text-xs" style={{ color: '#60A5FA' }}>▶ video</span>}
-                                             {task.mediaUrl && <span className="text-xs" style={{ color: '#60A5FA' }}>🎵 audio</span>}
-                                             {isMasterUser && (
-                                                <button
-                                                  onClick={(e) => { e.stopPropagation(); handleStartEditTask(day.id, task); }}
-                                                  className="opacity-0 group-hover:opacity-100 transition-opacity text-stone-400 hover:text-stone-700 text-xs px-1"
-                                                  title="Edit task"
-                                                  >
-                                                  <span style={{ display: 'inline-block', transform: 'scaleX(-1)' }}>✏️</span>
-                                                </button>
-                                              )}
-                                            {isMasterUser && (
-                                               <button
-                                                 onClick={(e) => { e.stopPropagation(); handleDeleteTask(day.id, task.id); }}
-                                                 className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-600 text-xs px-1"
-                                                 title="Remove from schedule"
-                                               >
-                                                 ✕
-                                               </button>
-                                             )}
+                                              {(task.video_id || extractYouTubeId(task.youtube_url)) && <span className="text-xs" style={{ color: '#60A5FA' }}>▶ video</span>}
+                                              {task.mediaUrl && <span className="text-xs" style={{ color: '#60A5FA' }}>🎵 audio</span>}
+                                              {isMasterUser && (<button onClick={(e) => { e.stopPropagation(); handleStartEditTask(day.id, task); }} className="opacity-0 group-hover:opacity-100 transition-opacity text-stone-400 hover:text-stone-700 text-xs px-1"><span style={{ display: 'inline-block', transform: 'scaleX(-1)' }}>✏️</span></button>)}
+                                              {isMasterUser && (<button onClick={(e) => { e.stopPropagation(); handleDeleteTask(day.id, task.id); }} className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-600 text-xs px-1">✕</button>)}
                                             </div>
                                           </div>
-                                          )}
-                                          {isLastTask && isMasterUser && (
-                                            <button
-                                              onClick={() => setAddingTaskToDayId(addingTaskToDayId === day.id ? null : day.id)}
-                                              className="mt-2 w-full py-2 px-3 rounded-lg bg-white/10 hover:bg-white/20 text-white/60 hover:text-white/80 text-sm font-medium border border-dashed border-white/20 transition-all flex items-center justify-center gap-2"
-                                            >
-                                              <Plus className="w-4 h-4" /> Add more
-                                            </button>
-                                          )}
-                                          </div>
-                                          );
-                                          })}
-                                          </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    );
-                  })}
+                                        )}
+                                        {isLastTask && isMasterUser && (
+                                          <button onClick={() => setAddingTaskToDayId(addingTaskToDayId === day.id ? null : day.id)} className="mt-2 w-full py-2 px-3 rounded-lg bg-white/10 hover:bg-white/20 text-white/60 hover:text-white/80 text-sm font-medium border border-dashed border-white/20 transition-all flex items-center justify-center gap-2">
+                                            <Plus className="w-4 h-4" /> Add more
+                                          </button>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      );
+                    })}
                   </div>
-              </div>
-            </div>
+                </div>
               );
             })()}
 
