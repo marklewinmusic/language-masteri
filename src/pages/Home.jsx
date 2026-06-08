@@ -719,7 +719,7 @@ export default function Home() {
                       const sessionTitle = firstVideoTask?.name?.replace(/^▶\s*/, '') || day.title || `Session ${day.day_number}`;
 
                       const sessionChecklist = [
-                        { label: 'Add words to your Backpack' },
+                        { label: 'Watch adding words to your Backpack' },
                         { label: 'Learn sentence by sentence' },
                         { label: 'Rank words by mastery level' },
                         { label: 'Complete a live coaching session' },
